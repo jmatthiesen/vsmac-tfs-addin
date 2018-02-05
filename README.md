@@ -1,6 +1,6 @@
 # Visual Studio for macOS TFS Add-in
 
-Visual Studio for macOS add-in for interacting with Microsoft Team Foundation Server and Visual Studio Team Services,.
+Visual Studio for macOS add-in for interacting with Microsoft Team Foundation Server and Visual Studio Team Services.
 
 ## Contributing
 
