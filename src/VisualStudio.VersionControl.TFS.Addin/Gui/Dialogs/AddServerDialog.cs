@@ -1,0 +1,33 @@
+﻿using MonoDevelop.Core;
+using VisualStudio.VersionControl.TFS.Addin.Gui.Widgets;
+using Xwt;
+
+namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
+{
+    public class AddServerDialog : Dialog
+    {
+        Notebook _notebook;
+        AddVisualStudioTeamServicesWidget _vstsWidget;
+
+        public AddServerDialog()
+        {
+            Init();
+            BuildGui();
+        }
+
+        void Init()
+        {
+            _notebook = new Notebook();
+            _vstsWidget = new AddVisualStudioTeamServicesWidget();
+        }
+
+        void BuildGui()
+        {
+            Title = GettextCatalog.GetString("Add Team Foundation Server");
+            Buttons.Add(Command.Ok, Command.Cancel);
+            _notebook.Add(_vstsWidget, GettextCatalog.GetString("Visual Studio Team Services"));
+            Content = _notebook;
+            Resizable = false;
+        }
+    }
+}

@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+    <ExtensionModel>
+        <Extension path = "/MonoDevelop/Ide/Commands">
+                <Category _name = "Team Foundation" id = "TeamFoundation">
+                    <Command 
+                        id = "VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.ConnectToServer"
+                        _label = "Connect to Team Foundation Server"
+                        defaultHandler = "VisualStudio.VersionControl.TFS.Addin.Commands.ConnectToServerHandler" />  
+                    <Command 
+                        id = "VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.TeamExplorer"
+                        _label = "Team Explorer"
+                        defaultHandler = "VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerHandler" />
+            </Category>
+        </Extension>
+        <Extension path = "/MonoDevelop/Ide/MainMenu/VersionControl">
+            <SeparatorItem insertafter="MonoDevelop.VersionControl.Commands.Annotate"/>
+            <ItemSet id = "TeamFoundation" _label = "Team Foundation Server"  autohide="true" >
+                <CommandItem id="VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.ConnectToServer" />
+                <CommandItem id="VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.TeamExplorer" />
+            </ItemSet>
+        </Extension>
+    </ExtensionModel>
