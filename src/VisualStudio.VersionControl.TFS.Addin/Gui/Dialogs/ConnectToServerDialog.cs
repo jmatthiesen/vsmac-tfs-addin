@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.TeamFoundation.Client;
 using MonoDevelop.Core;
+using MonoDevelop.Ide;
 using Xwt;
 
 namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
@@ -12,23 +16,25 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
 
         readonly DataField<string> _nameField = new DataField<string>();
         readonly DataField<string> _urlField = new DataField<string>();
+        readonly DataField<BaseTeamFoundationServer> _serverField = new DataField<BaseTeamFoundationServer>();
 
         public ConnectToServerDialog()
         {
             Init();
             BuildGui();
+            UpdateServers();
         }
 
-        private void Init()
+        void Init()
         {
             _serverList = new ListView();
             _notebook = new Notebook();
-            _serverStore = new ListStore(_nameField, _urlField);
+            _serverStore = new ListStore(_nameField, _urlField, _serverField);
         }
 
-        private void BuildGui()
+        void BuildGui()
         {
-            this.Title = GettextCatalog.GetString("Add/Remove Team Foundation Server");
+            Title = GettextCatalog.GetString("Add/Remove Team Foundation Server");
       
             var table = new Table();
 
@@ -71,25 +77,61 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
             Resizable = false;
         }
 
-        void OnServerClicked(object sender, EventArgs e)
+        void OnServerClicked(object sender, ListViewRowEventArgs e)
         {
-            
+  
         }
 
         void OnAddServer(object sender, EventArgs e)
         {
             using (var dialog = new AddServerDialog())
             {
-                if (dialog.Run(this) == Command.Ok)
+                if (dialog.Run(this) == Command.Ok && dialog.ServerInfo != null)
                 {
-             
+                    if (TeamFoundationServerClient.Settings.HasServer(dialog.ServerInfo.Name))
+                    {
+                        MessageService.ShowError("Server already exists!");
+                        return;
+                    }
+
+                    var server = TeamFoundationServerClient.Instance.SaveCredentials(dialog.ServerInfo, dialog.ServerAuthentication);
+
+                    using (var projectsDialog = new ChooseProjectsDialog(server))
+                    {
+                        if (projectsDialog.Run(this) == Command.Ok && projectsDialog.SelectedProjects.Any())
+                        {
+                            var selectedProjects = projectsDialog.SelectedProjects;
+                            server.ProjectCollections = new List<ProjectCollection>(selectedProjects.Select(x => x.Collection).Distinct());
+                            server.ProjectCollections.ForEach(pc => pc.Projects = new List<ProjectInfo>(selectedProjects.Where(pi => pi.Collection == pc)));
+                            TeamFoundationServerClient.Settings.AddServer(server);
+                            UpdateServers();
+                        }
+                    }
                 }
             }
         }
 
         void OnRemoveServer(object sender, EventArgs e)
         {
-            
+            if (MessageService.Confirm("Are you sure you want to delete this server!", AlertButton.Delete))
+            {
+                var serverName = _serverStore.GetValue(_serverList.SelectedRow, _nameField);
+                TeamFoundationServerClient.Settings.RemoveServer(serverName);
+                UpdateServers();
+            }
+        }
+
+        void UpdateServers()
+        {
+            _serverStore.Clear();
+
+            foreach (var server in TeamFoundationServerClient.Settings.GetServers())
+            {
+                var row = _serverStore.AddRow();
+                _serverStore.SetValue(row, _nameField, server.Name);
+                _serverStore.SetValue(row, _urlField, server.Uri.ToString());
+                _serverStore.SetValue(row, _serverField, server);
+            }
         }
     }
 }

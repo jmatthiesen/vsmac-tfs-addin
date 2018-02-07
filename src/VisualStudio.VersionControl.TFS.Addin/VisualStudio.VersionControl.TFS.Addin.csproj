@@ -12,6 +12,7 @@
     <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Commands\" />
@@ -20,15 +21,13 @@
     <Folder Include="Gui\Widgets\" />
     <Folder Include="Gui\Pads\" />
     <Folder Include="Services\" />
-    <Folder Include="Models\" />
+    <Folder Include="Helpers\" />
+    <Folder Include="Client\" />
+    <Folder Include="Client\Microsoft.TeamFoundation.Client\" />
+    <Folder Include="Client\Microsoft.TeamFoundation.VersionControl.Client\" />
+    <Folder Include="Client\Microsoft.TeamFoundation.WorkItemTracking.Client\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.TeamFoundation.Client\Microsoft.TeamFoundation.Client.csproj" />
-    <ProjectReference Include="..\Microsoft.TeamFoundation.VersionControl.Client\Microsoft.TeamFoundation.VersionControl.Client.csproj" />
-    <ProjectReference Include="..\Microsoft.TeamFoundation.WorkItemTracking.Client\Microsoft.TeamFoundation.WorkItemTracking.Client.csproj" />
-    <ProjectReference Include="..\Microsoft.TeamFoundation\Microsoft.TeamFoundation.csproj" />
-    <ProjectReference Include="..\Microsoft.TeamFoundation.VersionControl.Common\Microsoft.TeamFoundation.VersionControl.Common.csproj" />
-    <ProjectReference Include="..\Microsoft.TeamFoundation.Common\Microsoft.TeamFoundation.Common.csproj" />
-    <ProjectReference Include="..\Microsoft.TeamFoundation.WorkItemTracking.Common\Microsoft.TeamFoundation.WorkItemTracking.Common.csproj" />
+    <Compile Remove="Models\ServerAuthentication.cs" />
   </ItemGroup>
 </Project>

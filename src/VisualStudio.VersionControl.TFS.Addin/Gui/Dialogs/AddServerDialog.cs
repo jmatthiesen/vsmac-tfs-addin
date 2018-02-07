@@ -1,4 +1,5 @@
-﻿using MonoDevelop.Core;
+﻿using Microsoft.TeamFoundation.Client;
+using MonoDevelop.Core;
 using VisualStudio.VersionControl.TFS.Addin.Gui.Widgets;
 using Xwt;
 
@@ -29,5 +30,9 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
             Content = _notebook;
             Resizable = false;
         }
+
+        public BaseServerInfo ServerInfo { get { return _vstsWidget.ServerInfo; } }
+
+        public ServerAuthentication ServerAuthentication { get { return _vstsWidget.Authentication; } }
     }
 }
