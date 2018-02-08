@@ -26,6 +26,7 @@
     <Folder Include="Client\Microsoft.TeamFoundation.Client\" />
     <Folder Include="Client\Microsoft.TeamFoundation.VersionControl.Client\" />
     <Folder Include="Client\Microsoft.TeamFoundation.WorkItemTracking.Client\" />
+    <Folder Include="Gui\Views\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Models\ServerAuthentication.cs" />

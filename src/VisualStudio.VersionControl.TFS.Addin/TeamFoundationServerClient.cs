@@ -1,4 +1,6 @@
-﻿using Microsoft.TeamFoundation.Client;
+﻿using System.Collections.Generic;
+using Microsoft.TeamFoundation.Client;
+using Microsoft.TeamFoundation.VersionControl.Client;
 using VisualStudio.VersionControl.TFS.Addin.Services;
 
 namespace VisualStudio.VersionControl.TFS.Addin
@@ -10,11 +12,13 @@ namespace VisualStudio.VersionControl.TFS.Addin
 
         AuthService _authService;
         ProjectService _projectService;
+        WorkspaceService _workspaceService;
 
         public TeamFoundationServerClient()
         {
             _authService = new AuthService();
             _projectService = new ProjectService();
+            _workspaceService = new WorkspaceService();
         }
 
         public static TeamFoundationServerClient Instance { get { return _instance ?? (_instance = new TeamFoundationServerClient()); } }
@@ -44,6 +48,11 @@ namespace VisualStudio.VersionControl.TFS.Addin
         public void LoadProjects(BaseTeamFoundationServer server)
         {
             _projectService.LoadProjects(server);
+        }
+
+        public List<Workspace> GetWorkspaces(ProjectCollection collection)
+        {
+            return _workspaceService.GetLocalWorkspaces(collection);
         }
     }
 }

@@ -3,8 +3,9 @@
 //
 // Author:
 //       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
+//       Javier Suárez Ruiz  <javiersuarezruiz@hotmail.com>
 //
-// Copyright (c) 2013 Ventsislav Mladenov
+// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -49,13 +50,15 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             }
         }
 
-        public override Microsoft.TeamFoundation.Client.IServiceResolver ServiceResolver
+        public override TeamFoundation.Client.IServiceResolver ServiceResolver
         {
             get
             {
                 return new VersionControlServiceResolver();
             }
         }
+
+        public override Uri Url => new Uri(base.Url.OriginalString.Replace("TeamFoundation", string.Empty));
 
         #endregion
 
@@ -85,6 +88,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             XElement result = invoker.InvokeResult();
             workspaces.AddRange(result.Elements(MessageNs + "Workspace").Select(el => Workspace.FromXml(this, el)));
             workspaces.Sort();
+
             return workspaces;
         }
 
