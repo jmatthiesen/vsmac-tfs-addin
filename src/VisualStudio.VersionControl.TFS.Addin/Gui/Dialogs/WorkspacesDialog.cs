@@ -87,7 +87,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
 
         void AddWorkspaceClick(object sender, EventArgs e)
         {
-            using (var dialog = new AddWorkspaceDialog())
+            using (var dialog = new AddWorkspaceDialog(_projectCollection))
             {
                 if (dialog.Run(this) == Command.Ok)
                 {
