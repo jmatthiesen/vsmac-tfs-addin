@@ -44,7 +44,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
             BuildGui();
             AttachEvents();
 
-            using (var progress = new MonoDevelop.Ide.ProgressMonitoring.MessageDialogProgressMonitor(true, false, false))
+            using (var progress = new MonoDevelop.Ide.ProgressMonitoring.MessageDialogProgressMonitor(true, false, true))
             {
                 progress.BeginTask("Loading...", 2);
                 GetData();
