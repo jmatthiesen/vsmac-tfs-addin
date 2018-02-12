@@ -6,13 +6,27 @@
     <PackageReference Include="MonoDevelop.Addins" Version="0.4.1" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="System" />
     <Reference Include="System.Web.Services" />
-    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System" />
+    <Reference Include="gtk-sharp">
+      <HintPath>..\..\..\..\..\..\..\Library\Frameworks\Mono.framework\Versions\5.8.0\lib\mono\gac\gtk-sharp\2.12.0.0__35e10195dab3c99f\gtk-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="glib-sharp">
+      <HintPath>..\..\..\..\..\..\..\Library\Frameworks\Mono.framework\Versions\5.8.0\lib\mono\gac\glib-sharp\2.12.0.0__35e10195dab3c99f\glib-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="gtk-dotnet">
+      <HintPath>..\..\..\..\..\..\..\Library\Frameworks\Mono.framework\Versions\5.8.0\lib\mono\gac\gtk-dotnet\2.12.0.0__35e10195dab3c99f\gtk-dotnet.dll</HintPath>
+    </Reference>
+    <Reference Include="glade-sharp">
+      <HintPath>..\..\..\..\..\..\..\Library\Frameworks\Mono.framework\Versions\5.8.0\lib\mono\gac\glade-sharp\2.12.0.0__35e10195dab3c99f\glade-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="pango-sharp">
+      <HintPath>..\..\..\..\..\..\..\Library\Frameworks\Mono.framework\Versions\5.8.0\lib\mono\gac\pango-sharp\2.12.0.0__35e10195dab3c99f\pango-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="gdk-sharp">
+      <HintPath>..\..\..\..\..\..\..\Library\Frameworks\Mono.framework\Versions\5.8.0\lib\mono\gac\gdk-sharp\2.12.0.0__35e10195dab3c99f\gdk-sharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Commands\" />
@@ -28,8 +42,20 @@
     <Folder Include="Client\Microsoft.TeamFoundation.WorkItemTracking.Client\" />
     <Folder Include="Gui\Views\" />
     <Folder Include="Models\" />
+    <Folder Include="Icons\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Models\ServerAuthentication.cs" />
+    <Compile Remove="Icons.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Icons\file-16.png" />
+    <None Remove="Icons\folder-16.png" />
+    <None Remove="Icons\project-16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Icons\project-16.png" />
+    <EmbeddedResource Include="Icons\folder-16.png" />
+    <EmbeddedResource Include="Icons\file-16.png" />
   </ItemGroup>
 </Project>

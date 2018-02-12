@@ -10,14 +10,14 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
     public class ChooseProjectsDialog : Dialog
     {
         ListStore _collectionStore;
-        ListBox _collectionsList = new ListBox();
-        DataField<string> _collectionName = new DataField<string>();
-        DataField<ProjectCollection> _collectionItem = new DataField<ProjectCollection>();
+        ListBox _collectionsList;
         TreeStore _projectsStore;
-        TreeView _projectsList = new TreeView();
-        DataField<bool> _isProjectSelected = new DataField<bool>();
-        DataField<string> _projectName = new DataField<string>();
-        DataField<ProjectInfo> _projectItem = new DataField<ProjectInfo>();
+        TreeView _projectsList;
+        DataField<ProjectCollection> _collectionItem;
+        DataField<string> _collectionName;
+        DataField<bool> _isProjectSelected;
+        DataField<string> _projectName;
+        DataField<ProjectInfo> _projectItem;
 
         public List<ProjectInfo> SelectedProjects { get; set; }
 
@@ -30,6 +30,15 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
 
         void Init()
         {
+            _collectionsList = new ListBox();
+            _projectsList = new TreeView();
+
+            _collectionItem = new DataField<ProjectCollection>();
+            _collectionName = new DataField<string>();
+            _isProjectSelected = new DataField<bool>();
+            _projectName = new DataField<string>();
+            _projectItem = new DataField<ProjectInfo>();
+
             _collectionStore = new ListStore(_collectionName, _collectionItem);
             _projectsStore = new TreeStore(_isProjectSelected, _projectName, _projectItem);
         }
