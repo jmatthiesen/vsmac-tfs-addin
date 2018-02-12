@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
+using Microsoft.TeamFoundation.VersionControl.Client.Enums;
+using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using VisualStudio.VersionControl.TFS.Addin.Services;
 
 namespace VisualStudio.VersionControl.TFS.Addin
@@ -53,6 +55,30 @@ namespace VisualStudio.VersionControl.TFS.Addin
         public List<Workspace> GetWorkspaces(ProjectCollection collection)
         {
             return _workspaceService.GetLocalWorkspaces(collection);
+        }
+
+        public string DownloadTempItem(Workspace workspace, ProjectCollection collection, ExtendedItem extendedItem)
+        {
+            var dowloadService = collection.GetService<VersionControlDownloadService>();
+            var item = workspace.GetItem(extendedItem.ServerPath, ItemType.File, true);
+            var filePath = dowloadService.DownloadToTempWithName(item.ArtifactUri, item.ServerPath.ItemName);
+
+            return filePath;
+        }
+
+        public void GetLatestVersion(Workspace workspace, List<ExtendedItem> items)
+        {
+            List<GetRequest> requests = new List<GetRequest>();
+
+            foreach (var item in items)
+            {
+                RecursionType recursion = item.ItemType == ItemType.File ? RecursionType.None : RecursionType.Full;
+                requests.Add(new GetRequest(item.ServerPath, recursion, VersionSpec.Latest));
+            }
+
+            var option = GetOptions.None;
+
+            workspace.Get(requests, option);
         }
     }
 }

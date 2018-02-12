@@ -71,6 +71,8 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             }
         }
 
+        public override Uri Url => new Uri(base.Url.OriginalString.Replace("TeamFoundation", string.Empty));
+
         #endregion
 
         readonly Random random = new Random();

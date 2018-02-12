@@ -317,7 +317,46 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
 
             if (item.ItemType == ItemType.File)
             {
-                // TODO:
+                if (IsMapped(item.ServerPath))
+                {
+                    if (item.IsInWorkspace)
+                    {
+                        if (MonoDevelop.Projects.Services.ProjectService.IsWorkspaceItemFile(item.LocalItem))
+                        {
+                            IdeApp.Workspace.OpenWorkspaceItem(item.LocalItem, true);
+                        }
+                        else
+                        {
+                            IdeApp.Workbench.OpenDocument(item.LocalItem, null, true);
+                        }
+                    }
+                    else
+                    {
+                        var filePath = TeamFoundationServerClient.Instance.DownloadTempItem(_currentWorkspace, _projectCollection, item);
+
+                        if (MonoDevelop.Projects.Services.ProjectService.IsWorkspaceItemFile(filePath))
+                        {
+                            var parentFolder = _currentWorkspace.GetExtendedItem(item.ServerPath.ParentPath, ItemType.Folder);
+
+                            if (parentFolder == null)
+                                return;
+
+                            TeamFoundationServerClient.Instance.GetLatestVersion(_currentWorkspace, new List<ExtendedItem> { parentFolder });
+                            var futurePath = _currentWorkspace.GetLocalPathForServerPath(item.ServerPath);
+                            IdeApp.Workspace.OpenWorkspaceItem(futurePath, true);
+                            FileHelper.FileDelete(filePath);
+                        }
+                        else
+                        {
+                            IdeApp.Workbench.OpenDocument(filePath, null, null);
+                        }
+                    }
+                }
+                else
+                {
+                    var filePath = TeamFoundationServerClient.Instance.DownloadTempItem(_currentWorkspace, _projectCollection, item);
+                    IdeApp.Workbench.OpenDocument(filePath, null, true);
+                }
             }
         }
 
@@ -326,7 +365,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
         {
             if (args.Event.Button == 3 && _listView.Selection.GetSelectedRows().Any())
             {
-                // TODO:
+                // TODO: Show Menu
                 args.RetVal = true;
             }
         }
