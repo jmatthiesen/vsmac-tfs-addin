@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Gtk;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
@@ -22,6 +21,8 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
 {
     public class SourceControlExplorerView : ViewContent
     {
+        #region Variables
+
         int _treeLevel;
         ProjectCollection _projectCollection;
         List<Workspace> _workspaces;
@@ -37,6 +38,10 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
         Gtk.TreeView _listView;
         Gtk.ListStore _listStore;
 
+        #endregion
+
+        #region Constructor
+
         public SourceControlExplorerView(ProjectCollection projectCollection)
         {
             _projectCollection = projectCollection;
@@ -46,25 +51,37 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
             BuildGui();
             AttachEvents();
 
-            using (var progress = new MonoDevelop.Ide.ProgressMonitoring.MessageDialogProgressMonitor(true, false, true))
+            using (var progress = new MessageDialogProgressMonitor(true, false, true))
             {
                 progress.BeginTask("Loading...", 2);
                 GetData();
                 progress.Step(1);
                 GetWorkspaces();
                 ExpandPath(VersionControlPath.RootFolder);
-         
+
                 progress.EndTask();
             }
         }
 
+        #endregion
+
+        #region Properties
+
         public override Control Control => _view;
+
+        #endregion
+
+        #region Public Methods
 
         public static void Show(ProjectCollection projectCollection)
         {
             var sourceControlExplorerView = new SourceControlExplorerView(projectCollection);
             IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
         }
+
+        #endregion
+
+        #region Private Methods
 
         void Init()
         {
@@ -73,13 +90,13 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
             _view = new Gtk.VBox();
             _localFolder = new Gtk.Label();
             _manageButton = new Gtk.Button(GettextCatalog.GetString("Manage"));
-         
+
             _workspaceComboBox = new Gtk.ComboBox();
             _workspaceStore = new Gtk.ListStore(typeof(Workspace), typeof(string));
-          
+
             _treeView = new Gtk.TreeView();
             _treeStore = new Gtk.TreeStore(typeof(BaseItem), typeof(Gdk.Pixbuf), typeof(string));
-          
+
             _listView = new Gtk.TreeView();
             _listStore = new Gtk.ListStore(typeof(ExtendedItem), typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
         }
@@ -123,7 +140,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
 
             Gtk.VBox rightBox = new Gtk.VBox();
             Gtk.HBox headerRightBox = new Gtk.HBox();
-              
+
             headerRightBox.PackStart(new Gtk.Label(GettextCatalog.GetString("Local Path") + ":"), false, false, 0);
             rightBox.PackStart(headerRightBox, false, false, 0);
             headerRightBox.PackStart(_localFolder, false, false, 0);
@@ -150,7 +167,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
             rightBox.PackStart(listViewScollWindow, true, true, 0);
             mainBox.Pack2(rightBox, true, true);
             _view.PackStart(mainBox, true, true, 0);
-        
+
             _view.ShowAll();
         }
 
@@ -170,114 +187,50 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
                 GetListView(items[0].ServerPath.ParentPath);
         }
 
-        Gtk.Menu GetPopupMenu()
+        void CheckOut(List<ExtendedItem> itemsToCheckOut)
         {
-            Gtk.Menu menu = new Gtk.Menu();
-
-            var items = new List<ExtendedItem>();
-            foreach (var path in _listView.Selection.GetSelectedRows())
+            using (var progress = new MessageDialogProgressMonitor(true, false, true))
             {
-                TreeIter iter;
-                _listStore.GetIter(out iter, path);
-                items.Add((ExtendedItem)_listStore.GetValue(iter, 0));
-            }
+                progress.BeginTask("Check Out", itemsToCheckOut.Count);
 
-            if (items.All(i => IsMapped(i.ServerPath)))
-            {
-                foreach (var item in GetVersionMenu(items))
+                foreach (var item in itemsToCheckOut)
                 {
-                    menu.Add(item);
-                }
-            }
-            else
-            {
-                foreach (var item in GetMapMenu(items))
-                {
-                    menu.Add(item);
-                }
-            }
+                    var path = item.IsInWorkspace ? item.LocalItem : _currentWorkspace.GetLocalPathForServerPath(item.ServerPath);
+                    _currentWorkspace.Get(new GetRequest(item.ServerPath, RecursionType.Full, VersionSpec.Latest), GetOptions.None, progress);
+                    progress.Log.WriteLine("Check out item: " + item.ServerPath);
+                    var failures = _currentWorkspace.PendEdit(new List<FilePath> { path }, RecursionType.Full, CheckOutLockLevel.CheckOut);
 
-            menu.ShowAll();
-
-            return menu;
-        }
-
-        List<Gtk.MenuItem> GetVersionMenu(List<ExtendedItem> items)
-        {
-            var groupItems = new List<Gtk.MenuItem>();
-            Gtk.MenuItem getLatestVersionItem = new Gtk.MenuItem(GettextCatalog.GetString("Get Latest Version"));
-           
-            getLatestVersionItem.Activated += (sender, e) =>
-            {
-                List<GetRequest> requests = new List<GetRequest>();
-              
-                foreach (var item in items)
-                {
-                    RecursionType recursion = item.ItemType == ItemType.File ? RecursionType.None : RecursionType.Full;
-                    requests.Add(new GetRequest(item.ServerPath, recursion, VersionSpec.Latest));
-                }
-
-                MessageDialogProgressMonitor monitor = new MessageDialogProgressMonitor(true, false, false);
-
-                try
-                {
-                    var option = GetOptions.None;
-
-                    monitor.Log.WriteLine("Start downloading items.");
-
-                    TeamFoundationServerClient.Instance.Get(_currentWorkspace, requests, option, monitor);
-
-                    monitor.ReportSuccess("Finish Downloading.");
-                }
-                catch (Exception ex)
-                {
-                    monitor.ReportError(GettextCatalog.GetString("Download failed."), ex);
-                }
-                finally
-                {
-                    monitor.Dispose();
-                }           
-
-                Refresh(items);
-            };
-
-            groupItems.Add(getLatestVersionItem);
-         
-            Gtk.MenuItem forceGetLatestVersionItem = new Gtk.MenuItem(GettextCatalog.GetString("Get Specific Version"));
-         
-            forceGetLatestVersionItem.Activated += (sender, e) =>
-            {
-                using (var specVersionDialog = new GetSpecVersionDialog(_currentWorkspace))
-                {
-                    specVersionDialog.AddData(items);
-
-                    if (specVersionDialog.Run() == Command.Ok)
+                    if (failures != null && failures.Any())
                     {
-                        Refresh(items);
+                        if (failures.Any(f => f.SeverityType == SeverityType.Error))
+                        {
+                            foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
+                            {
+                                progress.ReportError(failure.Code, new Exception(failure.Message));
+                            }
+
+                            break;
+                        }
+
+                        foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Warning))
+                        {
+                            progress.ReportWarning(failure.Message);
+                        }
                     }
                 }
-            };
 
-            groupItems.Add(forceGetLatestVersionItem);
-
-            return groupItems;
-        }
-
-        List<Gtk.MenuItem> GetMapMenu(List<ExtendedItem> items)
-        {
-            Gtk.MenuItem mapItem = new Gtk.MenuItem(GettextCatalog.GetString("Map"));
-            mapItem.Activated += (sender, e) => MapItem(items);
-
-            return new List<Gtk.MenuItem> { mapItem };
+                progress.EndTask();
+                progress.ReportSuccess("Finish Check Out.");
+            }
         }
 
         void MapItem(List<ExtendedItem> items)
         {
             var item = items.FirstOrDefault(i => i.ItemType == ItemType.Folder);
-        
+
             if (_currentWorkspace == null || item == null)
                 return;
-            
+
             using (Xwt.SelectFolderDialog folderSelect = new Xwt.SelectFolderDialog("Browse For Folder"))
             {
                 folderSelect.Multiselect = false;
@@ -335,7 +288,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
                 _treeView.Selection.SelectIter(firstNode);
             }
             _treeView.Model = _treeStore;
-  
+
         }
 
         void AddChilds(TreeIter node, List<HierarchyItem> children)
@@ -499,7 +452,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
 
                 if (menu.Children.Length > 0)
                     menu.Popup();
-                
+
                 args.RetVal = true;
             }
         }
@@ -513,7 +466,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
                 _currentWorkspace = workspace;
 
                 TeamFoundationServerClient.Settings.SetActiveWorkspace(_projectCollection, workspace.Name);
-              
+
                 TreeIter treeIter;
                 if (_treeView.Selection.GetSelected(out treeIter))
                 {
@@ -532,7 +485,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
         {
             if (string.IsNullOrEmpty(path))
                 return;
-            
+
             TreeIter iter = TreeIter.Zero;
             _treeStore.Foreach((m, p, i) =>
             {
@@ -547,7 +500,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
 
             if (iter.Equals(TreeIter.Zero))
                 return;
-            
+
             _treeView.CollapseAll();
             _treeView.ExpandToPath(_treeStore.GetPath(iter));
             _treeView.Selection.SelectIter(iter);
@@ -557,7 +510,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
         {
             if (_currentWorkspace == null)
                 return false;
-            
+
             return _currentWorkspace.IsServerPathMapped(serverPath);
         }
 
@@ -570,7 +523,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
             }
 
             var mappedFolder = _currentWorkspace.Folders.First(f => serverPath.IsChildOrEqualTo(f.ServerItem));
-          
+
             if (string.Equals(serverPath, mappedFolder.ServerItem, StringComparison.Ordinal))
                 _localFolder.Text = mappedFolder.LocalItem;
             else
@@ -590,5 +543,162 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
                 }
             }
         }
+
+        #region Popup Menu
+
+        Gtk.Menu GetPopupMenu()
+        {
+            Gtk.Menu menu = new Gtk.Menu();
+
+            var items = new List<ExtendedItem>();
+            foreach (var path in _listView.Selection.GetSelectedRows())
+            {
+                TreeIter iter;
+                _listStore.GetIter(out iter, path);
+                items.Add((ExtendedItem)_listStore.GetValue(iter, 0));
+            }
+
+            if (items.All(i => IsMapped(i.ServerPath)))
+            {
+                foreach (var item in GetVersionMenu(items))
+                {
+                    menu.Add(item);
+                }
+
+                var editMenu = GetEditMenu(items);
+                if (editMenu.Any())
+                {
+                    menu.Add(new Gtk.SeparatorMenuItem());
+                    foreach (var item in editMenu)
+                    {
+                        menu.Add(item);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var item in GetMapMenu(items))
+                {
+                    menu.Add(item);
+                }
+            }
+
+            menu.ShowAll();
+
+            return menu;
+        }
+
+        List<Gtk.MenuItem> GetVersionMenu(List<ExtendedItem> items)
+        {
+            var groupItems = new List<Gtk.MenuItem>();
+            Gtk.MenuItem getLatestVersionItem = new Gtk.MenuItem(GettextCatalog.GetString("Get Latest Version"));
+
+            getLatestVersionItem.Activated += (sender, e) =>
+            {
+                List<GetRequest> requests = new List<GetRequest>();
+
+                foreach (var item in items)
+                {
+                    RecursionType recursion = item.ItemType == ItemType.File ? RecursionType.None : RecursionType.Full;
+                    requests.Add(new GetRequest(item.ServerPath, recursion, VersionSpec.Latest));
+                }
+
+                MessageDialogProgressMonitor monitor = new MessageDialogProgressMonitor(true, false, false);
+
+                try
+                {
+                    var option = GetOptions.None;
+
+                    monitor.Log.WriteLine("Start downloading items.");
+
+                    TeamFoundationServerClient.Instance.Get(_currentWorkspace, requests, option, monitor);
+
+                    monitor.ReportSuccess("Finish Downloading.");
+                }
+                catch (Exception ex)
+                {
+                    monitor.ReportError(GettextCatalog.GetString("Download failed."), ex);
+                }
+                finally
+                {
+                    monitor.Dispose();
+                }
+
+                Refresh(items);
+            };
+
+            groupItems.Add(getLatestVersionItem);
+
+            Gtk.MenuItem forceGetLatestVersionItem = new Gtk.MenuItem(GettextCatalog.GetString("Get Specific Version"));
+
+            forceGetLatestVersionItem.Activated += (sender, e) =>
+            {
+                using (var specVersionDialog = new GetSpecVersionDialog(_currentWorkspace))
+                {
+                    specVersionDialog.AddData(items);
+
+                    if (specVersionDialog.Run() == Command.Ok)
+                    {
+                        Refresh(items);
+                    }
+                }
+            };
+
+            groupItems.Add(forceGetLatestVersionItem);
+
+            return groupItems;
+        }
+
+        List<Gtk.MenuItem> GetEditMenu(List<ExtendedItem> items)
+        {
+            var editItems = new List<Gtk.MenuItem>();
+
+            //Check Out
+            var checkOutItems = items
+                .Where(i => i.ChangeType == ChangeType.None || i.ChangeType == ChangeType.Lock || i.ItemType == ItemType.Folder)
+                .ToList();
+
+            if (checkOutItems.Any())
+            {
+                Gtk.MenuItem checkOutItem = new Gtk.MenuItem(GettextCatalog.GetString("Check out items"));
+
+                checkOutItem.Activated += (sender, e) =>
+                {
+                    if (checkOutItems.Count > 1)
+                    {
+                        using (var dialog = new CheckOutDialog(checkOutItems, _currentWorkspace))
+                        {
+                            if (dialog.Run() == Command.Ok)
+                            {
+                                var itemsToCheckOut = dialog.SelectedItems;
+                                CheckOut(itemsToCheckOut);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        CheckOut(checkOutItems);
+                    }
+
+                    Refresh(items);
+                };
+
+                editItems.Add(checkOutItem);
+            }
+
+            return editItems;
+        }
+
+        List<Gtk.MenuItem> GetMapMenu(List<ExtendedItem> items)
+        {
+            Gtk.MenuItem mapItem = new Gtk.MenuItem(GettextCatalog.GetString("Map"));
+            mapItem.Activated += (sender, e) => MapItem(items);
+
+            return new List<Gtk.MenuItem> { mapItem };
+        }
+
+        #endregion
+
+        #endregion
     }
 }

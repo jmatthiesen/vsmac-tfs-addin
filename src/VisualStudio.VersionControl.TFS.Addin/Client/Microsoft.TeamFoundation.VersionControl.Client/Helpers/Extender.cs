@@ -23,6 +23,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System.Xml.Linq;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client.Helpers
@@ -40,8 +41,8 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Helpers
                 element.Attribute(attributeName) == null ||
                 string.IsNullOrEmpty(element.Attribute(attributeName).Value))
                 return string.Empty;
+            
             return element.Attribute(attributeName).Value;
         }
     }
 }
-

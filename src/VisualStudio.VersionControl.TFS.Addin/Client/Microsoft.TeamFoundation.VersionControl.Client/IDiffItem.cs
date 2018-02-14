@@ -26,17 +26,9 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System;
-using System.Collections;
-using System.IO;
-using System.Net;
-using System.Text;
-using System.Xml;
-using System.Web.Services;
-
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
-	public interface IDiffItem
+    public interface IDiffItem
 	{
 		string GetFile ();
 		int GetEncoding();

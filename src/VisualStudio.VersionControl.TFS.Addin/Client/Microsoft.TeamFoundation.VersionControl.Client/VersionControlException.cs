@@ -27,7 +27,6 @@
 //
 
 using System;
-using Microsoft.TeamFoundation;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
@@ -43,4 +42,3 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         }
     }
 }
-

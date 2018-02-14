@@ -43,4 +43,3 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
         //Contains,
     }
 }
-

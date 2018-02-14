@@ -20,4 +20,3 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         public List<WorkingFolder> WorkingFolders { get; set; }
     }
 }
-

@@ -114,4 +114,3 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         public string Target { get; set; }
     }
 }
-

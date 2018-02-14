@@ -36,19 +36,19 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
     {
         public GetRequest(string item, RecursionType recursionType, VersionSpec versionSpec)
         {
-            this.ItemSpec = new ItemSpec(item, recursionType);
-            this.VersionSpec = versionSpec;
+            ItemSpec = new ItemSpec(item, recursionType);
+            VersionSpec = versionSpec;
         }
 
         public GetRequest(ItemSpec itemSpec, VersionSpec versionSpec)
         {
-            this.ItemSpec = itemSpec;
-            this.VersionSpec = versionSpec;
+            ItemSpec = itemSpec;
+            VersionSpec = versionSpec;
         }
 
         internal GetRequest(VersionSpec versionSpec)
         {
-            this.VersionSpec = versionSpec;
+            VersionSpec = versionSpec;
         }
 
         public ItemSpec ItemSpec { get; private set; }
@@ -61,6 +61,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             if (ItemSpec != null)
                 result.Add(ItemSpec.ToXml(ns + "ItemSpec"));
             result.Add(VersionSpec.ToXml(ns + "VersionSpec"));
+
             return result;
         }
 

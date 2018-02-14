@@ -134,4 +134,3 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
     //		}
     //	}
 }
-

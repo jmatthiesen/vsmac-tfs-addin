@@ -1,4 +1,5 @@
 ﻿using MonoDevelop.Components.Commands;
+using MonoDevelop.Ide;
 using VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs;
 
 namespace VisualStudio.VersionControl.TFS.Addin.Commands
@@ -7,15 +8,13 @@ namespace VisualStudio.VersionControl.TFS.Addin.Commands
     {
         protected override void Run()
         {
-            var dialog = new ConnectToServerDialog();
-            dialog.Show();
-        
-            /*
+            var RootWindow = IdeApp.Workbench.RootWindow;
+            Xwt.MessageDialog.RootWindow = Xwt.Toolkit.CurrentEngine.WrapWindow(IdeApp.Workbench.RootWindow);
+
             using (var dialog = new ConnectToServerDialog())
             {
-                dialog.Run(Toolkit.CurrentEngine.WrapWindow(MessageService.RootWindow));
+                dialog.Run(Xwt.MessageDialog.RootWindow);
             }
-            */
         }
 
         protected override void Update(CommandInfo info)

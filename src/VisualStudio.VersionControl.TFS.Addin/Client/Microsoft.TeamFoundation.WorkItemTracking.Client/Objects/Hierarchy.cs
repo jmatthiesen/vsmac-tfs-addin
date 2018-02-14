@@ -23,6 +23,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System;
 using System.Collections.Generic;
 using Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata;
@@ -65,4 +66,3 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
         public List<Hierarchy> Children { get; set; }
     }
 }
-

@@ -33,4 +33,3 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
         public string Me { get; set; }
     }
 }
-

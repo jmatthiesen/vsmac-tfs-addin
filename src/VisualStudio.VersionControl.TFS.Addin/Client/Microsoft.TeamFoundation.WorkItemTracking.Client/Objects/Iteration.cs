@@ -23,9 +23,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Proxies;
 
 namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
 {
@@ -55,7 +55,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
         public List<SubIteration> Children { get; set; }
     }
 
-    internal class SubIteration : IIteration
+    class SubIteration : IIteration
     {
         public SubIteration()
         {
@@ -69,7 +69,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
         public List<SubIteration> Children { get; set; }
     }
 
-    internal class IterationList : List<IIteration>
+    class IterationList : List<IIteration>
     {
         const int IterationParentType = -43;
         readonly List<Project> projects;
@@ -78,7 +78,6 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
         {
             this.projects = projects;
         }
-
 
         public void Build(List<Hierarchy> hierarchy)
         {
@@ -99,7 +98,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
             }
         }
 
-        private void BuildSubIterations(List<Hierarchy> hierarchy, IIteration iteration)
+        void BuildSubIterations(List<Hierarchy> hierarchy, IIteration iteration)
         {
             foreach (var subIterationNode in hierarchy.Where(h => !h.IsDeleted && h.ParentId == iteration.Id))
             {
@@ -151,4 +150,3 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
         }
     }
 }
-

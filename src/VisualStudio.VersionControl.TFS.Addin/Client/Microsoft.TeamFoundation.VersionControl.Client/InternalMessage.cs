@@ -28,8 +28,8 @@
 //
 
 using System.Net;
-using System.Xml.Schema;
 using System.Xml.Linq;
+using System.Xml.Schema;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {

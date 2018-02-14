@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.TeamFoundation.VersionControl.Client;
+using Microsoft.TeamFoundation.VersionControl.Client.Enums;
 using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using MonoDevelop.Core;
+using MonoDevelop.Ide.ProgressMonitoring;
 using Xwt;
 
 namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
@@ -52,6 +55,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
             _listView.Columns.Add("Name", checkSell, new TextCellView(_nameField));
             _listView.Columns.Add("Folder", new TextCellView(_pathField));
             _listView.MinHeight = 300;
+            _listView.MinWidth = 300;
             _listView.DataSource = _listStore;
 
             content.PackStart(_listView);
@@ -103,9 +107,44 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
             }
         }
 
-        void OnGet(object sender, System.EventArgs e)
+        void OnGet(object sender, EventArgs e)
         {
-            
+            var requests = new List<GetRequest>();
+
+            for (int row = 0; row < _listStore.RowCount; row++)
+            {
+                var isChecked = _listStore.GetValue(row, _isSelectedField);
+             
+                if (isChecked)
+                {
+                    var item = _listStore.GetValue(row, _itemField);
+                    var spec = new ItemSpec(item.ServerPath, item.ItemType == ItemType.File ? RecursionType.None : RecursionType.Full);
+                    var version = (int)_versionBox.SelectedItem == 0 ? new ChangesetVersionSpec(Convert.ToInt32(_changeSetNumber.Value)) : VersionSpec.Latest;
+
+                    requests.Add(new GetRequest(spec, version));
+
+                    // Force Get 
+                    _workspace.ResetDownloadStatus(item.ItemId);
+
+                }
+            }
+
+            Respond(Command.Ok);
+
+            var option =  GetOptions.GetAll;
+
+            using (var progress = new MessageDialogProgressMonitor(true, false, true))
+            {
+                progress.Log.WriteLine("Start downloading items. GetOption: " + option);
+              
+                foreach (var request in requests)
+                {
+                    progress.Log.WriteLine(request);
+                }
+
+                TeamFoundationServerClient.Instance.Get(_workspace, requests, option, progress);
+                progress.ReportSuccess("Finish Downloading.");
+            }
         }
     }
 }
