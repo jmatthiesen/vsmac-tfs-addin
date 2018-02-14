@@ -3,6 +3,7 @@ using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.TeamFoundation.VersionControl.Client.Enums;
 using Microsoft.TeamFoundation.VersionControl.Client.Objects;
+using MonoDevelop.Ide.ProgressMonitoring;
 using VisualStudio.VersionControl.TFS.Addin.Services;
 
 namespace VisualStudio.VersionControl.TFS.Addin
@@ -66,7 +67,12 @@ namespace VisualStudio.VersionControl.TFS.Addin
             return filePath;
         }
 
-        public void GetLatestVersion(Workspace workspace, List<ExtendedItem> items)
+        public void Get(Workspace workspace, List<GetRequest> requests, GetOptions options, MessageDialogProgressMonitor monitor = null)
+        {
+            workspace.Get(requests, options, monitor);
+        }
+
+        public void GetLatestVersion(Workspace workspace, List<ExtendedItem> items, MessageDialogProgressMonitor monitor = null)
         {
             List<GetRequest> requests = new List<GetRequest>();
 
@@ -78,7 +84,12 @@ namespace VisualStudio.VersionControl.TFS.Addin
 
             var option = GetOptions.None;
 
-            workspace.Get(requests, option);
+            workspace.Get(requests, option, monitor);
+        }
+
+        public void Map(Workspace workspace, string serverPath, string localPath)
+        {
+            workspace.Map(serverPath, localPath);
         }
     }
 }
