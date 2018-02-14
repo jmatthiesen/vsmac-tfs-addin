@@ -23,6 +23,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System;
 using Microsoft.TeamFoundation.Client;
 using System.Collections.Generic;
@@ -36,29 +37,32 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 {
     public class WorkItemManager
     {
-        private readonly ProjectCollection collection;
-        private readonly ClientService clientService;
+        readonly ProjectCollection collection;
+        readonly ClientService clientService;
 
         public WorkItemManager(ProjectCollection collection)
         {
             this.collection = collection;
-            this.clientService = collection.GetService<ClientService>();
+            clientService = collection.GetService<ClientService>();
             Init();
         }
 
-        private void Init()
+        void Init()
         {
-            CachedMetaData.Instance.Init(this.clientService);
+            CachedMetaData.Instance.Init(clientService);
             var constants = CachedMetaData.Instance.Constants;
             var userNameBuilder = new StringBuilder();
-            var server = this.collection.Server as INetworkServer;
+            var server = collection.Server as INetworkServer;
+          
             if (server != null && !string.IsNullOrEmpty(server.Credentials.Domain))
             {
                 userNameBuilder.Append(server.Credentials.Domain + "\\");
             }
-            userNameBuilder.Append(this.collection.Server.UserName);
+
+            userNameBuilder.Append(collection.Server.UserName);
             var userName = userNameBuilder.ToString();
             var me = constants.FirstOrDefault(c => string.Equals(c.Value, userName, StringComparison.OrdinalIgnoreCase));
+
             if (me != null)
             {
                 WorkItemsContext.WhoAmI = me.DisplayName;
@@ -92,10 +96,10 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
                 switch (workItem.Value)
                 {
                     case WorkItemCheckinAction.Associate:
-                        this.clientService.Associate(workItem.Key, changeSet, comment);
+                        clientService.Associate(workItem.Key, changeSet, comment);
                         break;
                     case WorkItemCheckinAction.Resolve:
-                        this.clientService.Resolve(workItem.Key, changeSet, comment);
+                        clientService.Resolve(workItem.Key, changeSet, comment);
                         break;
                     default:
                         break;

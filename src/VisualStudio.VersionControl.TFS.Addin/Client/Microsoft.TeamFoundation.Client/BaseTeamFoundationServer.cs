@@ -9,17 +9,17 @@ namespace Microsoft.TeamFoundation.Client
     {
         protected BaseTeamFoundationServer(Uri uri, string name, string userName, string password, bool isPasswordSavedInXml)
         {
-            this.Uri = uri;
-            this.Name = name;
-            this.UserName = userName;
-            this.IsPasswordSavedInXml = isPasswordSavedInXml;
-            this.Password = password;
+            Uri = uri;
+            Name = name;
+            UserName = userName;
+            IsPasswordSavedInXml = isPasswordSavedInXml;
+            Password = password;
         }
 
         public void LoadProjectConnections()
         {
             var projectCollectionsService = new ProjectCollectionService(this);
-            this.ProjectCollections = projectCollectionsService.GetProjectCollections();
+            ProjectCollections = projectCollectionsService.GetProjectCollections();
         }
 
         public abstract XElement ToLocalXml();

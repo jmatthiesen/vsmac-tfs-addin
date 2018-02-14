@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.TeamFoundation.Client;
+using Microsoft.TeamFoundation.WorkItemTracking.Client;
+using Microsoft.TeamFoundation.WorkItemTracking.Client.Objects;
 using MonoDevelop.Components;
 using MonoDevelop.Components.Docking;
 using MonoDevelop.Core;
@@ -19,7 +21,9 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Pads
             ProjectCollection,
             Project,
             SourceControl,
-            WorkItems
+            WorkItems,
+            WorkItemQueryType,
+            WorkItemQuery
         }
 
         VBox _content;
@@ -104,6 +108,45 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Pads
                             .SetValue(_type, TeamExplorerNodeType.Project)
                             .SetValue(_item, projectInfo);
 
+                        var workItemManager = new WorkItemManager(pc);
+                        var workItemProject = workItemManager.GetByGuid(projectInfo.Guid);
+
+                        if (workItemProject != null)
+                        {
+                            node.AddChild().SetValue(_name, "Work Items").SetValue(_type, TeamExplorerNodeType.WorkItems);
+                            var privateQueries = workItemManager.GetMyQueries(workItemProject);
+                           
+                            if (privateQueries.Any())
+                            {
+                                node.AddChild().SetValue(_name, "My Queries").SetValue(_type, TeamExplorerNodeType.WorkItemQueryType);
+                              
+                                foreach (var query in privateQueries)
+                                {
+                                    node.AddChild().SetValue(_name, query.QueryName).SetValue(_type, TeamExplorerNodeType.WorkItemQuery).SetValue(_item, query);
+                                    node.MoveToParent();
+                                }
+
+                                node.MoveToParent();
+                            }
+
+                            var publicQueries = workItemManager.GetPublicQueries(workItemProject);
+                          
+                            if (publicQueries.Any())
+                            {
+                                node.AddChild().SetValue(_name, "Public").SetValue(_type, TeamExplorerNodeType.WorkItemQueryType);
+                              
+                                foreach (var query in publicQueries)
+                                {
+                                    node.AddChild().SetValue(_name, query.QueryName).SetValue(_type, TeamExplorerNodeType.WorkItemQuery).SetValue(_item, query);
+                                    node.MoveToParent();
+                                }
+
+                                node.MoveToParent();
+                            }
+
+                            node.MoveToParent();
+                        }
+
                         node.AddChild()
                             .SetValue(_name, "Source Control")
                             .SetValue(_type, TeamExplorerNodeType.SourceControl);
@@ -145,6 +188,12 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Pads
                 node.MoveToParent();
                 var project = (ProjectInfo)node.GetValue(_item);
                 SourceControlExplorerView.Show(project.Collection);
+            }
+
+            if (nodeType == TeamExplorerNodeType.WorkItemQuery)
+            {
+                var query = (StoredQuery)node.GetValue(_item);
+                WorkItemsView.Show(query);
             }
         }
 

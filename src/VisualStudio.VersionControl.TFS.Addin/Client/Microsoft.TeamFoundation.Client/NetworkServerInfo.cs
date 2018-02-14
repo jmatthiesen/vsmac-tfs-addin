@@ -14,4 +14,3 @@ namespace Microsoft.TeamFoundation.Client
         public override Uri Uri { get { return uri; } }
     }
 }
-

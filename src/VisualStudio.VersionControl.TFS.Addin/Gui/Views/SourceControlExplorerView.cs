@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Gtk;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
@@ -46,7 +45,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
             BuildGui();
             AttachEvents();
 
-            using (var progress = new MonoDevelop.Ide.ProgressMonitoring.MessageDialogProgressMonitor(true, false, true))
+            using (var progress = new MessageDialogProgressMonitor(true, false, false))
             {
                 progress.BeginTask("Loading...", 2);
                 GetData();

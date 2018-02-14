@@ -3,8 +3,9 @@
 //
 // Author:
 //       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
+//       Javier Suárez Ruiz <javiersuarezruiz@hotmail.com>
 //
-// Copyright (c) 2013 Ventsislav Mladenov
+// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +30,7 @@ using Microsoft.TeamFoundation.WorkItemTracking.Client.Objects;
 using Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata;
 using System;
 using System.Linq;
+using MonoDevelop.Ide.ProgressMonitoring;
 
 namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 {
@@ -39,13 +41,13 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 
         public WorkItemStore(StoredQuery query)
         {
-            this.clientService = query.Collection.GetService<ClientService>();
+            clientService = query.Collection.GetService<ClientService>();
             this.query = query;
         }
 
         public List<WorkItem> LoadByWorkItem()
         {
-            var ids = this.clientService.GetWorkItemIds(this.query, CachedMetaData.Instance.Fields);
+            var ids = clientService.GetWorkItemIds(query, CachedMetaData.Instance.Fields);
             var list = new List<WorkItem>();
 
             foreach (var id in ids)
@@ -56,17 +58,23 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
             return list;
         }
 
-        public List<WorkItem> LoadByPage()
+        public List<WorkItem> LoadByPage(MessageDialogProgressMonitor progress)
         {
-            var ids = this.clientService.GetWorkItemIds(this.query, CachedMetaData.Instance.Fields);
+            var ids = clientService.GetWorkItemIds(query, CachedMetaData.Instance.Fields);
             int pages = (int)Math.Ceiling((double)ids.Count / (double)50);
             var result = new List<WorkItem>();
+         
+            progress.BeginTask("Loading WorkItems", pages);
+
             for (int i = 0; i < pages; i++)
             {
                 var idList = new List<int>(ids.Skip(i * 50).Take(50));
-                var items = this.clientService.PageWorkitemsByIds(this.query, idList);
+                var items = clientService.PageWorkitemsByIds(query, idList);
                 result.AddRange(items);
+                progress.Step(1);
             }
+
+            progress.EndTask();
 
             return result;
         }

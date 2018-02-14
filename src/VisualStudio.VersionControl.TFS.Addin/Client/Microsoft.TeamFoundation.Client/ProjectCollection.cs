@@ -62,6 +62,7 @@ namespace Microsoft.TeamFoundation.Client
             collection.Url = UrlHelper.AddPathToUri(server.Uri, UrlHelper.GetFirstItemOfPath(locationService));
             collection.LocationServiceUrl = UrlHelper.AddPathToUri(server.Uri, locationService);
             collection.locationService = new LocationService(collection);
+           
             return collection;
         }
 
@@ -75,6 +76,7 @@ namespace Microsoft.TeamFoundation.Client
             collection.LocationServiceUrl = new Uri(element.Attribute("LocationServiceUrl").Value);
             collection.locationService = new LocationService(collection);
             collection.Projects = element.Elements("Project").Select(x => ProjectInfo.FromLocalXml(collection, x)).ToList();
+         
             return collection;
         }
 

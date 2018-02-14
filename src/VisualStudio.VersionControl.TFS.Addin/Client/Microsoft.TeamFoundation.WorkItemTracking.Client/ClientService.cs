@@ -3,8 +3,9 @@
 //
 // Author:
 //       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
+//       Javier Suárez Ruiz <javiersuarezruiz@hotmail.com>
 //
-// Copyright (c) 2013 Ventsislav Mladenov
+// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +40,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 {
     public class ClientService : TFSCollectionService
     {
-        private class ClientServiceResolver : IServiceResolver
+        class ClientServiceResolver : IServiceResolver
         {
             #region IServiceResolver implementation
 
@@ -72,6 +73,8 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
             }
         }
 
+        public override Uri Url => new Uri(base.Url.OriginalString.Replace("TeamFoundation", string.Empty));
+
         #endregion
 
         #region implemented abstract members of TFSCollectionService
@@ -86,15 +89,15 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 
         #endregion
 
-        private static readonly string headerName = "RequestHeader";
-        private static readonly string requestId = "uuid:" + Guid.NewGuid().ToString("D");
+        static readonly string headerName = "RequestHeader";
+        static readonly string requestId = "uuid:" + Guid.NewGuid().ToString("D");
 
-        private XElement GetHeaderElement()
+        XElement GetHeaderElement()
         {
             return new XElement(this.MessageNs + "Id", requestId);
         }
 
-        private List<T> GetMetadata<T>(MetadataRowSetNames table)
+        List<T> GetMetadata<T>(MetadataRowSetNames table)
             where T: class
         {
             var invoker = new SoapInvoker(this);
@@ -107,6 +110,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
             envelope.Body.Add(new XElement(MessageNs + "useMaster", "false"));
             var response = invoker.InvokeResponse();
             var extractor = new TableExtractor<T>(response, table.ToString());
+
             return extractor.Extract();
         }
 
@@ -117,22 +121,22 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 
         public List<Field> GetFields()
         {
-            return this.GetMetadata<Field>(MetadataRowSetNames.Fields);
+            return GetMetadata<Field>(MetadataRowSetNames.Fields);
         }
 
         public List<Constant> GetConstants()
         {
-            return this.GetMetadata<Constant>(MetadataRowSetNames.Constants).Where(c => !c.IsDeleted).ToList();
+            return GetMetadata<Constant>(MetadataRowSetNames.Constants).Where(c => !c.IsDeleted).ToList();
         }
 
         public List<WorkItemType> GetWorkItemTypes()
         {
-            return this.GetMetadata<WorkItemType>(MetadataRowSetNames.WorkItemTypes).Where(t => !t.IsDeleted).ToList();
+            return GetMetadata<WorkItemType>(MetadataRowSetNames.WorkItemTypes).Where(t => !t.IsDeleted).ToList();
         }
 
         public List<Objects.Action> GetActions()
         {
-            return this.GetMetadata<Objects.Action>(MetadataRowSetNames.Actions).Where(t => !t.IsDeleted).ToList();
+            return GetMetadata<Objects.Action>(MetadataRowSetNames.Actions).Where(t => !t.IsDeleted).ToList();
         }
 
         public List<StoredQuery> GetStoredQueries(Project project)
@@ -201,13 +205,14 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
             var response = invoker.InvokeResponse();
             var extractor = new TableDictionaryExtractor(response, "WorkItemInfo");
             var workItem = new WorkItem();
-            //workItem.Id = id;
             var data = extractor.Extract().Single();
             workItem.WorkItemInfo = new Dictionary<string, object>();
+           
             foreach (var item in data)
             {
                 workItem.WorkItemInfo.Add(item.Key, item.Value);
             }
+
             return workItem;
         }
 
@@ -215,6 +220,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
         {
             if (ids.Count > 50)
                 throw new Exception("Page only by 50");
+            
             var invoker = new SoapInvoker(this);
             var msg = invoker.CreateEnvelope("PageWorkitemsByIds", headerName);
             msg.Header.Add(GetHeaderElement());
@@ -263,6 +269,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
                         new XElement("InsertText", new XAttribute("FieldDisplayName", "History"), new XAttribute("FieldName", "System.History"), historyMsg),
                         new XElement("InsertResourceLink", new XAttribute("Comment", oneLineComment), new XAttribute("FieldName", "System.BISLinks"), new XAttribute("LinkType", "Fixed in Changeset"), new XAttribute("Location", changeSetLink))
                     ))));
+            
             invoker.InvokeResponse();
         }
 

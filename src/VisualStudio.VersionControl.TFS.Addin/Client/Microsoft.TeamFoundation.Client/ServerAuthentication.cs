@@ -14,7 +14,7 @@
 
         public string Password { get; set; }
 
-        private string domain;
+        string domain;
         public string Domain 
         { 
             get
@@ -29,13 +29,14 @@
             }
         }
 
-        private string userName;
+        string userName;
         public string UserName 
         { 
             get
             {
                 if (serverType == ServerType.TFS)
                     return AuthUser;
+                
                 return userName;
             }
             set
@@ -45,4 +46,3 @@
         }
     }
 }
-

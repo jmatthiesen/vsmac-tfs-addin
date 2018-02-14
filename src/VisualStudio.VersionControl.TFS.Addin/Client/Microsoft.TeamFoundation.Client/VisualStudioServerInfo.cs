@@ -4,13 +4,13 @@ namespace Microsoft.TeamFoundation.Client
 {
     public class VisualStudioServerInfo : BaseServerInfo
     {
-        private readonly string url;
+        readonly string url;
 
         public VisualStudioServerInfo(string name, string url, string tfsUser)
             : base(name)
         {
             this.url = url;
-            this.TFSUserName = tfsUser;
+            TFSUserName = tfsUser;
         }
 
         public string TFSUserName { get; set; }
@@ -19,9 +19,8 @@ namespace Microsoft.TeamFoundation.Client
         {
             get
             {
-                return new Uri(this.url);
+                return new Uri(url);
             }
         }
     }
 }
-
