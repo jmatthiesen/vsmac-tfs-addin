@@ -3,8 +3,9 @@
 //
 // Author:
 //       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
+//       Javier Suárez Ruiz <javiersuarezruiz@hotmail.com>
 //
-// Copyright (c) 2013 Ventsislav Mladenov
+// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -81,9 +82,11 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             }
         }
 
+        public override Uri Url => new Uri(base.Url.OriginalString.Replace("TeamFoundation", string.Empty));
+
         #endregion
 
-        private void CopyStream(Stream source, Stream destination)
+        void CopyStream(Stream source, Stream destination)
         {
             byte[] buffer = new byte[ChunkSize];
             int cnt;
@@ -165,7 +168,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             request.GetResponse();
         }
 
-        private string GetTemplate()
+        string GetTemplate()
         {
             var builder = new StringBuilder();
             builder.AppendLine(Boundary);
@@ -227,7 +230,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             return builder.ToString();
         }
 
-        private byte[] Compress(byte[] input)
+        byte[] Compress(byte[] input)
         {
             using (var memoryStream = new MemoryStream())
             {
@@ -240,16 +243,15 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             }
         }
 
-        private string Hash(byte[] input)
+        string Hash(byte[] input)
         {
             using (var md5 = new MD5CryptoServiceProvider())
             {
                 return Convert.ToBase64String(md5.ComputeHash(input));
             }
-
         }
 
-        private string GetRange(long start, long end, long length)
+        string GetRange(long start, long end, long length)
         {
             var builder = new StringBuilder(100);
             builder.Append("bytes=");
@@ -263,4 +265,3 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         }
     }
 }
-

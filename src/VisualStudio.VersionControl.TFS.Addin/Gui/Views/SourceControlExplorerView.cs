@@ -694,6 +694,41 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
                 editItems.Add(checkOutItem);
             }
 
+            // Check In
+            var checkInItems = items.Where(i => !i.ChangeType.HasFlag(ChangeType.None)).ToList();
+          
+            if (checkInItems.Any())
+            {
+                Gtk.MenuItem checkinItem = new Gtk.MenuItem(GettextCatalog.GetString("Check In"));
+
+                checkinItem.Activated += (sender, e) =>
+                {
+                    using (var dialog = new CheckInDialog(checkOutItems, _currentWorkspace))
+                    {
+                        if (dialog.Run() == Command.Ok)
+                        {
+                            using (var progress = new MessageDialogProgressMonitor(true, false, false))
+                            {
+                                progress.BeginTask("Check In", 1);
+
+                                var result = TeamFoundationServerClient.Instance.CheckIn(_currentWorkspace, dialog.SelectedChanges, dialog.Comment);
+                                foreach (var failure in result.Failures.Where(f => f.SeverityType == SeverityType.Error))
+                                {
+                                    progress.ReportError(failure.Code, new Exception(failure.Message));
+                                }
+
+                                progress.EndTask();
+                                progress.ReportSuccess("Finish Check In");
+                            }
+                        }
+                    }
+
+                    Refresh(items);
+                };
+
+                editItems.Add(checkinItem);
+            }
+
             // Lock
             var lockItems = items.Where(i => !i.IsLocked).ToList();
 
@@ -749,6 +784,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
                 editItems.Add(unLockItem);
             }
 
+            // Delete
             var deleteItems = items.Where(i => !i.ChangeType.HasFlag(ChangeType.Delete)).ToList();
 
             if (deleteItems.Any())

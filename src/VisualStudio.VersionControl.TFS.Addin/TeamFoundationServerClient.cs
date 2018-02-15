@@ -101,5 +101,12 @@ namespace VisualStudio.VersionControl.TFS.Addin
         {
             workspace.LockFiles(paths, lockLevel);
         }
+
+        public CheckInResult CheckIn(Workspace workspace, List<PendingChange> changes, string comment)
+        {
+            var result = workspace.CheckIn(changes, comment, null);
+
+            return result;
+        }
     }
 }
