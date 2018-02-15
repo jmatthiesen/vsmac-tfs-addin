@@ -49,9 +49,9 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
     {
         #region Constructors
 
-        private Workspace(string name, 
-                          string ownerName, string comment, 
-                          List<WorkingFolder> folders, string computer)
+        Workspace(string name, 
+                  string ownerName, string comment, 
+                  List<WorkingFolder> folders, string computer)
         {
             Name = name;
             OwnerName = ownerName;
@@ -97,18 +97,23 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             {
                 VersionControlService.UploadFile(this, change);
             }
+
             var result = VersionControlService.CheckIn(this, changes, comment, workItems);
+          
             if (result.ChangeSet > 0)
             {
                 WorkItemManager wm = new WorkItemManager(this.ProjectCollection);
                 wm.UpdateWorkItems(result.ChangeSet, workItems, comment);
             }
+
             RefreshPendingChanges();
             ProcessGetOperations(result.LocalVersionUpdates, ProcessType.Get);
+          
             foreach (var file in changes.Where(ch => ch.ItemType == ItemType.File && !string.IsNullOrEmpty(ch.LocalItem)).Select(ch => ch.LocalItem).Distinct())
             {
                 MakeFileReadOnly(file);
             }
+
             return result;
         }
 
@@ -929,6 +934,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             var text = item.Encoding > 0 ? File.ReadAllText(tempName, Encoding.GetEncoding(item.Encoding)) :
                        File.ReadAllText(tempName);
             FileHelper.FileDelete(tempName);
+
             return text;
         }
 
