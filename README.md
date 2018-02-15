@@ -4,7 +4,7 @@ Visual Studio for macOS add-in for interacting with Microsoft Team Foundation Se
 
 ## Contributing
 
-We take contributions and fixes via Pull Request. Are you interesting?. You can **[contribute](docs\How-Contribute.md)**!.
+We take contributions and fixes via Pull Request. Are you interesting?. You can **[contribute](docs/How-Contribute.md)**!.
 
 ## Code of Conduct
 
