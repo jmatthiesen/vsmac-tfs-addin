@@ -1,4 +1,5 @@
-﻿using MonoDevelop.Components.Commands;
+﻿using System.Linq;
+using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
 
@@ -38,9 +39,9 @@ namespace VisualStudio.VersionControl.TFS.Addin.Commands
 
         protected override void Update (CommandInfo info)
         {
-            info.Enabled = true;
+            var serversCount = TeamFoundationServerClient.Settings.GetServers().Count();
 
-            base.Update(info);
+            info.Visible = serversCount > 0;
         }   
     }
 }

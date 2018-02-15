@@ -91,5 +91,15 @@ namespace VisualStudio.VersionControl.TFS.Addin
         {
             workspace.Map(serverPath, localPath);
         }
+
+        public void LockFolders(Workspace workspace, List<string> paths, LockLevel lockLevel)
+        {
+            workspace.LockFolders(paths, lockLevel);
+        }
+
+        public void LockFiles(Workspace workspace, List<string> paths, LockLevel lockLevel)
+        {
+            workspace.LockFiles(paths, lockLevel);
+        }
     }
 }

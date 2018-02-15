@@ -10,6 +10,10 @@
                         id = "VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.TeamExplorer"
                         _label = "Team Explorer"
                         defaultHandler = "VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerHandler" />
+                    <Command 
+                        id = "VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.SourceControlExplorer"
+                        _label = "Source Control Explorer"
+                        defaultHandler = "VisualStudio.VersionControl.TFS.Addin.Commands.SourceControlExplorerHandler" />
             </Category>
         </Extension>
         <Extension path = "/MonoDevelop/Ide/MainMenu/VersionControl">
@@ -17,6 +21,7 @@
             <ItemSet id = "TeamFoundation" _label = "Team Foundation Server"  autohide="true" >
                 <CommandItem id="VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.ConnectToServer" />
                 <CommandItem id="VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.TeamExplorer" />
+                <CommandItem id="VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.SourceControlExplorer" />
             </ItemSet>
         </Extension>
         <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/VersionControl">

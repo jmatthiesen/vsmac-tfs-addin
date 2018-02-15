@@ -3,6 +3,7 @@
     public enum TeamExplorerCommands
     {
         ConnectToServer,
-        TeamExplorer
+        TeamExplorer,
+        SourceControlExplorer
     }
 }

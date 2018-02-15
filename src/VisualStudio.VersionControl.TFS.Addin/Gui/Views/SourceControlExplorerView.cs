@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Gtk;
@@ -76,6 +77,13 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
         public static void Show(ProjectCollection projectCollection)
         {
             var sourceControlExplorerView = new SourceControlExplorerView(projectCollection);
+            IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
+        }
+
+        public static void Show(ProjectInfo project)
+        {
+            var sourceControlExplorerView = new SourceControlExplorerView(project.Collection);
+            sourceControlExplorerView.ExpandPath(VersionControlPath.RootFolder + project.Name);
             IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
         }
 
@@ -684,6 +692,90 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
                 };
 
                 editItems.Add(checkOutItem);
+            }
+
+            // Lock
+            var lockItems = items.Where(i => !i.IsLocked).ToList();
+
+            if (lockItems.Any())
+            {
+                Gtk.MenuItem lockItem = new Gtk.MenuItem(GettextCatalog.GetString("Lock"));
+              
+                lockItem.Activated += (sender, e) =>
+                {
+                    var itemsToLock = items;
+                    var lockLevel = LockLevel.CheckOut;
+
+                    using (var progress = new MessageDialogProgressMonitor(true, false, true))
+                    {
+                        progress.BeginTask("Lock Files", itemsToLock.Count);
+                      
+                        var folders = new List<string>(itemsToLock.Where(i => i.ItemType == ItemType.Folder).Select(i => (string)i.ServerPath));
+                        var files = new List<string>(itemsToLock.Where(i => i.ItemType == ItemType.File).Select(i => (string)i.ServerPath));
+                     
+                        TeamFoundationServerClient.Instance.LockFolders(_currentWorkspace, folders, lockLevel);
+                        TeamFoundationServerClient.Instance.LockFiles(_currentWorkspace, files, lockLevel);
+                      
+                        progress.EndTask();
+                        progress.ReportSuccess("Finish locking.");
+                    }
+
+                    TeamFoundationServerFileHelper.NotifyFilesChanged(_currentWorkspace, itemsToLock);
+                    Refresh(items);
+                };
+
+                editItems.Add(lockItem);
+            }
+
+            // Unlock
+            var unLockItems = items.Where(i => i.IsLocked && !i.HasOtherPendingChange).ToList();
+           
+            if (unLockItems.Any())
+            {
+                Gtk.MenuItem unLockItem = new Gtk.MenuItem(GettextCatalog.GetString("UnLock"));
+              
+                unLockItem.Activated += (sender, e) =>
+                {
+                    var folders = new List<string>(unLockItems.Where(i => i.ItemType == ItemType.Folder).Select(i => (string)i.ServerPath));
+                    var files = new List<string>(unLockItems.Where(i => i.ItemType == ItemType.File).Select(i => (string)i.ServerPath));
+                   
+                    TeamFoundationServerClient.Instance.LockFolders(_currentWorkspace, folders, LockLevel.None);
+                    TeamFoundationServerClient.Instance.LockFiles(_currentWorkspace, files, LockLevel.None);
+
+                    TeamFoundationServerFileHelper.NotifyFilesChanged(_currentWorkspace, unLockItems);
+                    Refresh(items);
+                };
+
+                editItems.Add(unLockItem);
+            }
+
+            var deleteItems = items.Where(i => !i.ChangeType.HasFlag(ChangeType.Delete)).ToList();
+
+            if (deleteItems.Any())
+            {
+                Gtk.MenuItem deleteItem = new Gtk.MenuItem(GettextCatalog.GetString("Delete"));
+
+                deleteItem.Activated += (sender, e) =>
+                {
+                    if (MessageService.Confirm(GettextCatalog.GetString("Are you sure you want to delete selected files?"), AlertButton.Yes))
+                    {
+                        List<Failure> failures;
+                        _currentWorkspace.PendDelete(items.Select(x => (FilePath)x.LocalItem).ToList(), RecursionType.Full, false, out failures);
+
+                        var errors = failures.Any(f => f.SeverityType == SeverityType.Error);
+
+                        if (errors)
+                        {
+                            foreach (var failure in failures)
+                                Debug.WriteLine(failure.Message);
+                        }
+
+                        TeamFoundationServerFileHelper.NotifyFilesRemoved(_currentWorkspace, items);
+                        Refresh(items);
+                    }
+                };
+               
+                editItems.Add(deleteItem);
             }
 
             return editItems;
