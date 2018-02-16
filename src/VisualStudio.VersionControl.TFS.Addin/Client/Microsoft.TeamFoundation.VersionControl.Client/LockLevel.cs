@@ -26,7 +26,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
     public enum LockLevel
@@ -34,7 +33,6 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         None = 0,
         Checkin = 1,
         CheckOut = 2,
-        Unchanged = 3,
+        Unchanged = 3
     }
 }
-

@@ -41,7 +41,6 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Enums
         Actions,
         LinkTypes,
         WorkItemTypeCategories,
-        WorkItemTypeCategoryMembers,
+        WorkItemTypeCategoryMembers
     }
 }
-

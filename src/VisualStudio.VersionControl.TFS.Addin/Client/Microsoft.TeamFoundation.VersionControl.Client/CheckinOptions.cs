@@ -26,20 +26,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System;
-using System.Net;
-using System.Web.Services;
-
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
-	public enum CheckinOptions {
-				
-		None,
-				
-		SuppresEvent,
-				
-		ValidateCheckinOwner,
-
+    public enum CheckinOptions
+    {			
+		None,		
+		SuppresEvent,		
+		ValidateCheckinOwnerS
 	}
 }
-

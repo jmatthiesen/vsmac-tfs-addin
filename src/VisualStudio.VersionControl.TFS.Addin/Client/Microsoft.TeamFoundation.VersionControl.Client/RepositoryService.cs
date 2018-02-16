@@ -24,17 +24,18 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using System.Xml.Linq;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using System.Xml.XPath;
-using System;
-using Microsoft.TeamFoundation.VersionControl.Client.Objects;
-using Microsoft.TeamFoundation.VersionControl.Client.Helpers;
-using Microsoft.TeamFoundation.VersionControl.Client.Enums;
-using SoapInvoker = Microsoft.TeamFoundation.Client.SoapInvoker;
 using Microsoft.TeamFoundation.Client.Services;
+using Microsoft.TeamFoundation.VersionControl.Client.Enums;
+using Microsoft.TeamFoundation.VersionControl.Client.Helpers;
+using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using Microsoft.TeamFoundation.WorkItemTracking.Client.Enums;
+using SoapInvoker = Microsoft.TeamFoundation.Client.SoapInvoker;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
@@ -490,4 +491,3 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         }
     }
 }
-

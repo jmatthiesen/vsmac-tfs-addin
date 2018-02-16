@@ -25,8 +25,8 @@
 // THE SOFTWARE.
 
 using System.IO;
-using MonoDevelop.Core;
 using Microsoft.TeamFoundation.VersionControl.Client.Enums;
+using MonoDevelop.Core;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {

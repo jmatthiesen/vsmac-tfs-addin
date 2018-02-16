@@ -25,9 +25,9 @@
 // THE SOFTWARE.
 
 using System;
-using System.Xml;
-using System.Text;
 using System.Globalization;
+using System.Text;
+using System.Xml;
 using Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where;
 
 namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query

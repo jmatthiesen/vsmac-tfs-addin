@@ -32,6 +32,6 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
     public enum WorkingFolderType
     {
         Map,
-        Cloak,
+        Cloak
     }
 }

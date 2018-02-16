@@ -27,14 +27,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-
 namespace Microsoft.TeamFoundation.VersionControl.Client.Enums
 {
     public enum ItemType
     {
         Any,
         Folder,
-        File,
+        File
     }
 }
-

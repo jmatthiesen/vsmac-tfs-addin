@@ -26,16 +26,11 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System;
-using System.Net;
-using System.Web.Services;
-
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
-	public enum RecursionType {
+    public enum RecursionType {
 		None,
 		OneLevel,
-		Full,
+		Full
 	}
 }
-

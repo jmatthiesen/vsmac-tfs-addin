@@ -26,13 +26,10 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System;
-
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
-	public abstract class SecurityChange
+    public abstract class SecurityChange
 	{
         public string Item { get; set; }
 	}
 }
-

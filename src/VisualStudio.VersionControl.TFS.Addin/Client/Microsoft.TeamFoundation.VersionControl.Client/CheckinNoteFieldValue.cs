@@ -26,13 +26,11 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System;
-using System.Net;
 using System.Xml;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
-	public sealed class CheckinNoteFieldValue 
+    public sealed class CheckinNoteFieldValue 
 	{
 		private string name;
 		private string value;
@@ -65,4 +63,3 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 
 	}
 }
-

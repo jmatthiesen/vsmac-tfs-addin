@@ -30,6 +30,5 @@ using System;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
-    public delegate void ProcessingChangeEventHandler(Object sender,
-																										 ProcessingChangeEventArgs e);
+    public delegate void ProcessingChangeEventHandler(Object sender,																										 ProcessingChangeEventArgs e);
 }

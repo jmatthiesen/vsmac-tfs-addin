@@ -34,6 +34,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Helpers
         {
             if (string.IsNullOrWhiteSpace(value))
                 return new byte[0];
+            
             return Convert.FromBase64String(value);
         }
 
@@ -41,6 +42,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Helpers
         {
             if (string.IsNullOrWhiteSpace(value))
                 return false;
+            
             return string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
         }
 
@@ -48,6 +50,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Helpers
         {
             if (string.IsNullOrWhiteSpace(value))
                 return 0;
+            
             return Convert.ToInt32(value);
         }
 
@@ -55,6 +58,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Helpers
         {
             if (string.IsNullOrWhiteSpace(value))
                 return DateTime.MinValue;
+            
             return DateTime.Parse(value);
         }
     }

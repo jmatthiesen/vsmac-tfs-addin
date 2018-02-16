@@ -23,11 +23,12 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System;
-using Microsoft.TeamFoundation.Client;
-using System.Net;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
+using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.Client.Services;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
@@ -161,4 +162,3 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         }
     }
 }
-

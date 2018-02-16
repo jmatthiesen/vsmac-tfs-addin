@@ -33,4 +33,3 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Enums
         Associate
     }
 }
-
