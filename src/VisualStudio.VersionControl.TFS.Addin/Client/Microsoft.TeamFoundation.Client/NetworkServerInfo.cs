@@ -10,8 +10,7 @@ namespace Microsoft.TeamFoundation.Client
             this.uri = uri;
         }
 
-        private readonly Uri uri;
+        readonly Uri uri;
         public override Uri Uri { get { return uri; } }
     }
 }
-

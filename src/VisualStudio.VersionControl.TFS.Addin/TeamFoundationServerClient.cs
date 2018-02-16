@@ -118,5 +118,10 @@ namespace VisualStudio.VersionControl.TFS.Addin
         {
             workspace.PendRenameFolder(oldPath, newPath, out failures);
         }
+
+        public void UndoChanges(Workspace workspace, List<ItemSpec> itemSpecs)
+        {
+            workspace.Undo(itemSpecs);
+        }
     }
 }

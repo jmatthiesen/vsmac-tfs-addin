@@ -35,7 +35,7 @@ namespace Microsoft.TeamFoundation.Client
 {
     public class ProjectCollection : IEquatable<ProjectCollection>, IComparable<ProjectCollection>
     {
-        private LocationService locationService;
+        LocationService locationService;
 
         private ProjectCollection()
         {
@@ -62,6 +62,7 @@ namespace Microsoft.TeamFoundation.Client
             collection.Url = UrlHelper.AddPathToUri(server.Uri, UrlHelper.GetFirstItemOfPath(locationService));
             collection.LocationServiceUrl = UrlHelper.AddPathToUri(server.Uri, locationService);
             collection.locationService = new LocationService(collection);
+        
             return collection;
         }
 
@@ -75,17 +76,18 @@ namespace Microsoft.TeamFoundation.Client
             collection.LocationServiceUrl = new Uri(element.Attribute("LocationServiceUrl").Value);
             collection.locationService = new LocationService(collection);
             collection.Projects = element.Elements("Project").Select(x => ProjectInfo.FromLocalXml(collection, x)).ToList();
+         
             return collection;
         }
 
         public XElement ToLocalXml()
         {
             return new XElement("ProjectCollection", 
-                new XAttribute("Id", this.Id), 
-                new XAttribute("Url", this.Url),
-                new XAttribute("Name", this.Name),
-                new XAttribute("LocationServiceUrl", this.LocationServiceUrl),
-                this.Projects.Select(x => x.ToLocalXml()));
+                new XAttribute("Id", Id), 
+                new XAttribute("Url", Url),
+                new XAttribute("Name", Name),
+                new XAttribute("LocationServiceUrl", LocationServiceUrl),
+                Projects.Select(x => x.ToLocalXml()));
         }
 
         public void LoadProjects()
@@ -93,13 +95,13 @@ namespace Microsoft.TeamFoundation.Client
             /*s.agostini (2014-01-14) Catch "401 unauthorized" exception, returning an empty list*/
             try
             {
-            var commonStructureService = this.GetService<CommonStructureService>();
-            this.Projects = commonStructureService.ListAllProjects();
-            this.Projects.Sort();
+            var commonStructureService = GetService<CommonStructureService>();
+            Projects = commonStructureService.ListAllProjects();
+            Projects.Sort();
             }
             catch
             {
-                this.Projects = new List<ProjectInfo>();
+                Projects = new List<ProjectInfo>();
             }
             /*s.agostini end*/
         }
@@ -107,8 +109,8 @@ namespace Microsoft.TeamFoundation.Client
         public void LoadProjects(List<string> names)
         {
             var commonStructureService = this.GetService<CommonStructureService>();
-            this.Projects = commonStructureService.ListAllProjects().Where(pi => names.Any(n => string.Equals(pi.Name, n))).ToList();
-            this.Projects.Sort();
+            Projects = commonStructureService.ListAllProjects().Where(pi => names.Any(n => string.Equals(pi.Name, n))).ToList();
+            Projects.Sort();
         }
 
         public List<ProjectInfo> Projects { get; set; }

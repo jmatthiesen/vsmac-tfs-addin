@@ -24,6 +24,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System.Collections.Generic;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -47,16 +48,16 @@ namespace Microsoft.TeamFoundation.Client.Services
 
         #endregion
 
-        private readonly string serviceUrl = "/TeamFoundation/Administration/v3.0/CatalogService.asmx";
-        private readonly string projectCollectionsTypeId = "b2daa29e-33da-4881-9b42-0e25dcadae5d";
+        readonly string serviceUrl = "/TeamFoundation/Administration/v3.0/CatalogService.asmx";
+        readonly string projectCollectionsTypeId = "b2daa29e-33da-4881-9b42-0e25dcadae5d";
 
         public ProjectCollectionService(BaseTeamFoundationServer server)
         {
-            this.Server = server;
-            this.RelativeUrl = serviceUrl;
+            Server = server;
+            RelativeUrl = serviceUrl;
         }
 
-        private IEnumerable<XElement> GetXmlCollections()
+        IEnumerable<XElement> GetXmlCollections()
         {
             SoapInvoker invoker = new SoapInvoker(this);
             var message = invoker.CreateEnvelope("QueryResources");
@@ -76,8 +77,7 @@ namespace Microsoft.TeamFoundation.Client.Services
             var teamProjects = GetXmlCollections();
             return new List<ProjectCollection>(teamProjects
                 .Where(tp => projectCollectionsIds.Any(id => string.Equals(id, tp.Attribute("Identifier").Value)))
-                .Select(tp => ProjectCollection.FromServerXml(this.Server, tp)));
+                .Select(tp => ProjectCollection.FromServerXml(Server, tp)));
         }
     }
 }
-

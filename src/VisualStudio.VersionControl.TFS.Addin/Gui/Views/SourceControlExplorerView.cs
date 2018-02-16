@@ -821,6 +821,38 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
                 editItems.Add(renameItem);
             }
 
+            //Undo
+            var undoItems = items.Where(i => !i.ChangeType.HasFlag(ChangeType.None) || i.ItemType == ItemType.Folder).ToList();
+
+            if (undoItems.Any())
+            {
+                Gtk.MenuItem undoItem = new Gtk.MenuItem(GettextCatalog.GetString("Undo Changes"));
+
+                undoItem.Activated += (sender, e) =>
+                {
+                    using (var dialog = new UndoDialog(undoItems, _currentWorkspace))
+                    {
+                        if (dialog.Run() == Command.Ok)
+                        {
+                            var changesToUndo = dialog.SelectedItems;
+                            var itemSpecs = new List<ItemSpec>();
+
+                            foreach (var change in changesToUndo)
+                            {
+                                itemSpecs.Add(new ItemSpec(change.LocalItem, change.ItemType == ItemType.File ? RecursionType.None : RecursionType.Full));
+                            }
+
+                            TeamFoundationServerClient.Instance.UndoChanges(_currentWorkspace, itemSpecs);
+
+                            TeamFoundationServerFileHelper.NotifyFilesRemoved(_currentWorkspace, undoItems);
+                            Refresh(items);
+                        }
+                    }
+                };
+
+                editItems.Add(undoItem);
+            }
+
             // Delete
             var deleteItems = items.Where(i => !i.ChangeType.HasFlag(ChangeType.Delete)).ToList();
 
