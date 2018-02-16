@@ -23,6 +23,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System;
 using System.Xml.XPath;
 
@@ -55,7 +56,7 @@ namespace Microsoft.TeamFoundation.Client.Services
 
         public LocationService(ProjectCollection collection)
         {
-            this.Server = collection.Server;
+            Server = collection.Server;
             this.collection = collection;
         }
 
@@ -68,13 +69,14 @@ namespace Microsoft.TeamFoundation.Client.Services
             T service = Activator.CreateInstance<T>();
             var serviceEl = resultEl.XPathSelectElement(string.Format("./msg:ServiceDefinitions/msg:ServiceDefinition[@identifier='{0}']", service.ServiceResolver.Id), 
                                 TeamFoundationServerServiceMessage.NsResolver);
+            
             if (serviceEl == null)
                 throw new Exception("Service not found");
-            service.Server = this.collection.Server;
-            service.Collection = this.collection;
+            
+            service.Server = collection.Server;
+            service.Collection = collection;
             service.RelativeUrl = serviceEl.Attribute("relativePath").Value;
             return service;
         }
     }
 }
-

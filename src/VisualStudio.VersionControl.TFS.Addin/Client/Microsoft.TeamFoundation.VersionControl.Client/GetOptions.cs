@@ -38,7 +38,6 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         Overwrite = 1,
         GetAll = 2,
         Preview = 4,
-        Remap = 8,
+        Remap = 8
     }
 }
-

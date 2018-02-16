@@ -27,14 +27,10 @@
 //
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
-	[FlagsAttribute] 
+    [FlagsAttribute] 
 	public enum ShelvingOptions
 	{
 		Move, None, Replace,

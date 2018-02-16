@@ -59,4 +59,3 @@ namespace Microsoft.TeamFoundation.Client
         }
     }
 }
-

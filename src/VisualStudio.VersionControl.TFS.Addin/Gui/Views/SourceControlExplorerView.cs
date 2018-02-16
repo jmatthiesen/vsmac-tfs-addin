@@ -52,7 +52,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
             BuildGui();
             AttachEvents();
 
-            using (var progress = new MessageDialogProgressMonitor(true, false, true))
+            using (var progress = new MessageDialogProgressMonitor(true, false, false))
             {
                 progress.BeginTask("Loading...", 2);
                 GetData();
@@ -782,6 +782,75 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
                 };
 
                 editItems.Add(unLockItem);
+            }
+
+            //Rename
+            var itemToRename = items.FirstOrDefault(i => !i.ChangeType.HasFlag(ChangeType.Delete));
+           
+            if (itemToRename != null)
+            {
+                Gtk.MenuItem renameItem = new Gtk.MenuItem(GettextCatalog.GetString("Rename"));
+             
+                renameItem.Activated += (sender, e) =>
+                {
+                    using (var dialog = new RenameDialog(itemToRename))
+                    {
+                        if (dialog.Run() == Command.Ok)
+                        {
+                            List<Failure> failures;
+
+                            if (itemToRename.ItemType == ItemType.File)
+                                TeamFoundationServerClient.Instance.PendRenameFile(_currentWorkspace, itemToRename.LocalItem, dialog.NewPath, out failures);
+                            else
+                                TeamFoundationServerClient.Instance.PendRenameFolder(_currentWorkspace, itemToRename.LocalItem, dialog.NewPath, out failures);
+
+                            if (failures != null && failures.Any(f => f.SeverityType == SeverityType.Error))
+                            {
+                                foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
+                                {
+                                    MessageService.ShowError(failure.Message);
+                                }
+                            }      
+
+                            TeamFoundationServerFileHelper.NotifyFilesChanged(_currentWorkspace, new List<ExtendedItem> { itemToRename });
+                            Refresh(items);
+                        }
+                    }
+                };
+
+                editItems.Add(renameItem);
+            }
+
+            //Undo
+            var undoItems = items.Where(i => !i.ChangeType.HasFlag(ChangeType.None) || i.ItemType == ItemType.Folder).ToList();
+
+            if (undoItems.Any())
+            {
+                Gtk.MenuItem undoItem = new Gtk.MenuItem(GettextCatalog.GetString("Undo Changes"));
+
+                undoItem.Activated += (sender, e) =>
+                {
+                    using (var dialog = new UndoDialog(undoItems, _currentWorkspace))
+                    {
+                        if (dialog.Run() == Command.Ok)
+                        {
+                            var changesToUndo = dialog.SelectedItems;
+                            var itemSpecs = new List<ItemSpec>();
+
+                            foreach (var change in changesToUndo)
+                            {
+                                itemSpecs.Add(new ItemSpec(change.LocalItem, change.ItemType == ItemType.File ? RecursionType.None : RecursionType.Full));
+                            }
+
+                            TeamFoundationServerClient.Instance.UndoChanges(_currentWorkspace, itemSpecs);
+
+                            TeamFoundationServerFileHelper.NotifyFilesRemoved(_currentWorkspace, undoItems);
+                            Refresh(items);
+                        }
+                    }
+                };
+
+                editItems.Add(undoItem);
             }
 
             // Delete

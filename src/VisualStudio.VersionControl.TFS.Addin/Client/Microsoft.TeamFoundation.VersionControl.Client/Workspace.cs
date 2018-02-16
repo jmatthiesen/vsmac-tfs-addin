@@ -763,7 +763,9 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                 var found = false;
                 if (operation.ItemType == ItemType.File)
                 {
-                    var project = IdeApp.Workspace.GetProjectsContainingFile(operation.SourceLocalItem).First();
+                    var projects = IdeApp.Workspace.GetProjectsContainingFile(operation.SourceLocalItem);
+                    var project = projects.FirstOrDefault();
+                   
                     if (project != null)
                     {
                         found = true;

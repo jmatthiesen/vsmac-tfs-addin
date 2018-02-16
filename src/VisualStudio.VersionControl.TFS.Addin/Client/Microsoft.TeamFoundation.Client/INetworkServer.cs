@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 
 namespace Microsoft.TeamFoundation.Client
 {
@@ -8,4 +7,3 @@ namespace Microsoft.TeamFoundation.Client
         NetworkCredential Credentials { get; }
     }
 }
-

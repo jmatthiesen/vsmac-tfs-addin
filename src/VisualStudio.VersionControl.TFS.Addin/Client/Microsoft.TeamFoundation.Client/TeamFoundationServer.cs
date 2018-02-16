@@ -81,4 +81,3 @@ namespace Microsoft.TeamFoundation.Client
         public NetworkCredential Credentials { get; private set; }
     }
 }
-

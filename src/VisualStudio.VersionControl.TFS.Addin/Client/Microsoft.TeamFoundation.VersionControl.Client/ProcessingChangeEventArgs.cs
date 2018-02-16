@@ -36,4 +36,3 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         public PendingChange PendingChange { get; set; }
     }
 }
-

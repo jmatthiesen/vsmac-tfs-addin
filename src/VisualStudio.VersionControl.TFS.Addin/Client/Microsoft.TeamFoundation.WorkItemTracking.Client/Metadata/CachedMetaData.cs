@@ -24,10 +24,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
 using System.Collections.Generic;
-using Microsoft.TeamFoundation.WorkItemTracking.Client.Objects;
 using System.Linq;
+using Microsoft.TeamFoundation.WorkItemTracking.Client.Objects;
 
 namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
 {
@@ -105,4 +104,3 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
         public List<Microsoft.TeamFoundation.WorkItemTracking.Client.Objects.Action> Actions { get; set; }
     }
 }
-

@@ -35,6 +35,6 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Enums
         Checkin,
         Get,
         Local,
-        Merge,
+        Merge
     }
 }

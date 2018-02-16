@@ -26,22 +26,15 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using System.IO;
-using System.Collections.Generic;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Xml;
 using System.Xml.Schema;
-using System.Web.Services;
-using System.Web.Services.Description;
-using System.Web.Services.Discovery;
-using System.Web.Services.Protocols;
 
 namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 {
-	internal class Message 
+    internal class Message 
 	{
 		private const string SoapEnvelopeNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
 		private const string MessageNamespace =	"http://schemas.microsoft.com/TeamFoundation/2005/06/WorkItemTracking/ClientServices/03";

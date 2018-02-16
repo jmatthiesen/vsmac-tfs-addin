@@ -6,4 +6,3 @@
         VisualStudio = 1
     }
 }
-

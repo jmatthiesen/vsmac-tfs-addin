@@ -30,6 +30,6 @@ using System;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
-    public delegate void ConflictEventHandler(Object sender,
-																						 ConflictEventArgs e);
+    public delegate void ConflictEventHandler(Object sender,										 
+                                              ConflictEventArgs e);
 }

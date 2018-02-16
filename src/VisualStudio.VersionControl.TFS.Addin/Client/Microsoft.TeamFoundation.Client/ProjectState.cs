@@ -36,4 +36,3 @@ namespace Microsoft.TeamFoundation.Client
         CreatePending
     }
 }
-

@@ -25,12 +25,12 @@
 // THE SOFTWARE.
 
 using System;
-using Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata;
-using Microsoft.TeamFoundation.Client;
-using System.Xml.Linq;
-using Microsoft.TeamFoundation.WorkItemTracking.Client.Query;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
+using Microsoft.TeamFoundation.Client;
+using Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata;
+using Microsoft.TeamFoundation.WorkItemTracking.Client.Query;
 
 namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
 {

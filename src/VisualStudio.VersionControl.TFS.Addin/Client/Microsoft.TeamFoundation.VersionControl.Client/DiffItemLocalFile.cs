@@ -27,16 +27,11 @@
 //
 
 using System;
-using System.Collections;
 using System.IO;
-using System.Net;
-using System.Text;
-using System.Xml;
-using System.Web.Services;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
-	public sealed class DiffItemLocalFile : IDiffItem
+    public sealed class DiffItemLocalFile : IDiffItem
 	{
 		private string fileName;
 		private int encoding;

@@ -37,4 +37,3 @@ namespace Microsoft.TeamFoundation.Client
 		void NotifyCredentialsAuthenticated (Uri uri);
 	}
 }
-

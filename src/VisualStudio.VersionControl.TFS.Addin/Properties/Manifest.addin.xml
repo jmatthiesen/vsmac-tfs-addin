@@ -24,6 +24,10 @@
                 <CommandItem id="VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.SourceControlExplorer" />
             </ItemSet>
         </Extension>
+        <Extension path = "/MonoDevelop/Ide/Pads">
+            <Pad id = "VisualStudio.VersionControl.TFS.Addin.Gui.Pads.TeamExplorerPad" defaultLayout="Solution" defaultPlacement = "Right" 
+                 class = "VisualStudio.VersionControl.TFS.Addin.Gui.Pads.TeamExplorerPad" _label="Team Explorer" />
+        </Extension>
         <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/VersionControl">
             <Section id = "Team Foundation Server" _label = "Team Foundation Server" class = "VisualStudio.VersionControl.TFS.Addin.Gui.Panels.SettingsPanel" />
         </Extension>

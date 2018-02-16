@@ -27,12 +27,6 @@
 //
 
 using System;
-using System.Collections;
-using System.IO;
-using System.Net;
-using System.Text;
-using System.Xml;
-using System.Web.Services;
 using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client

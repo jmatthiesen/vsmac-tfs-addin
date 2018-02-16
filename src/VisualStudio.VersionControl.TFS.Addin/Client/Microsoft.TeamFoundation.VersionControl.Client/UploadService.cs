@@ -26,14 +26,14 @@
 // THE SOFTWARE.
 
 using System;
-using Microsoft.TeamFoundation.Client;
-using System.Net;
 using System.IO;
-using System.Text;
 using System.IO.Compression;
+using System.Net;
 using System.Security.Cryptography;
-using Microsoft.TeamFoundation.VersionControl.Client.Objects;
+using System.Text;
+using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.Client.Services;
+using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {

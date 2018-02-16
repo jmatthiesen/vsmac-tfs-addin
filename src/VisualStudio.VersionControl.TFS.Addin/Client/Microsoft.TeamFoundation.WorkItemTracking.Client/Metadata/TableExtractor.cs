@@ -24,12 +24,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
 using System.Collections.Generic;
-using System.Xml.Linq;
 using System.Linq;
 using System.Reflection;
-using System;
-using Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata;
+using System.Xml.Linq;
 
 namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
 {

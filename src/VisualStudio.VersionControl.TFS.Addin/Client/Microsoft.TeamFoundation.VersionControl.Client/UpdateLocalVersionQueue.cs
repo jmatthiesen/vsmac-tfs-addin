@@ -28,9 +28,9 @@
 //
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using System.Linq;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
