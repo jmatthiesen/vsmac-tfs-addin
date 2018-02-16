@@ -108,5 +108,15 @@ namespace VisualStudio.VersionControl.TFS.Addin
 
             return result;
         }
+
+        public void PendRenameFile(Workspace workspace, string oldPath, string newPath, out List<Failure> failures)
+        {
+            workspace.PendRenameFile(oldPath, newPath, out failures);
+        }
+
+        public void PendRenameFolder(Workspace workspace, string oldPath, string newPath, out List<Failure> failures)
+        {
+            workspace.PendRenameFolder(oldPath, newPath, out failures);
+        }
     }
 }

@@ -52,7 +52,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
             BuildGui();
             AttachEvents();
 
-            using (var progress = new MessageDialogProgressMonitor(true, false, true))
+            using (var progress = new MessageDialogProgressMonitor(true, false, false))
             {
                 progress.BeginTask("Loading...", 2);
                 GetData();
@@ -782,6 +782,43 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
                 };
 
                 editItems.Add(unLockItem);
+            }
+
+            //Rename
+            var itemToRename = items.FirstOrDefault(i => !i.ChangeType.HasFlag(ChangeType.Delete));
+           
+            if (itemToRename != null)
+            {
+                Gtk.MenuItem renameItem = new Gtk.MenuItem(GettextCatalog.GetString("Rename"));
+             
+                renameItem.Activated += (sender, e) =>
+                {
+                    using (var dialog = new RenameDialog(itemToRename))
+                    {
+                        if (dialog.Run() == Command.Ok)
+                        {
+                            List<Failure> failures;
+
+                            if (itemToRename.ItemType == ItemType.File)
+                                TeamFoundationServerClient.Instance.PendRenameFile(_currentWorkspace, itemToRename.LocalItem, dialog.NewPath, out failures);
+                            else
+                                TeamFoundationServerClient.Instance.PendRenameFolder(_currentWorkspace, itemToRename.LocalItem, dialog.NewPath, out failures);
+
+                            if (failures != null && failures.Any(f => f.SeverityType == SeverityType.Error))
+                            {
+                                foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
+                                {
+                                    MessageService.ShowError(failure.Message);
+                                }
+                            }      
+
+                            TeamFoundationServerFileHelper.NotifyFilesChanged(_currentWorkspace, new List<ExtendedItem> { itemToRename });
+                            Refresh(items);
+                        }
+                    }
+                };
+
+                editItems.Add(renameItem);
             }
 
             // Delete
