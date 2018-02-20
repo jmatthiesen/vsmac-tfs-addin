@@ -4,10 +4,9 @@ using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.TeamFoundation.VersionControl.Client.Enums;
 using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using MonoDevelop.Core;
-using MonoDevelop.Ide.ProgressMonitoring;
 using Xwt;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
+namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
     public class GetSpecVersionDialog : Dialog
     {
@@ -133,7 +132,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
 
             var option =  GetOptions.GetAll;
 
-            using (var progress = new MessageDialogProgressMonitor(true, false, true))
+            using (var progress = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull))
             {
                 progress.Log.WriteLine("Start downloading items. GetOption: " + option);
               

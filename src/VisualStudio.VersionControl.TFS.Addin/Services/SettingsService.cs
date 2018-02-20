@@ -5,9 +5,9 @@ using System.Linq;
 using System.Xml.Linq;
 using Microsoft.TeamFoundation.Client;
 using MonoDevelop.Core;
-using VisualStudio.VersionControl.TFS.Addin.Helpers;
+using MonoDevelop.VersionControl.TFS.Helpers;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Services
+namespace MonoDevelop.VersionControl.TFS.Services
 {
     public class SettingsService
     {

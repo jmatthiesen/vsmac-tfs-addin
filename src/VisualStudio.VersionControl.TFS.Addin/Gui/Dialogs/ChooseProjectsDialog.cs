@@ -5,7 +5,7 @@ using Microsoft.TeamFoundation.Client;
 using MonoDevelop.Core;
 using Xwt;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
+namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
     public class ChooseProjectsDialog : Dialog
     {

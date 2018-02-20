@@ -5,7 +5,7 @@ using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using Xwt;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
+namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
     public class WorkspacesDialog : Dialog
     {

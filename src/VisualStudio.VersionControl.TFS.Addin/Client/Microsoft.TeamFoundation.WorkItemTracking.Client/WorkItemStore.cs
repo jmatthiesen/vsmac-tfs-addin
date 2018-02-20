@@ -24,11 +24,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System.Collections.Generic;
-using Microsoft.TeamFoundation.WorkItemTracking.Client.Objects;
-using Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata;
+using Microsoft.TeamFoundation.WorkItemTracking.Client.Objects;
 
 namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 {
@@ -39,13 +39,13 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 
         public WorkItemStore(StoredQuery query)
         {
-            this.clientService = query.Collection.GetService<ClientService>();
+            clientService = query.Collection.GetService<ClientService>();
             this.query = query;
         }
 
         public List<WorkItem> LoadByWorkItem()
         {
-            var ids = this.clientService.GetWorkItemIds(this.query, CachedMetaData.Instance.Fields);
+            var ids = clientService.GetWorkItemIds(query, CachedMetaData.Instance.Fields);
             var list = new List<WorkItem>();
 
             foreach (var id in ids)
@@ -58,13 +58,13 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 
         public List<WorkItem> LoadByPage()
         {
-            var ids = this.clientService.GetWorkItemIds(this.query, CachedMetaData.Instance.Fields);
+            var ids = clientService.GetWorkItemIds(query, CachedMetaData.Instance.Fields);
             int pages = (int)Math.Ceiling((double)ids.Count / (double)50);
             var result = new List<WorkItem>();
             for (int i = 0; i < pages; i++)
             {
                 var idList = new List<int>(ids.Skip(i * 50).Take(50));
-                var items = this.clientService.PageWorkitemsByIds(this.query, idList);
+                var items = clientService.PageWorkitemsByIds(query, idList);
                 result.AddRange(items);
             }
 

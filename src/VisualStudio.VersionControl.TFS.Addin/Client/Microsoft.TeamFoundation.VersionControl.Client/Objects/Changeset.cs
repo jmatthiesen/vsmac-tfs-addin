@@ -29,9 +29,9 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using System.Linq;
 using Microsoft.TeamFoundation.VersionControl.Client.Helpers;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client.Objects

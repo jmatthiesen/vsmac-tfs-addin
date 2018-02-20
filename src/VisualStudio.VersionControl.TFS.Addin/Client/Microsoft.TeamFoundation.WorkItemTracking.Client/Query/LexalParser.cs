@@ -90,7 +90,6 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
             this.selectClause = this.selectClause.Trim();
             this.whereClause = this.whereClause.Trim();
             this.orderByClause = this.orderByClause.Trim();
-
         }
 
         private Node SetState(CursorState state, string word)

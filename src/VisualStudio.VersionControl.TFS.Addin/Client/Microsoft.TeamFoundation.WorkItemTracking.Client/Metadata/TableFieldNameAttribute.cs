@@ -33,7 +33,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
     {
         public TableFieldNameAttribute(string fieldName)
         {
-            this.FieldName = fieldName;
+            FieldName = fieldName;
         }
 
         public string FieldName { get; set; }

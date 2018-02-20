@@ -24,7 +24,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using Microsoft.TeamFoundation.WorkItemTracking.Client.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;

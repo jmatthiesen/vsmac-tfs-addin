@@ -1,9 +1,11 @@
-﻿namespace VisualStudio.VersionControl.TFS.Addin.Commands
+﻿namespace MonoDevelop.VersionControl.TFS.Commands
 {
     public enum TeamExplorerCommands
     {
         ConnectToServer,
         TeamExplorer,
-        SourceControlExplorer
+        SourceControlExplorer,
+        Checkout,
+        LocateInSourceExplorer
     }
 }

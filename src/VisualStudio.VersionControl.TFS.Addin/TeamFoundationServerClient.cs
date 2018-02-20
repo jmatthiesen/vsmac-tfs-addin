@@ -3,10 +3,10 @@ using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.TeamFoundation.VersionControl.Client.Enums;
 using Microsoft.TeamFoundation.VersionControl.Client.Objects;
-using MonoDevelop.Ide.ProgressMonitoring;
-using VisualStudio.VersionControl.TFS.Addin.Services;
+using MonoDevelop.Core;
+using MonoDevelop.VersionControl.TFS.Services;
 
-namespace VisualStudio.VersionControl.TFS.Addin
+namespace MonoDevelop.VersionControl.TFS
 {
     public class TeamFoundationServerClient
     {
@@ -58,6 +58,11 @@ namespace VisualStudio.VersionControl.TFS.Addin
             return _workspaceService.GetLocalWorkspaces(collection);
         }
 
+        public Workspace CreateWorkspace(RepositoryService repositoryService, Workspace workspace)
+        {
+            return _workspaceService.CreateWorkspace(repositoryService, workspace);
+        }
+
         public string DownloadTempItem(Workspace workspace, ProjectCollection collection, ExtendedItem extendedItem)
         {
             var dowloadService = collection.GetService<VersionControlDownloadService>();
@@ -67,12 +72,17 @@ namespace VisualStudio.VersionControl.TFS.Addin
             return filePath;
         }
 
-        public void Get(Workspace workspace, List<GetRequest> requests, GetOptions options, MessageDialogProgressMonitor monitor = null)
+        public void Get(Workspace workspace, GetRequest request, GetOptions options, ProgressMonitor monitor = null)
+        {
+            workspace.Get(request, options, monitor);
+        }
+
+        public void Get(Workspace workspace, List<GetRequest> requests, GetOptions options, ProgressMonitor monitor = null)
         {
             workspace.Get(requests, options, monitor);
         }
 
-        public void GetLatestVersion(Workspace workspace, List<ExtendedItem> items, MessageDialogProgressMonitor monitor = null)
+        public void GetLatestVersion(Workspace workspace, List<ExtendedItem> items, ProgressMonitor monitor = null)
         {
             List<GetRequest> requests = new List<GetRequest>();
 
@@ -107,6 +117,11 @@ namespace VisualStudio.VersionControl.TFS.Addin
             var result = workspace.CheckIn(changes, comment, null);
 
             return result;
+        }
+
+        public void PendAdd(Workspace workspace, List<FilePath> paths, bool isRecursive)
+        {
+            workspace.PendAdd(paths, isRecursive);
         }
 
         public void PendRenameFile(Workspace workspace, string oldPath, string newPath, out List<Failure> failures)

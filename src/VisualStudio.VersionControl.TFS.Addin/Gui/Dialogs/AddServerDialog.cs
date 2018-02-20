@@ -1,9 +1,9 @@
 ﻿using Microsoft.TeamFoundation.Client;
 using MonoDevelop.Core;
-using VisualStudio.VersionControl.TFS.Addin.Gui.Widgets;
+using MonoDevelop.VersionControl.TFS.Gui.Widgets;
 using Xwt;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
+namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
     public class AddServerDialog : Dialog
     {

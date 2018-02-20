@@ -36,6 +36,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Helpers
             if (string.IsNullOrWhiteSpace(value))
                 return ChangeType.None;
             ChangeType changeType;
+          
             if (Enum.TryParse<ChangeType>(value.Replace(" ", ","), true, out changeType))
                 return changeType;
             else
@@ -47,6 +48,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Helpers
             if (string.IsNullOrWhiteSpace(value))
                 return ItemType.Any;
             ItemType itemType;
+          
             if (Enum.TryParse<ItemType>(value.Replace(" ", ","), true, out itemType))
                 return itemType;
             else
@@ -58,6 +60,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Helpers
             if (string.IsNullOrWhiteSpace(value))
                 throw new ArgumentNullException("value");
             ConflictType conflictType;
+           
             if (Enum.TryParse<ConflictType>(value.Replace(" ", ","), true, out conflictType))
                 return conflictType;
             else
@@ -69,6 +72,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Helpers
             if (string.IsNullOrWhiteSpace(value))
                 return RequestType.None;
             RequestType requestType;
+          
             if (Enum.TryParse<RequestType>(value.Replace(" ", ","), true, out requestType))
                 return requestType;
             else
@@ -80,6 +84,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Helpers
             if (string.IsNullOrWhiteSpace(value))
                 return LockLevel.None;
             LockLevel lockType;
+          
             if (Enum.TryParse<LockLevel>(value.Replace(" ", ","), true, out lockType))
                 return lockType;
             else
@@ -91,6 +96,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Helpers
             if (string.IsNullOrWhiteSpace(value))
                 throw new ArgumentNullException("value");
             SeverityType severityType;
+           
             if (Enum.TryParse<SeverityType>(value.Replace(" ", ","), true, out severityType))
                 return severityType;
             else

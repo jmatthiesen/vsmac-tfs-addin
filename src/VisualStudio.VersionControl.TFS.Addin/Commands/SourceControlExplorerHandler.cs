@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using MonoDevelop.Components.Commands;
-using VisualStudio.VersionControl.TFS.Addin.Gui.Views;
+using MonoDevelop.VersionControl.TFS.Gui.Views;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Commands
+namespace MonoDevelop.VersionControl.TFS.Commands
 {
     public class SourceControlExplorerHandler : CommandHandler
     {
@@ -16,7 +16,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Commands
         protected override void Update(CommandInfo info)
         {
             var collectionsCount = TeamFoundationServerClient.Settings.GetServers()
-                                                             .SelectMany(x => x.ProjectCollections).Count();
+                                                              .SelectMany(x => x.ProjectCollections).Count();
 
             info.Visible = collectionsCount > 0;
         }

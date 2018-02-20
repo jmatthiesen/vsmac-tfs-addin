@@ -30,7 +30,7 @@ using System.Linq;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Models
+namespace MonoDevelop.VersionControl.TFS.Models
 {
     public class HierarchyItem
     {

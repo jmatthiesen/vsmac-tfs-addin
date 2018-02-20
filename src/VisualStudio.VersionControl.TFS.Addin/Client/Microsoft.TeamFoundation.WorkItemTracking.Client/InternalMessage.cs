@@ -36,11 +36,11 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 {
     internal class Message 
 	{
-		private const string SoapEnvelopeNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
-		private const string MessageNamespace =	"http://schemas.microsoft.com/TeamFoundation/2005/06/WorkItemTracking/ClientServices/03";
-		private WebRequest request;
-		private XmlTextWriter xtw;
-		private string methodName;
+		const string SoapEnvelopeNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
+		const string MessageNamespace =	"http://schemas.microsoft.com/TeamFoundation/2005/06/WorkItemTracking/ClientServices/03";
+		WebRequest request;
+		XmlTextWriter xtw;
+		string methodName;
 
 		public XmlTextWriter Body
 		{

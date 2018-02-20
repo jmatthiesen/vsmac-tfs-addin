@@ -1,6 +1,6 @@
 ﻿using Microsoft.TeamFoundation.Client;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Services
+namespace MonoDevelop.VersionControl.TFS.Services
 {
     public class ProjectService
     {

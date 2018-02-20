@@ -1,9 +1,9 @@
 ﻿using MonoDevelop.Components;
-using VisualStudio.VersionControl.TFS.Addin.Gui.Widgets;
+using MonoDevelop.VersionControl.TFS.Gui.Widgets;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Gui.Panels
+namespace MonoDevelop.VersionControl.TFS.Gui.Panels
 {
-    public class SettingsPanel : MonoDevelop.Ide.Gui.Dialogs.OptionsPanel
+    public class SettingsPanel : Ide.Gui.Dialogs.OptionsPanel
     {
         SettingsWidget _widget;
 

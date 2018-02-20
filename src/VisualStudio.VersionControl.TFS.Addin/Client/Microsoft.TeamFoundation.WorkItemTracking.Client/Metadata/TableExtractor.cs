@@ -64,7 +64,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
         {
         }
 
-        private string GetFieldName(PropertyInfo prop)
+        string GetFieldName(PropertyInfo prop)
         {
             var attributes = prop.GetCustomAttributes(typeof(TableFieldNameAttribute), true);
             if (attributes.Length > 0)
@@ -73,7 +73,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
                 return string.Empty;
         }
 
-        private Dictionary<int, Tuple<PropertyInfo, string>> BuildMapping(XElement[] columns)
+        Dictionary<int, Tuple<PropertyInfo, string>> BuildMapping(XElement[] columns)
         {
             var result = new Dictionary<int, Tuple<PropertyInfo, string>>();
             var properties = typeof(T).GetProperties();
@@ -92,6 +92,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
                     }
                 }
             }
+
             return result;
         }
 
@@ -104,6 +105,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
             var columns = GetColumns(table);
             var mapping = BuildMapping(columns);
             var rows = table.Element(ns + "rows").Elements(ns + "r");
+
             foreach (var row in rows)
             {
                 var fields = row.Elements(ns + "f").ToArray();
@@ -125,6 +127,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
                 }
                 result.Add(obj);
             }
+
             return result;
         }
     }
@@ -136,7 +139,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
         {
         }
 
-        private Dictionary<int, Tuple<string,string>> BuildMapping(XElement[] columns)
+        Dictionary<int, Tuple<string,string>> BuildMapping(XElement[] columns)
         {
             var result = new Dictionary<int, Tuple<string,string>>();
             for (int i = 0; i < columns.Length; i++)
@@ -146,6 +149,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
                 var columnType = column.Element(ns + "t").Value;
                 result.Add(i, new Tuple<string, string>(columnName, columnType));
             }
+
             return result;
         }
 
@@ -153,8 +157,10 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
         {
             var result = new List<Dictionary<string, object>>();
             var table = GetTable();
+         
             if (table == null)
                 return result;
+            
             var columns = GetColumns(table);
             var mapping = BuildMapping(columns);
             var rows = table.Element(ns + "rows").Elements(ns + "r");
@@ -174,6 +180,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
                 }
                 result.Add(obj);
             }
+
             return result;
         }
     }

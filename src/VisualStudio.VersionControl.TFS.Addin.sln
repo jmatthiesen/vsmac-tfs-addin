@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudio.VersionControl.TFS.Addin", "VisualStudio.VersionControl.TFS.Addin\VisualStudio.VersionControl.TFS.Addin.csproj", "{C358DB75-2013-41CD-95CD-15B79F0AE86A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoDevelop.VersionControl.TFS", "VisualStudio.VersionControl.TFS.Addin\MonoDevelop.VersionControl.TFS.csproj", "{C358DB75-2013-41CD-95CD-15B79F0AE86A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Addin", "Addin", "{AB6DE080-5F1E-49B6-BA30-9E3888C9AB5B}"
 EndProject

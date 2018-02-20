@@ -3,8 +3,9 @@
 //
 // Author:
 //       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
+//       Javier Suárez Ruiz  <javiersuarezruiz@hotmail.com>
 //
-// Copyright (c) 2013 Ventsislav Mladenov
+// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -84,7 +85,8 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             var tempDir = Path.Combine(Path.GetTempPath(), "TfSAddinDownload");
             if (!Directory.Exists(tempDir))
                 Directory.CreateDirectory(tempDir);
-            return Path.Combine(tempDir, "tfsTemp" + num.ToString("X") + extension);// Files are gzipped
+            
+            return Path.Combine(tempDir, "tfsTemp" + num.ToString("X") + extension);    // Files are gzipped
         }
 
         public string DownloadToTemp(string artifactUri)
@@ -92,28 +94,28 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             try
             {
                 var client = new WebClient();
-                if (this.Collection.Server is INetworkServer)
+                if (Collection.Server is INetworkServer)
                 {
-                    var server = (INetworkServer)this.Collection.Server;
+                    var server = (INetworkServer)Collection.Server;
                     client.Credentials = server.Credentials;
                 }
-                else if (this.Collection.Server is IAuthServer) 
+                else if (Collection.Server is IAuthServer) 
                 {
-                    var server = (IAuthServer)this.Collection.Server;
+                    var server = (IAuthServer)Collection.Server;
                     client.Headers.Add(HttpRequestHeader.Authorization, server.AuthString);
                 }
                 else
                 {
                     throw new Exception("Known server");
                 }
-                var tempFileName = this.GetTempFileName(".gz");
-                UriBuilder bulder = new UriBuilder(this.Url);
+                var tempFileName = GetTempFileName(".gz");
+                UriBuilder bulder = new UriBuilder(Url);
                 bulder.Query = artifactUri;
                 client.DownloadFile(bulder.Uri, tempFileName);
 
                 if (string.Equals(client.ResponseHeaders[HttpResponseHeader.ContentType], "application/gzip"))
                 {
-                    string newTempFileName = this.GetTempFileName(".tmp");
+                    string newTempFileName = GetTempFileName(".tmp");
                     using (var inStream = new GZipStream(File.OpenRead(tempFileName), CompressionMode.Decompress))
                     {
                         using (var outStream = File.Create(newTempFileName))
@@ -140,7 +142,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 
         public string DownloadToTempWithName(string downloadUri, string fileName)
         {
-            var path = this.DownloadToTemp(downloadUri);
+            var path = DownloadToTemp(downloadUri);
             if (File.Exists(path))
             {
                 var name = Path.GetFileName(fileName);
@@ -150,14 +152,16 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                 else
                     return string.Empty;
             }
+
             return string.Empty;
         }
 
         public string Download(string path, string artifactUri)
         {
-            var tempPath = this.DownloadToTemp(artifactUri);
+            var tempPath = DownloadToTemp(artifactUri);
             if (string.IsNullOrEmpty(tempPath) || !FileHelper.FileMove(tempPath, path, true))
                 return string.Empty;
+            
             return path;
         }
     }

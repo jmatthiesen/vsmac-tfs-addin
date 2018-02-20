@@ -39,7 +39,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 {
     public class ClientService : TFSCollectionService
     {
-        private class ClientServiceResolver : IServiceResolver
+        class ClientServiceResolver : IServiceResolver
         {
             #region IServiceResolver implementation
 
@@ -86,15 +86,15 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 
         #endregion
 
-        private static readonly string headerName = "RequestHeader";
-        private static readonly string requestId = "uuid:" + Guid.NewGuid().ToString("D");
+        static readonly string headerName = "RequestHeader";
+        static readonly string requestId = "uuid:" + Guid.NewGuid().ToString("D");
 
-        private XElement GetHeaderElement()
+        XElement GetHeaderElement()
         {
             return new XElement(this.MessageNs + "Id", requestId);
         }
 
-        private List<T> GetMetadata<T>(MetadataRowSetNames table)
+        List<T> GetMetadata<T>(MetadataRowSetNames table)
             where T: class
         {
             var invoker = new SoapInvoker(this);
@@ -107,6 +107,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
             envelope.Body.Add(new XElement(MessageNs + "useMaster", "false"));
             var response = invoker.InvokeResponse();
             var extractor = new TableExtractor<T>(response, table.ToString());
+           
             return extractor.Extract();
         }
 
@@ -117,22 +118,22 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 
         public List<Field> GetFields()
         {
-            return this.GetMetadata<Field>(MetadataRowSetNames.Fields);
+            return GetMetadata<Field>(MetadataRowSetNames.Fields);
         }
 
         public List<Constant> GetConstants()
         {
-            return this.GetMetadata<Constant>(MetadataRowSetNames.Constants).Where(c => !c.IsDeleted).ToList();
+            return GetMetadata<Constant>(MetadataRowSetNames.Constants).Where(c => !c.IsDeleted).ToList();
         }
 
         public List<WorkItemType> GetWorkItemTypes()
         {
-            return this.GetMetadata<WorkItemType>(MetadataRowSetNames.WorkItemTypes).Where(t => !t.IsDeleted).ToList();
+            return GetMetadata<WorkItemType>(MetadataRowSetNames.WorkItemTypes).Where(t => !t.IsDeleted).ToList();
         }
 
         public List<Objects.Action> GetActions()
         {
-            return this.GetMetadata<Objects.Action>(MetadataRowSetNames.Actions).Where(t => !t.IsDeleted).ToList();
+            return GetMetadata<Objects.Action>(MetadataRowSetNames.Actions).Where(t => !t.IsDeleted).ToList();
         }
 
         public List<StoredQuery> GetStoredQueries(Project project)
@@ -171,6 +172,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
             if (queryIds == null)
                 return new List<int>();
             var list = new List<int>();
+
             foreach (var item in queryIds.Elements("id"))
             {
                 var startId = item.Attribute("s");
@@ -189,6 +191,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
                     list.Add(s);
                 }
             }
+
             return list;
         }
 
@@ -204,10 +207,12 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
             //workItem.Id = id;
             var data = extractor.Extract().Single();
             workItem.WorkItemInfo = new Dictionary<string, object>();
+           
             foreach (var item in data)
             {
                 workItem.WorkItemInfo.Add(item.Key, item.Value);
             }
+
             return workItem;
         }
 
@@ -231,10 +236,12 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
             var extractor = new TableDictionaryExtractor(response, "Items");
             var data = extractor.Extract();
             List<WorkItem> list = new List<WorkItem>();
+        
             foreach (var item in data)
             {
                 list.Add(new WorkItem { WorkItemInfo = item });
             }
+
             return list;
         }
 

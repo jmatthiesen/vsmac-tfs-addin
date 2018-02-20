@@ -30,6 +30,6 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Enums
 {
     public enum DiffOutputType
     {
-        Unified,
+        Unified
     }
 }

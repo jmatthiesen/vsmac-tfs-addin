@@ -3,7 +3,7 @@ using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Commands
+namespace MonoDevelop.VersionControl.TFS.Commands
 {
     public class TeamExplorerHandler : CommandHandler
     {
@@ -16,7 +16,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Commands
  
             foreach (var p in IdeApp.Workbench.Pads)
             {
-                if (string.Equals(p.Id, "VisualStudio.TFS.TeamExplorerPad", System.StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(p.Id, "MonoDevelop.MonoDevelop.TFS.TeamExplorerPad", System.StringComparison.OrdinalIgnoreCase))
                 {
                     pad = p;
                 }
@@ -26,7 +26,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Commands
             {
                 var content = new Gui.Pads.TeamExplorerPad();
 
-                pad = IdeApp.Workbench.ShowPad(content, "VisualStudio.TFS.TeamExplorerPad", "Team Explorer", "Right", null);
+                pad = IdeApp.Workbench.ShowPad(content, "MonoDevelop.MonoDevelop.TFS.TeamExplorerPad", "Team Explorer", "Right", null);
                
                 if (pad == null)
                     return;
@@ -39,6 +39,12 @@ namespace VisualStudio.VersionControl.TFS.Addin.Commands
 
         protected override void Update (CommandInfo info)
         {
+            if (VersionControlService.IsGloballyDisabled)
+            {
+                info.Enabled = false;
+                return;
+            }
+
             var serversCount = TeamFoundationServerClient.Settings.GetServers().Count();
 
             info.Visible = serversCount > 0;

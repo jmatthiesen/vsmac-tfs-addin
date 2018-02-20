@@ -23,6 +23,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using Microsoft.TeamFoundation.VersionControl.Client.Enums;
 using System;
 
@@ -53,6 +54,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
                 return false;
             if (ReferenceEquals(this, other))
                 return true;
+            
             return other.ServerPath == ServerPath;
         }
 
@@ -67,6 +69,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
             BaseItem cast = obj as BaseItem;
             if (cast == null)
                 return false;
+
             return Equals(cast);
         }
 
