@@ -13,12 +13,12 @@ using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.ProgressMonitoring;
-using VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs;
-using VisualStudio.VersionControl.TFS.Addin.Helpers;
-using VisualStudio.VersionControl.TFS.Addin.Models;
+using MonoDevelop.VersionControl.TFS.Gui.Dialogs;
+using MonoDevelop.VersionControl.TFS.Helpers;
+using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
+namespace MonoDevelop.VersionControl.TFS.Gui.Views
 {
     public class SourceControlExplorerView : ViewContent
     {
@@ -84,6 +84,14 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
         {
             var sourceControlExplorerView = new SourceControlExplorerView(project.Collection);
             sourceControlExplorerView.ExpandPath(VersionControlPath.RootFolder + project.Name);
+            IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
+        }
+
+        public static void Show(ProjectCollection collection, string path, string fileName)
+        {
+            var sourceControlExplorerView = new SourceControlExplorerView(collection);
+            sourceControlExplorerView.ExpandPath(path);
+            sourceControlExplorerView.FindItem(fileName);
             IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
         }
 
@@ -197,7 +205,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
 
         void CheckOut(List<ExtendedItem> itemsToCheckOut)
         {
-            using (var progress = new MessageDialogProgressMonitor(true, false, true))
+            using (var progress = VersionControlService.GetProgressMonitor("Check Out", VersionControlOperationType.Pull))
             {
                 progress.BeginTask("Check Out", itemsToCheckOut.Count);
 
@@ -425,7 +433,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
                     {
                         var filePath = TeamFoundationServerClient.Instance.DownloadTempItem(_currentWorkspace, _projectCollection, item);
 
-                        if (MonoDevelop.Projects.Services.ProjectService.IsWorkspaceItemFile(filePath))
+                        if (Projects.Services.ProjectService.IsWorkspaceItemFile(filePath))
                         {
                             var parentFolder = _currentWorkspace.GetExtendedItem(item.ServerPath.ParentPath, ItemType.Folder);
 
@@ -512,6 +520,28 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
             _treeView.CollapseAll();
             _treeView.ExpandToPath(_treeStore.GetPath(iter));
             _treeView.Selection.SelectIter(iter);
+        }
+
+        void FindItem(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return;
+            TreeIter iter = TreeIter.Zero;
+            _listStore.Foreach((model, path, it) =>
+            {
+                var item = ((BaseItem)model.GetValue(it, 0));
+                if (string.Equals(item.ServerPath.ItemName, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    iter = it;
+                    return true;
+                }
+                return false;
+            });
+            if (iter.Equals(TreeIter.Zero))
+                return;
+            _listView.Selection.SelectIter(iter);
+            var treePath = _listStore.GetPath(iter);
+            _listView.ScrollToCell(treePath, _listView.Columns[0], false, 0, 0);
         }
 
         bool IsMapped(string serverPath)
@@ -611,7 +641,7 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
                     requests.Add(new GetRequest(item.ServerPath, recursion, VersionSpec.Latest));
                 }
 
-                MessageDialogProgressMonitor monitor = new MessageDialogProgressMonitor(true, false, false);
+                var monitor = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull);
 
                 try
                 {
@@ -871,8 +901,8 @@ namespace VisualStudio.VersionControl.TFS.Addin.Gui.Views
 
                         if (errors)
                         {
-                            foreach (var failure in failures)
-                                Debug.WriteLine(failure.Message);
+                            var failuresDialog = new FailuresDialog(failures);
+                            failuresDialog.Show();
                         }
 
                         TeamFoundationServerFileHelper.NotifyFilesRemoved(_currentWorkspace, items);

@@ -30,8 +30,8 @@
 using System;
 using System.Text;
 using System.Xml.Linq;
-using Microsoft.TeamFoundation.VersionControl.Client.Helpers;
 using Microsoft.TeamFoundation.VersionControl.Client.Enums;
+using Microsoft.TeamFoundation.VersionControl.Client.Helpers;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
 {

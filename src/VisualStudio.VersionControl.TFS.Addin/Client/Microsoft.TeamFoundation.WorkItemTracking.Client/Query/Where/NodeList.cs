@@ -27,8 +27,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.TeamFoundation.WorkItemTracking.Client.Objects;
 using Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata;
+using Microsoft.TeamFoundation.WorkItemTracking.Client.Objects;
 
 namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
 {

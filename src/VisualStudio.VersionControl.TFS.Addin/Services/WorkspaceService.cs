@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Services
+namespace MonoDevelop.VersionControl.TFS.Services
 {
     public class WorkspaceService
     {     
@@ -23,6 +23,13 @@ namespace VisualStudio.VersionControl.TFS.Addin.Services
         {
             var versionControl = collection.GetService<RepositoryService>();
             return versionControl.QueryWorkspace(collection.Server.UserName, workspaceName);
+        }
+
+        public Workspace CreateWorkspace(RepositoryService repositoryService, Workspace workspace)
+        {
+            var createdWorkspace = repositoryService.CreateWorkspace(workspace);
+
+            return createdWorkspace;
         }
     }
 }

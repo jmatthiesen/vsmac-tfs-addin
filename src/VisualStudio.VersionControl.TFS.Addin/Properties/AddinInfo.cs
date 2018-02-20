@@ -2,7 +2,7 @@
 // AddinInfo.cs
 //
 // Author:
-//       Javier Suárez Ruiz <jsuarez@plainconcepts.com>
+//       Javier Suárez Ruiz <javiersuarezruiz@hotmail.com>
 //
 // Copyright (c) 2018 Microsoft Corp.
 //
@@ -23,17 +23,22 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using System;
+
 using Mono.Addins;
 using Mono.Addins.Description;
 
 [assembly: Addin(
-    "VisualStudio_VersionControl_TFS_Addin",
-    Namespace = "VisualStudio_VersionControl_TFS_Addin",
-    Version = "1.0"
-)]
+    "VersionControl.TFS",
+    Namespace = "MonoDevelop",
+    Version = "1.0",
+    Category = "Version Control")]
 
-[assembly: AddinName("VisualStudio.TFS.Addin")]
+[assembly: AddinName("TFS Support")]
 [assembly: AddinCategory("IDE extensions")]
-[assembly: AddinDescription("Visual Studio for macOS Team Foundation Server Add-in")]
+[assembly: AddinDescription("TFS support for the Version Control Add-in")]
 [assembly: AddinAuthor("Microsoft")]
+[assembly: AddinUrl("https://github.com/PlainConcepts/vsmac-tfs-addin")]
+
+[assembly: AddinDependency("Core", MonoDevelop.BuildInfo.Version)]
+[assembly: AddinDependency("Ide", MonoDevelop.BuildInfo.Version)]
+[assembly: AddinDependency("VersionControl", MonoDevelop.BuildInfo.Version)]

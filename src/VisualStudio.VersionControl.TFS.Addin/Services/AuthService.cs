@@ -1,7 +1,7 @@
 ﻿using System;
-using VisualStudio.VersionControl.TFS.Addin.Helpers;
+using MonoDevelop.VersionControl.TFS.Helpers;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Services
+namespace MonoDevelop.VersionControl.TFS.Services
 {
     public class AuthService
     {

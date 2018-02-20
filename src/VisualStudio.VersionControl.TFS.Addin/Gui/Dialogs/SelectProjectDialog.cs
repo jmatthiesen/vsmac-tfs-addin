@@ -3,10 +3,11 @@ using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using MonoDevelop.Core;
-using VisualStudio.VersionControl.TFS.Addin.Models;
+using MonoDevelop.VersionControl.TFS.Gui;
+using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
+namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
     public class SelectProjectDialog : Dialog
     {

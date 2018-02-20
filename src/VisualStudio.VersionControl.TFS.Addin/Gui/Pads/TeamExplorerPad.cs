@@ -5,11 +5,11 @@ using MonoDevelop.Components;
 using MonoDevelop.Components.Docking;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.Gui;
-using VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs;
-using VisualStudio.VersionControl.TFS.Addin.Gui.Views;
+using MonoDevelop.VersionControl.TFS.Gui.Dialogs;
+using MonoDevelop.VersionControl.TFS.Gui.Views;
 using Xwt;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Gui.Pads
+namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 {
     public class TeamExplorerPad : PadContent
     {

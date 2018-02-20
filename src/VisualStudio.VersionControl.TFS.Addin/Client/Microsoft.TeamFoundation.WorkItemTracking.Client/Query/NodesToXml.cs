@@ -41,7 +41,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
             this.nodes = nodes;
         }
 
-        private void WriteExpression(ConditionNode node, XmlWriter writer)
+        void WriteExpression(ConditionNode node, XmlWriter writer)
         {
             writer.WriteStartElement("Expression");
             var fieldNode = ((FieldNode)node.Left);
@@ -56,7 +56,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
             writer.WriteEndElement();
         }
 
-        private void WriterStartGroup(OperatorNode operatorNode, XmlWriter writer)
+        void WriterStartGroup(OperatorNode operatorNode, XmlWriter writer)
         {
             writer.WriteStartElement("Group");
             writer.WriteAttributeString("GroupOperator", operatorNode.Operator.ToString());
@@ -72,28 +72,31 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
             //settings.NewLineChars = Environment.NewLine;
             using (XmlWriter writer = XmlWriter.Create(builder, settings))
             {
-                if (this.nodes.Count == 1 && this.nodes[0].NodeType == NodeType.Condition)
+                if (nodes.Count == 1 && nodes[0].NodeType == NodeType.Condition)
                 {
-                    WriteExpression((ConditionNode)this.nodes[0], writer);
+                    WriteExpression((ConditionNode)nodes[0], writer);
                 }
                 else
                 {
-                    if (this.nodes[0].NodeType != NodeType.Operator)
+                    if (nodes[0].NodeType != NodeType.Operator)
                         throw new Exception("Invalid Node Order");
-                    var operatorNode = (OperatorNode)this.nodes[0];
+                    var operatorNode = (OperatorNode)nodes[0];
                     WriterStartGroup(operatorNode, writer);
-                    for (int i = 1; i < this.nodes.Count; i++)
+                    for (int i = 1; i < nodes.Count; i++)
                     {
                         var node = this.nodes[i];
+
                         if (node.NodeType == NodeType.OpenBracket)
                         {
                             i++;
-                            var op = (OperatorNode)this.nodes[i];
+                            var op = (OperatorNode)nodes[i];
                             WriterStartGroup(op, writer);
                             continue;
                         }
+
                         if (node.NodeType == NodeType.CloseBracket)
                             writer.WriteEndElement();
+                        
                         if (node.NodeType == NodeType.Condition)
                             WriteExpression((ConditionNode)node, writer);
                     }

@@ -1,8 +1,8 @@
 ﻿using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
-using VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs;
+using MonoDevelop.VersionControl.TFS.Gui.Dialogs;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Commands
+namespace MonoDevelop.VersionControl.TFS.Commands
 {
     public class ConnectToServerHandler : CommandHandler
     {

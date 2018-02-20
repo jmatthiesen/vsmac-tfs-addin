@@ -1,4 +1,4 @@
-﻿namespace VisualStudio.VersionControl.TFS.Addin.Gui
+﻿namespace MonoDevelop.VersionControl.TFS.Gui
 {
     public static class GuiSettings
     {

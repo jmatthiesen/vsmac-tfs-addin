@@ -4,7 +4,7 @@ using Microsoft.TeamFoundation.VersionControl.Client;
 using MonoDevelop.Core;
 using Xwt;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Gui.Dialogs
+namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
     public class AddWorkspaceDialog : Dialog
     {

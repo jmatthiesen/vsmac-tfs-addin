@@ -1,34 +1,74 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-    <ExtensionModel>
-        <Extension path = "/MonoDevelop/Ide/Commands">
-                <Category _name = "Team Foundation" id = "TeamFoundation">
-                    <Command 
-                        id = "VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.ConnectToServer"
-                        _label = "Connect to Team Foundation Server"
-                        defaultHandler = "VisualStudio.VersionControl.TFS.Addin.Commands.ConnectToServerHandler" />  
-                    <Command 
-                        id = "VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.TeamExplorer"
-                        _label = "Team Explorer"
-                        defaultHandler = "VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerHandler" />
-                    <Command 
-                        id = "VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.SourceControlExplorer"
-                        _label = "Source Control Explorer"
-                        defaultHandler = "VisualStudio.VersionControl.TFS.Addin.Commands.SourceControlExplorerHandler" />
-            </Category>
-        </Extension>
-        <Extension path = "/MonoDevelop/Ide/MainMenu/VersionControl">
-            <SeparatorItem insertafter="MonoDevelop.VersionControl.Commands.Annotate"/>
-            <ItemSet id = "TeamFoundation" _label = "Team Foundation Server"  autohide="true" >
-                <CommandItem id="VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.ConnectToServer" />
-                <CommandItem id="VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.TeamExplorer" />
-                <CommandItem id="VisualStudio.VersionControl.TFS.Addin.Commands.TeamExplorerCommands.SourceControlExplorer" />
-            </ItemSet>
-        </Extension>
-        <Extension path = "/MonoDevelop/Ide/Pads">
-            <Pad id = "VisualStudio.VersionControl.TFS.Addin.Gui.Pads.TeamExplorerPad" defaultLayout="Solution" defaultPlacement = "Right" 
-                 class = "VisualStudio.VersionControl.TFS.Addin.Gui.Pads.TeamExplorerPad" _label="Team Explorer" />
-        </Extension>
-        <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/VersionControl">
-            <Section id = "Team Foundation Server" _label = "Team Foundation Server" class = "VisualStudio.VersionControl.TFS.Addin.Gui.Panels.SettingsPanel" />
-        </Extension>
-    </ExtensionModel>
+<ExtensionModel>
+
+    <!-- VersionControlSystems -->
+    <Extension path="/MonoDevelop/VersionControl/VersionControlSystems">
+        <Class class="MonoDevelop.VersionControl.TFS.TeamFoundationServerVersionControl"/>
+    </Extension>
+    
+    <!-- Commands -->
+    <Extension path = "/MonoDevelop/Ide/Commands">
+        <Category _name = "Team Foundation" id = "TeamFoundationServer">
+            <Command 
+                id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.ConnectToServer"
+                _label = "_Connect to Team Foundation Server"
+                defaultHandler = "MonoDevelop.VersionControl.TFS.Commands.ConnectToServerHandler"
+                description = "Connect to Team Foundation Server." />  
+            <Command 
+                id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.TeamExplorer"
+                _label = "_Team Explorer"
+                defaultHandler = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerHandler"
+                description = "Team Explorer." />
+            <Command 
+                id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.SourceControlExplorer"
+                _label = "_Source Control Explorer"
+                defaultHandler = "MonoDevelop.VersionControl.TFS.Commands.SourceControlExplorerHandler" />
+            <Command 
+                id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.Checkout"
+                _label = "_Checkout" 
+                description = "Check Out." />
+            <Command 
+                id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.LocateInSourceExplorer"
+                _label = "_Locate in Source Explorer"  
+                description = "Locate in Source Explorer." />
+        </Category>
+    </Extension>
+
+    <!-- Main Menu Commands -->
+    <Extension path = "/MonoDevelop/Ide/MainMenu/VersionControl">
+        <SeparatorItem insertafter="MonoDevelop.VersionControl.Commands.Annotate"/>
+        <ItemSet id = "TeamFoundationServer" _label = "Team Foundation Server" autohide="true">
+            <CommandItem id="MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.ConnectToServer" />  
+            <CommandItem id="MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.TeamExplorer" />
+            <CommandItem id="MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.SourceControlExplorer" />
+        </ItemSet>
+    </Extension>  
+
+    <!-- ProjectPad NodeExtension -->
+    <Extension path = "/MonoDevelop/Ide/Pads/ProjectPad">
+        <NodeBuilder class = "MonoDevelop.VersionControl.TFS.Extensions.TeamFoundationServerNodeExtension" insertbefore="VersionControlNodeExtension" />
+    </Extension>
+
+    <!-- ContextMenu ProjectPad -->
+    <Extension path = "/MonoDevelop/Ide/ContextMenu/ProjectPad/VersionControl">
+        <SeparatorItem insertafter="MonoDevelop.VersionControl.Commands.SolutionStatus"/>
+        <Condition id="ItemType" value="IFileItem">
+            <CommandItem id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.Checkout"/>
+        </Condition>
+        <Condition id="ItemType" value="IFileItem|IFolderItem">
+            <CommandItem id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.LocateInSourceExplorer"/>
+        </Condition>
+    </Extension>
+    
+    <!-- Pads -->
+    <Extension path = "/MonoDevelop/Ide/Pads">
+        <Pad id = "MonoDevelop.VersionControl.TFS.TeamExplorerPad" defaultLayout="Solution" defaultPlacement = "Right" 
+            class = "MonoDevelop.VersionControl.TFS.Gui.Pads.TeamExplorerPad" _label="Team Explorer" />
+    </Extension>
+    
+    <!-- Options -->
+    <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/VersionControl">
+        <Section id = "Team Foundation Server" _label = "Team Foundation Server" class = "MonoDevelop.VersionControl.TFS.Gui.Panels.SettingsPanel" />
+    </Extension>
+    
+</ExtensionModel>

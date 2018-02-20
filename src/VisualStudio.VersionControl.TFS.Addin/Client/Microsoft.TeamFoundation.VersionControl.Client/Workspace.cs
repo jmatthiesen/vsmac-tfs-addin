@@ -201,7 +201,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                                                    DeletedState deletedState,
                                                    ItemType itemType)
         {
-            return this.VersionControlService.QueryItemsExtended(this.Name, this.OwnerName, itemSpecs, deletedState, itemType);
+            return VersionControlService.QueryItemsExtended(Name, OwnerName, itemSpecs, deletedState, itemType);
         }
 
         #endregion
@@ -222,6 +222,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         public VersionControlPath GetServerPathForLocalPath(string localItem)
         {
             var mappedFolder = Folders.FirstOrDefault(f => localItem.StartsWith(f.LocalItem, StringComparison.OrdinalIgnoreCase));
+           
             if (mappedFolder == null)
                 return null;
             if (string.Equals(mappedFolder.LocalItem, localItem, StringComparison.OrdinalIgnoreCase))
@@ -229,6 +230,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             else
             {
                 string rest = TfsPath.LocalToServerPath(localItem.Substring(mappedFolder.LocalItem.Length));
+               
                 if (mappedFolder.ServerItem == VersionControlPath.RootFolder)
                     return "$" + rest;
                 else
@@ -239,8 +241,10 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         public string GetLocalPathForServerPath(VersionControlPath serverItem)
         {
             var mappedFolder = Folders.FirstOrDefault(f => serverItem.IsChildOrEqualTo(f.ServerItem));
+          
             if (mappedFolder == null)
                 return null;
+            
             if (serverItem == mappedFolder.ServerItem)
                 return mappedFolder.LocalItem;
             else
@@ -279,7 +283,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 
         void Update()
         {
-            VersionControlService.UpdateWorkspace(this.Name, this.OwnerName, this);
+            VersionControlService.UpdateWorkspace(Name, OwnerName, this);
         }
 
 
@@ -293,13 +297,13 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 
         #region Version Control Operations
 
-        public GetStatus Get(GetRequest request, GetOptions options, MessageDialogProgressMonitor monitor = null)
+        public GetStatus Get(GetRequest request, GetOptions options, ProgressMonitor monitor = null)
         {
             var requests = new List<GetRequest> { request };
             return Get(requests, options, monitor);
         }
 
-        public GetStatus Get(List<GetRequest> requests, GetOptions options, MessageDialogProgressMonitor monitor = null)
+        public GetStatus Get(List<GetRequest> requests, GetOptions options, ProgressMonitor monitor = null)
         {
             bool force = options.HasFlag(GetOptions.GetAll);
             bool noGet = options.HasFlag(GetOptions.Preview);
@@ -338,6 +342,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             {
                 var itemType = path.IsDirectory ? ItemType.Folder : ItemType.File;
                 changes.Add(new ChangeRequest(path, RequestType.Add, itemType));
+               
                 if (isRecursive && itemType == ItemType.Folder)
                 {
                     CollectPaths(path, changes);
@@ -409,10 +414,10 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             PendRename(oldPath, newPath, ItemType.Folder, out failures);
         }
 
-        public List<FilePath> Undo(List<ItemSpec> items)
+        public List<FilePath> Undo(List<ItemSpec> items, ProgressMonitor monitor = null)
         {
             var operations = VersionControlService.UndoPendChanges(this, items);
-            UndoGetOperations(operations);
+            UndoGetOperations(operations, monitor);
             RefreshPendingChanges();
             List<FilePath> undoPaths = new List<FilePath>();
         
@@ -581,20 +586,26 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         string DownloadFile(GetOperation operation, VersionControlDownloadService downloadService)
         {
             string path = string.IsNullOrEmpty(operation.TargetLocalItem) ? operation.SourceLocalItem : operation.TargetLocalItem;
+           
             if (string.IsNullOrEmpty(path))
                 return string.Empty;
+            
             if (operation.ItemType == ItemType.Folder)
             {
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
+                
                 return path;
             }
+
             if (operation.ItemType == ItemType.File)
             {
                 if (!Directory.Exists(Path.GetDirectoryName(path)))
                     Directory.CreateDirectory(Path.GetDirectoryName(path));
+                
                 return downloadService.Download(path, operation.ArtifactUri);
             }
+
             return string.Empty;
         }
 
@@ -623,7 +634,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             return new UpdateLocalVersion(operation.ItemId, operation.TargetLocalItem, operation.VersionServer);
         }
 
-        private UpdateLocalVersion ProcessGet(GetOperation operation, VersionControlDownloadService downloadService, ProcessDirection processDirection)
+        UpdateLocalVersion ProcessGet(GetOperation operation, VersionControlDownloadService downloadService, ProcessDirection processDirection)
         {
             if (processDirection == ProcessDirection.Normal)
             {
@@ -753,11 +764,13 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             }
         }
 
-        UpdateLocalVersion ProcessRename(GetOperation operation, ProcessDirection processDirection)
+        UpdateLocalVersion ProcessRename(GetOperation operation, ProcessDirection processDirection, ProgressMonitor monitor)
         {
             //If the operation is called by Repository OnMoveFile or OnMoveDirectory file/folder is moved before this method.
             //When is called by Source Exporer or By Revert command file is not moved
+           
             bool hasBeenMoved = !FileHelper.Exists(operation.SourceLocalItem) && FileHelper.Exists(operation.TargetLocalItem);
+
             if (!hasBeenMoved)
             {
                 var found = false;
@@ -771,6 +784,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                         found = true;
                         FileHelper.FileMove(operation.SourceLocalItem, operation.TargetLocalItem);
                         ProjectMoveFile(project, operation.SourceLocalItem, operation.TargetLocalItem);                  
+                        project.SaveAsync(monitor);
                     }
                 }
                 else
@@ -814,22 +828,25 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             DeleteKeep
         }
 
-        void ProcessGetOperations(List<GetOperation> getOperations, ProcessType processType, MessageDialogProgressMonitor monitor = null)
+        void ProcessGetOperations(List<GetOperation> getOperations, ProcessType processType, ProgressMonitor monitor = null)
         {
             if (getOperations == null || getOperations.Count == 0)
                 return;
          
             var downloadService = VersionControlService.Collection.GetService<VersionControlDownloadService>();
-           
+
+            ProgressMonitor progress = monitor ?? new MessageDialogProgressMonitor(false, false, false);
+
             try
             {
+                progress.BeginTask("Process", getOperations.Count);
                 UpdateLocalVersionQueue updates = new UpdateLocalVersionQueue(this);
 
                 foreach (var operation in getOperations)
                 {
                     try
                     {
-                        monitor?.BeginTask(processType + " " + operation.TargetLocalItem, 1);
+                        progress.BeginTask(processType + " " + operation.TargetLocalItem, 1);
              
                         UpdateLocalVersion update = null;
 
@@ -842,11 +859,10 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                                 update = ProcessEdit(operation, downloadService, ProcessDirection.Normal);
                                 break;
                             case ProcessType.Get:
-                                monitor?.Log.WriteLine("Get: " + operation.VersionServer.ToString());
                                 update = ProcessGet(operation, downloadService, ProcessDirection.Normal);
                                 break;
                             case ProcessType.Rename:
-                                update = ProcessRename(operation, ProcessDirection.Normal);
+                                update = ProcessRename(operation, ProcessDirection.Normal, progress);
                                 break;
                             case ProcessType.Delete:
                             case ProcessType.DeleteKeep:
@@ -862,65 +878,83 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                     }
                     finally
                     {
-                        monitor?.EndTask();
+                        progress.EndTask();
                     }
                 }
 
                 updates.Flush();
-                monitor?.EndTask();
+                progress.EndTask();
             }
             finally
             {
-                if (monitor != null)
-                    monitor.Dispose();
+                if (monitor == null && progress != null)
+                    progress.Dispose();
             }
         }
 
-        void UndoGetOperations(List<GetOperation> getOperations)
+        void UndoGetOperations(List<GetOperation> getOperations, ProgressMonitor monitor = null)
         {
             if (getOperations == null || getOperations.Count == 0)
                 return;
-
+            
             var downloadService = VersionControlService.Collection.GetService<VersionControlDownloadService>();
-
-
-            UpdateLocalVersionQueue updates = new UpdateLocalVersionQueue(this);
-            foreach (var operation in getOperations)
+            ProgressMonitor progress = monitor ?? new MessageDialogProgressMonitor(false, false, false);
+            try
             {
-                string stepName = operation.ChangeType == ChangeType.None ? "Undo " : operation.ChangeType.ToString();
-                UpdateLocalVersion update = null;
-
-                if (operation.IsAdd)
+                progress.BeginTask("Undo", getOperations.Count);
+                UpdateLocalVersionQueue updates = new UpdateLocalVersionQueue(this);
+                foreach (var operation in getOperations)
                 {
-                    update = ProcessAdd(operation, ProcessDirection.Undo);
-                    if (update != null)
-                        updates.QueueUpdate(update);
-                    continue;
+                    try
+                    {
+                        string stepName = operation.ChangeType == ChangeType.None ? "Undo " : operation.ChangeType.ToString();
+                        progress.BeginTask(stepName + " " + operation.TargetLocalItem, 1);
+                        UpdateLocalVersion update = null;
+
+                        if (operation.IsAdd)
+                        {
+                            update = ProcessAdd(operation, ProcessDirection.Undo);
+                            if (update != null)
+                                updates.QueueUpdate(update);
+                            continue;
+                        }
+
+                        if (operation.IsDelete)
+                        {
+                            update = ProcessDelete(operation, downloadService, ProcessDirection.Undo, ProcessType.Delete);
+                            if (update != null)
+                                updates.QueueUpdate(update);
+                        }
+
+                        if (operation.IsRename)
+                        {
+                            update = ProcessRename(operation, ProcessDirection.Undo, progress);
+                          
+                            if (update != null)
+                                updates.QueueUpdate(update);
+                        }
+                        if (operation.IsEdit || operation.IsEncoding)
+                        {
+                            update = ProcessEdit(operation, downloadService, ProcessDirection.Undo);
+
+                            if (update != null)
+                                updates.QueueUpdate(update);
+                        }
+                    }
+                    finally
+                    {
+                        progress.EndTask();
+                    }
                 }
 
-                if (operation.IsDelete)
-                {
-                    update = ProcessDelete(operation, downloadService, ProcessDirection.Undo, ProcessType.Delete);
-                    if (update != null)
-                        updates.QueueUpdate(update);
-                }
-
-                if (operation.IsRename)
-                {
-                    update = ProcessRename(operation, ProcessDirection.Undo);
-
-                    if (update != null)
-                        updates.QueueUpdate(update);
-                }
-                if (operation.IsEdit || operation.IsEncoding)
-                {
-                    update = ProcessEdit(operation, downloadService, ProcessDirection.Undo);
-                    if (update != null)
-                        updates.QueueUpdate(update);
-                }
+                updates.Flush();
+                progress.EndTask();
             }
-
-            updates.Flush();
+            finally
+            {
+                if (monitor == null && progress != null)
+                    progress.Dispose();
+            }
         }
 
         #endregion

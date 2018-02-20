@@ -2,7 +2,7 @@
 using MonoDevelop.Core;
 using Xwt;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Gui.Widgets
+namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
     public class AddVisualStudioTeamServicesWidget : VBox
     {

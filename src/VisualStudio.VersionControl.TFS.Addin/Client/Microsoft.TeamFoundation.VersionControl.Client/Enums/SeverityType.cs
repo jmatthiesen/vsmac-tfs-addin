@@ -38,4 +38,3 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Enums
         Warning
     }
 }
-

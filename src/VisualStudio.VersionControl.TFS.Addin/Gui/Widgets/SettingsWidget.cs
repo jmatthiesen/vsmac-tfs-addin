@@ -1,7 +1,7 @@
 ﻿using Xwt;
 using MonoDevelop.Core;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Gui.Widgets
+namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
     public class SettingsWidget : VBox
     {

@@ -34,7 +34,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
     enum Direction
     {
         Asc,
-        Desc,
+        Desc
     }
 
     class OrderByNode

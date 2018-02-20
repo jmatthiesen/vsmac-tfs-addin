@@ -1,7 +1,7 @@
 ﻿using System;
 using MonoDevelop.Core;
 
-namespace VisualStudio.VersionControl.TFS.Addin.Helpers
+namespace MonoDevelop.VersionControl.TFS.Helpers
 {
     public class CredentialsHelper
     {

@@ -37,27 +37,27 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 {
     public class WorkItemManager
     {
-        private readonly ProjectCollection collection;
-        private readonly ClientService clientService;
+        readonly ProjectCollection collection;
+        readonly ClientService clientService;
 
         public WorkItemManager(ProjectCollection collection)
         {
             this.collection = collection;
-            this.clientService = collection.GetService<ClientService>();
+            clientService = collection.GetService<ClientService>();
             Init();
         }
 
-        private void Init()
+        void Init()
         {
-            CachedMetaData.Instance.Init(this.clientService);
+            CachedMetaData.Instance.Init(clientService);
             var constants = CachedMetaData.Instance.Constants;
             var userNameBuilder = new StringBuilder();
-            var server = this.collection.Server as INetworkServer;
+            var server = collection.Server as INetworkServer;
             if (server != null && !string.IsNullOrEmpty(server.Credentials.Domain))
             {
                 userNameBuilder.Append(server.Credentials.Domain + "\\");
             }
-            userNameBuilder.Append(this.collection.Server.UserName);
+            userNameBuilder.Append(collection.Server.UserName);
             var userName = userNameBuilder.ToString();
             var me = constants.FirstOrDefault(c => string.Equals(c.Value, userName, StringComparison.OrdinalIgnoreCase));
             if (me != null)
@@ -75,14 +75,14 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
         public List<StoredQuery> GetPublicQueries(Project project)
         {
             var list = clientService.GetStoredQueries(project).Where(q => q.IsPublic && !q.IsDeleted).OrderBy(q => q.QueryName).ToList();
-            list.ForEach(sq => sq.Collection = this.collection);
+            list.ForEach(sq => sq.Collection = collection);
             return list;
         }
 
         public List<StoredQuery> GetMyQueries(Project project)
         {
             var list = clientService.GetStoredQueries(project).Where(q => string.Equals(WorkItemsContext.MySID, q.Owner) && !q.IsDeleted).ToList();
-            list.ForEach(sq => sq.Collection = this.collection);
+            list.ForEach(sq => sq.Collection = collection);
             return list;
         }
 
@@ -93,10 +93,10 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
                 switch (workItem.Value)
                 {
                     case WorkItemCheckinAction.Associate:
-                        this.clientService.Associate(workItem.Key, changeSet, comment);
+                        clientService.Associate(workItem.Key, changeSet, comment);
                         break;
                     case WorkItemCheckinAction.Resolve:
-                        this.clientService.Resolve(workItem.Key, changeSet, comment);
+                        clientService.Resolve(workItem.Key, changeSet, comment);
                         break;
                     default:
                         break;
