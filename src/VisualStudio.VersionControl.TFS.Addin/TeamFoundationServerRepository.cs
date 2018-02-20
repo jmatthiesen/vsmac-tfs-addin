@@ -45,7 +45,7 @@ namespace MonoDevelop.VersionControl.TFS
         {
             foreach (var ws in GroupFilesPerWorkspace(localPaths))
             {
-                ws.Key.PendAdd(ws.ToList(), recurse);
+                TeamFoundationServerClient.Instance.PendAdd(ws.Key, ws.ToList(), recurse);
             }
 
             _cache.RefreshItems(localPaths);

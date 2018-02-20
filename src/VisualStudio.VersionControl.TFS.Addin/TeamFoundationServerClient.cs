@@ -4,7 +4,6 @@ using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.TeamFoundation.VersionControl.Client.Enums;
 using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using MonoDevelop.Core;
-using MonoDevelop.Ide.ProgressMonitoring;
 using MonoDevelop.VersionControl.TFS.Services;
 
 namespace MonoDevelop.VersionControl.TFS
@@ -118,6 +117,11 @@ namespace MonoDevelop.VersionControl.TFS
             var result = workspace.CheckIn(changes, comment, null);
 
             return result;
+        }
+
+        public void PendAdd(Workspace workspace, List<FilePath> paths, bool isRecursive)
+        {
+            workspace.PendAdd(paths, isRecursive);
         }
 
         public void PendRenameFile(Workspace workspace, string oldPath, string newPath, out List<Failure> failures)
