@@ -197,6 +197,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _listView.ButtonPressEvent += OnListViewMouseClick;
         }
 
+        void FireFilesChanged(List<ExtendedItem> items)
+        {
+            FileService.NotifyFilesChanged(items.Select(i => (FilePath)_currentWorkspace.GetLocalPathForServerPath(i.ServerPath)), true);
+        }
+
+        void FireFilesRemoved(List<ExtendedItem> items)
+        {
+            FileService.NotifyFilesRemoved(items.Select(i => (FilePath)_currentWorkspace.GetLocalPathForServerPath(i.ServerPath)));
+        }
+
         void Refresh(List<ExtendedItem> items)
         {
             if (items.Any())
@@ -718,6 +728,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                         CheckOut(checkOutItems);
                     }
 
+                    FireFilesChanged(checkOutItems);
                     Refresh(items);
                 };
 
@@ -753,6 +764,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                         }
                     }
 
+                    FireFilesChanged(checkInItems);
                     Refresh(items);
                 };
 
@@ -785,7 +797,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                         progress.ReportSuccess("Finish locking.");
                     }
 
-                    TeamFoundationServerFileHelper.NotifyFilesChanged(_currentWorkspace, itemsToLock);
+                    FireFilesChanged(lockItems);
                     Refresh(items);
                 };
 
@@ -807,7 +819,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                     TeamFoundationServerClient.Instance.LockFolders(_currentWorkspace, folders, LockLevel.None);
                     TeamFoundationServerClient.Instance.LockFiles(_currentWorkspace, files, LockLevel.None);
 
-                    TeamFoundationServerFileHelper.NotifyFilesChanged(_currentWorkspace, unLockItems);
+                    FireFilesChanged(unLockItems);
                     Refresh(items);
                 };
 
@@ -842,7 +854,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                                 }
                             }      
 
-                            TeamFoundationServerFileHelper.NotifyFilesChanged(_currentWorkspace, new List<ExtendedItem> { itemToRename });
+                            FireFilesChanged(new List<ExtendedItem> { itemToRename });
                             Refresh(items);
                         }
                     }
@@ -874,7 +886,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
                             TeamFoundationServerClient.Instance.UndoChanges(_currentWorkspace, itemSpecs);
 
-                            TeamFoundationServerFileHelper.NotifyFilesRemoved(_currentWorkspace, undoItems);
+                            FireFilesChanged(undoItems);
                             Refresh(items);
                         }
                     }
@@ -905,7 +917,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                             failuresDialog.Show();
                         }
 
-                        TeamFoundationServerFileHelper.NotifyFilesRemoved(_currentWorkspace, items);
+                        FireFilesRemoved(items);
                         Refresh(items);
                     }
                 };

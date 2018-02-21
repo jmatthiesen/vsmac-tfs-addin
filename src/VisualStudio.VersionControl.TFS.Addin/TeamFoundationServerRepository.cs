@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.TeamFoundation.VersionControl.Client.Enums;
@@ -41,6 +42,51 @@ namespace MonoDevelop.VersionControl.TFS
             return workspace.GetItemContent(item);
         }
 
+        public override bool RequestFileWritePermission(params FilePath[] paths)
+        {
+            using (var progress = VersionControl.VersionControlService.GetProgressMonitor("Edit"))
+            {
+                foreach (var path in paths)
+                {
+                    if (!File.Exists(path) || !File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))
+                        continue;
+                  
+                    progress.Log.WriteLine("Start editing item: " + path);
+                   
+                    try
+                    {
+                        var workspace = GetWorkspaceByLocalPath(path);
+                        var failures = workspace.PendEdit(new List<FilePath> { path }, RecursionType.None, TeamFoundationServerClient.Settings.CheckOutLockLevel);
+                       
+                        if (failures.Any(f => f.SeverityType == SeverityType.Error))
+                        {
+                            foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
+                            {
+                                progress.ReportError(failure.Code, new Exception(failure.Message));
+                            }
+                        }
+                        else
+                        {
+                            _cache.RefreshItem(path);
+                            progress.ReportSuccess("Finish editing item.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        progress.ReportError(ex.Message, ex);
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public void Resolve(Conflict conflict, ResolutionType resolutionType)
+        {
+            conflict.Workspace.Resolve(conflict, resolutionType);
+        }
+
         protected override void OnAdd(FilePath[] localPaths, bool recurse, ProgressMonitor monitor)
         {
             foreach (var ws in GroupFilesPerWorkspace(localPaths))
@@ -80,7 +126,31 @@ namespace MonoDevelop.VersionControl.TFS
 
         protected override void OnCommit(ChangeSet changeSet, ProgressMonitor monitor)
         {
-            throw new NotImplementedException();
+            var groupByWorkspace = from it in changeSet.Items
+                                   let workspace = GetWorkspaceByLocalPath(it.LocalPath)
+                                   group it by workspace into wg
+                                   select wg;
+
+            foreach (var workspace in groupByWorkspace)
+            {
+                var workspace1 = workspace;
+                var changes = workspace.Key.PendingChanges.Where(pc => workspace1.Any(wi => string.Equals(pc.LocalItem, wi.LocalPath))).ToList();
+
+                var result = TeamFoundationServerClient.Instance.CheckIn(workspace.Key, changes, changeSet.GlobalComment);
+
+                if (result.Failures != null && result.Failures.Any(x => x.SeverityType == SeverityType.Error))
+                {
+                    MessageService.ShowError("Commit failed!", string.Join(Environment.NewLine, result.Failures.Select(f => f.Message)));
+                    break;
+                }
+            }
+
+            foreach (var file in changeSet.Items.Where(i => !i.IsDirectory))
+            {
+                FileService.NotifyFileChanged(file.LocalPath);
+            }
+
+            _cache.RefreshItems(changeSet.Items.Select(i => i.LocalPath));
         }
 
         protected override void OnDeleteDirectories(FilePath[] localPaths, bool force, ProgressMonitor monitor, bool keepLocal)
@@ -279,7 +349,7 @@ namespace MonoDevelop.VersionControl.TFS
                 var workspace = GetWorkspaceByLocalPath(path);
 
                 TeamFoundationServerClient.Instance.Get(workspace, new GetRequest(path, RecursionType.None, VersionSpec.Latest), GetOptions.GetAll);
-                var failures = workspace.PendEdit(new List<FilePath> { path }, RecursionType.None, CheckOutLockLevel.CheckOut);
+                var failures = workspace.PendEdit(new List<FilePath> { path }, RecursionType.None, TeamFoundationServerClient.Settings.CheckOutLockLevel);
 
                 if (failures.Any())
                 {
@@ -313,6 +383,18 @@ namespace MonoDevelop.VersionControl.TFS
             {
                 workspace.RefreshPendingChanges();
             }
+        }
+
+        internal List<Conflict> GetConflicts(List<FilePath> paths)
+        {
+            List<Conflict> conflicts = new List<Conflict>();
+           
+            foreach (var workspacePaths in GroupFilesPerWorkspace(paths))
+            {
+                conflicts.AddRange(workspacePaths.Key.GetConflicts(workspacePaths));
+            }
+
+            return conflicts;
         }
 
         List<IGrouping<Workspace, FilePath>> GroupFilesPerWorkspace(IEnumerable<FilePath> filePaths)

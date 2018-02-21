@@ -6,6 +6,8 @@
         TeamExplorer,
         SourceControlExplorer,
         Checkout,
-        LocateInSourceExplorer
+        LocateInSourceExplorer,
+        ResolveConflicts,
+        ResolveConflictsMenu
     }
 }

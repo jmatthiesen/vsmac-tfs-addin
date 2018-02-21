@@ -99,17 +99,13 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             }
 
             var result = VersionControlService.CheckIn(this, changes, comment, workItems);
-          
-            if (result.ChangeSet > 0)
-            {
-                WorkItemManager wm = new WorkItemManager(this.ProjectCollection);
-                wm.UpdateWorkItems(result.ChangeSet, workItems, comment);
-            }
 
             RefreshPendingChanges();
             ProcessGetOperations(result.LocalVersionUpdates, ProcessType.Get);
           
-            foreach (var file in changes.Where(ch => ch.ItemType == ItemType.File && !string.IsNullOrEmpty(ch.LocalItem)).Select(ch => ch.LocalItem).Distinct())
+            foreach (var file in changes
+                     .Where(ch => ch.ItemType == ItemType.File && !string.IsNullOrEmpty(ch.LocalItem))
+                     .Select(ch => ch.LocalItem).Distinct())
             {
                 MakeFileReadOnly(file);
             }
@@ -286,7 +282,6 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             VersionControlService.UpdateWorkspace(Name, OwnerName, this);
         }
 
-
         public void ResetDownloadStatus(int itemId)
         {
             var updateVer = new UpdateLocalVersion(itemId, string.Empty, 0);
@@ -381,11 +376,14 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         {
             if (paths.Count == 0)
                 return new List<Failure>();
+           
             LockLevel lockLevel = LockLevel.None;
+
             if (checkOutlockLevel == CheckOutLockLevel.CheckOut)
                 lockLevel = LockLevel.CheckOut;
             else if (checkOutlockLevel == CheckOutLockLevel.CheckIn)
                 lockLevel = LockLevel.Checkin;
+
             var changes = paths.Select(p => new ChangeRequest(p, RequestType.Edit, ItemType.File, recursionType, lockLevel, VersionSpec.Latest)).ToList();
             List<Failure> failures;
             var getOperations = VersionControlService.PendChanges(this, changes, out failures);

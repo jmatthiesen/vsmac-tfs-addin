@@ -42,7 +42,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         const string NewLine = "\r\n";
         const string Boundary = "----------------------------8e5m2D6l5Q4h6";
         const int ChunkSize = 512 * 1024; //Chunk Size 512 K
-        private static readonly string uncompressedContentType = "application/octet-stream";
+        static readonly string uncompressedContentType = "application/octet-stream";
 //        private static readonly string compressedContentType = "application/gzip";
 
         class UploadServiceResolver : IServiceResolver
@@ -97,7 +97,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             destination.Flush();
         }
 
-        private void CopyBytes(byte[] source, Stream destination)
+        void CopyBytes(byte[] source, Stream destination)
         {
             using (var memorySource = new MemoryStream(source))
             {
@@ -123,16 +123,17 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             }
         }
 
-        private void UploadPart(string fileName, string workspaceName, string workspaceOwner, int fileSize, string fileHash, string range, string contentType, byte[] bytes, int copyBytes)
+        void UploadPart(string fileName, string workspaceName, string workspaceOwner, int fileSize, string fileHash, string range, string contentType, byte[] bytes, int copyBytes)
         {
             var request = (HttpWebRequest)WebRequest.Create(this.Url);
             request.Method = "POST";
-            if (this.Collection.Server is INetworkServer)
+
+            if (Collection.Server is INetworkServer)
             {
                 var server = (INetworkServer)this.Collection.Server;
                 request.Credentials = server.Credentials;
             }
-            else if (this.Collection.Server is IAuthServer) 
+            else if (Collection.Server is IAuthServer)
             {
                 var server = (IAuthServer)this.Collection.Server;
                 request.Headers.Add(HttpRequestHeader.Authorization, server.AuthString);
@@ -141,6 +142,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             {
                 throw new Exception("Known server");
             }
+
             request.AllowWriteStreamBuffering = true;
             request.ContentType = "multipart/form-data; boundary=" + Boundary.Substring(2);
 
@@ -158,13 +160,11 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                 contentBytes = stream.ToArray();
             }
 
-            //request.ContentLength = contentBytes.Length;
-
             using (var requestStream = request.GetRequestStream())
             {
                 CopyBytes(contentBytes, requestStream);
             }
-                           
+
             request.GetResponse();
         }
 
@@ -223,10 +223,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             builder.Append("{7}");
             builder.AppendLine();
             builder.AppendLine();
-//			builder.Append("{8}");
-//			builder.AppendLine();
-//			builder.Append("----------------------------8e5m2D6l5Q4h6");
-//			builder.AppendLine("--");
+
             return builder.ToString();
         }
 
@@ -239,6 +236,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                     stream.Write(input, 0, input.Length);
                     stream.Flush();
                 }
+
                 return memoryStream.ToArray();
             }
         }
@@ -261,6 +259,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             builder.Append('/');
             builder.Append(length);
             builder.AppendLine();
+
             return builder.ToString();
         }
     }

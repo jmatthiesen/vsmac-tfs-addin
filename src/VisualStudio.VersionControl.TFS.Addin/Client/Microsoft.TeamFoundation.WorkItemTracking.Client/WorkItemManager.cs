@@ -88,18 +88,21 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 
         public void UpdateWorkItems(int changeSet, Dictionary<int, WorkItemCheckinAction> workItems, string comment)
         {
-            foreach (var workItem in workItems)
+            if (workItems.Any())
             {
-                switch (workItem.Value)
+                foreach (var workItem in workItems)
                 {
-                    case WorkItemCheckinAction.Associate:
-                        clientService.Associate(workItem.Key, changeSet, comment);
-                        break;
-                    case WorkItemCheckinAction.Resolve:
-                        clientService.Resolve(workItem.Key, changeSet, comment);
-                        break;
-                    default:
-                        break;
+                    switch (workItem.Value)
+                    {
+                        case WorkItemCheckinAction.Associate:
+                            clientService.Associate(workItem.Key, changeSet, comment);
+                            break;
+                        case WorkItemCheckinAction.Resolve:
+                            clientService.Resolve(workItem.Key, changeSet, comment);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }

@@ -75,7 +75,8 @@ namespace Microsoft.TeamFoundation.Client.Services
             SoapInvoker invoker = new SoapInvoker(this);
             invoker.CreateEnvelope("ListProjects");
             var resultEl = invoker.InvokeResult();
-            return new List<ProjectInfo>(resultEl.Elements(this.MessageNs + "ProjectInfo").Select(x => ProjectInfo.FromXml(Collection, x)));
+
+            return new List<ProjectInfo>(resultEl.Elements(MessageNs + "ProjectInfo").Select(x => ProjectInfo.FromXml(Collection, x)));
         }
 
         public List<ProjectInfo> ListAllProjects()
@@ -83,7 +84,8 @@ namespace Microsoft.TeamFoundation.Client.Services
             SoapInvoker invoker = new SoapInvoker(this);
             invoker.CreateEnvelope("ListAllProjects");
             var resultEl = invoker.InvokeResult();
-            return new List<ProjectInfo>(resultEl.Elements(this.MessageNs + "ProjectInfo").Select(x => ProjectInfo.FromXml(Collection, x)));
+
+            return new List<ProjectInfo>(resultEl.Elements(MessageNs + "ProjectInfo").Select(x => ProjectInfo.FromXml(Collection, x)));
         }
     }
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.TeamFoundation.Client;
+using Microsoft.TeamFoundation.VersionControl.Client.Enums;
 using MonoDevelop.Core;
 using MonoDevelop.VersionControl.TFS.Helpers;
 
@@ -12,13 +13,24 @@ namespace MonoDevelop.VersionControl.TFS.Services
     public class SettingsService
     {
         string ConfigFile { get { return UserProfile.Current.ConfigDir.Combine("VisualStudio.TFS.config"); } }
-      
+     
+        CheckOutLockLevel _checkOutLockLevel;
         List<BaseTeamFoundationServer> _registredServers;
         Dictionary<string, string> _activeWorkspaces;
 
         public SettingsService()
         {
             Init();
+        }
+
+        public CheckOutLockLevel CheckOutLockLevel
+        {
+            get { return _checkOutLockLevel; }
+            set
+            {
+                _checkOutLockLevel = value;
+                SaveSettings();
+            }
         }
 
         public List<BaseTeamFoundationServer> RegistredServers
@@ -133,6 +145,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                 doc.Add(new XElement("TFSRoot"));
                 doc.Root.Add(new XElement("Servers", _registredServers.Select(x => x.ToLocalXml())));
                 doc.Root.Add(new XElement("Workspaces", _activeWorkspaces.Select(a => new XElement("Workspace", new XAttribute("Id", a.Key), new XAttribute("Name", a.Value)))));
+                doc.Root.Add(new XElement("CheckOutLockLevel", (int)CheckOutLockLevel));
                 doc.Save(file);
                 file.Close();
             }

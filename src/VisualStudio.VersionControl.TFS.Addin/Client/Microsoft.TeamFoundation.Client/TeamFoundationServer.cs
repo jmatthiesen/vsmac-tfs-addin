@@ -66,13 +66,13 @@ namespace Microsoft.TeamFoundation.Client
         {
             var serverElement = new XElement("Server", 
                                     new XAttribute("Type", (int)ServerType.TFS),
-                                    new XAttribute("Name", this.Name),
-                                    new XAttribute("Url", this.Uri),
-                                    new XAttribute("Domain", this.Credentials.Domain),
-                                    new XAttribute("UserName", this.Credentials.UserName),
-                                    this.ProjectCollections.Select(p => p.ToLocalXml()));
+                                    new XAttribute("Name", Name),
+                                    new XAttribute("Url", Uri),
+                                    new XAttribute("Domain", Credentials.Domain),
+                                    new XAttribute("UserName", Credentials.UserName),
+                                    ProjectCollections.Select(p => p.ToLocalXml()));
             if (IsPasswordSavedInXml)
-                serverElement.Add(new XAttribute("Password", this.Credentials.Password));
+                serverElement.Add(new XAttribute("Password", Credentials.Password));
             return serverElement;
         }
 
