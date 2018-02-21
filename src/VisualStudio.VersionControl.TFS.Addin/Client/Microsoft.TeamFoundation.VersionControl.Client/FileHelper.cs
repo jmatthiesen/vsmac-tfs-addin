@@ -54,6 +54,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         {
             if (!File.Exists(source))
                 return false;
+            
             if (!overrideDetination && File.Exists(destination))
                 return false;
             try
@@ -65,9 +66,11 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                     flag = true;
                 }
                 File.Move(source, destination);
+
                 if (flag)
                     FileService.NotifyFileChanged(destination);
                 FileService.NotifyFileRemoved(source);
+
                 return true;
             }
             catch

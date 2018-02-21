@@ -23,6 +23,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System;
 using System.Net;
 using System.Xml.Linq;
@@ -56,9 +57,9 @@ namespace Microsoft.TeamFoundation.Client
         public SoapInvoker(TFSService service)
         {
             this.service = service;
-            this.url = service.Url;
-            this.messagegNs = service.MessageNs;
-            this.document = new XDocument(
+            url = service.Url;
+            messagegNs = service.MessageNs;
+            document = new XDocument(
                 new XDeclaration("1.0", "utf-8", "no"),
                 new XElement(soapNs + "Envelope", 
                     new XAttribute(XNamespace.Xmlns + "xsi", xsiNs),
@@ -70,7 +71,8 @@ namespace Microsoft.TeamFoundation.Client
         {
             this.methodName = methodName;
             var innerMessage = new XElement(messagegNs + methodName);
-            this.document.Root.Add(new XElement(soapNs + "Body", innerMessage));
+            document.Root.Add(new XElement(soapNs + "Body", innerMessage));
+          
             return innerMessage;
         }
 
@@ -79,23 +81,25 @@ namespace Microsoft.TeamFoundation.Client
             this.methodName = methodName;
             var headerMessage = new XElement(messagegNs + headerName);
             var bodyMessage = new XElement(messagegNs + methodName);
-            this.document.Root.Add(new XElement(soapNs + "Header", headerMessage));
-            this.document.Root.Add(new XElement(soapNs + "Body", bodyMessage));
+            document.Root.Add(new XElement(soapNs + "Header", headerMessage));
+            document.Root.Add(new XElement(soapNs + "Body", bodyMessage));
+         
             return new SoapEnvelope { Header = headerMessage, Body = bodyMessage };
         }
 
         public XElement MethodResultExtractor(XElement responseElement)
         {
-            return responseElement.Element(this.messagegNs + (this.methodName + "Result"));
+            return responseElement.Element(messagegNs + (methodName + "Result"));
         }
 
         public XElement InvokeResult()
         {
             var responseElement = InvokeResponse();
+          
             return MethodResultExtractor(responseElement);
         }
 
-        private FileStream GetLogFileStream()
+        FileStream GetLogFileStream()
         {
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "TFS.VersionControl.Debug.log");
             return File.Open(path, FileMode.OpenOrCreate, FileAccess.Write);
@@ -106,7 +110,7 @@ namespace Microsoft.TeamFoundation.Client
             var logBuilder = new StringBuilder();
             logBuilder.AppendLine("Date: " + DateTime.Now.ToString("s"));
             logBuilder.AppendLine("Request:");
-            logBuilder.AppendLine(this.ToString());
+            logBuilder.AppendLine(ToString());
 
             try
             {
@@ -134,7 +138,7 @@ namespace Microsoft.TeamFoundation.Client
                 request.ContentType = "text/xml; charset=utf-8";
                 request.Headers["SOAPAction"] = messagegNs.NamespaceName.TrimEnd('/') + '/' + this.methodName;
 
-                this.document.Save(request.GetRequestStream());
+                document.Save(request.GetRequestStream());
 
                 using (var response = (HttpWebResponse)request.GetResponse())
                 {
@@ -203,6 +207,7 @@ namespace Microsoft.TeamFoundation.Client
         {
             var builder = new StringBuilder();
             builder.Append(document.ToString());
+
             return builder.ToString();
         }
     }

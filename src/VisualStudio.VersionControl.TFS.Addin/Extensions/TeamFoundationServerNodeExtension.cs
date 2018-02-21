@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using MonoDevelop.Components.Commands;
+using MonoDevelop.Core;
 using MonoDevelop.Ide.Gui.Components;
 using MonoDevelop.Ide.Gui.Pads.ProjectPad;
 using MonoDevelop.Projects;
@@ -125,6 +127,73 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
                     return;
                 }
             }
+        }
+
+        [CommandHandler(TeamExplorerCommands.ResolveConflicts)]
+        protected void OnResolveConflicts()
+        {
+            var items = GetItems(false);
+
+            if (items.Count == 0)
+                return;
+            
+            var item = items[0];
+            var repo = (TeamFoundationServerRepository)item.Repository; 
+            ResolveConflictsView.Open(repo, GetWorkingPaths(item));
+        }
+
+        [CommandUpdateHandler(TeamExplorerCommands.ResolveConflicts)]
+        protected void UpdateResolveConflicts(CommandInfo commandInfo)
+        {
+            if (VersionControlService.IsGloballyDisabled)
+            {
+                commandInfo.Visible = false;
+                return;
+            }
+
+            var items = GetItems(false);
+           
+            if (items.Count == 0)
+            {
+                commandInfo.Visible = false;
+                return;
+            }
+
+            var item = items[0];
+            var repo = item.Repository as TeamFoundationServerRepository;
+           
+            if (repo == null)
+            {
+                commandInfo.Visible = false;
+                return;
+            }
+
+            commandInfo.Visible = true;
+        }
+
+        List<FilePath> GetWorkingPaths(VersionControlItem item)
+        {
+            List<FilePath> paths = new List<FilePath>();
+            var solution = item.WorkspaceObject as Solution;
+          
+            if (solution != null)
+            {
+                paths.Add(solution.BaseDirectory);
+                foreach (var path in solution.GetItemFiles(true))
+                {
+                    if (!path.IsChildPathOf(solution.BaseDirectory))
+                    {
+                        paths.Add(path);
+                    }
+                }
+            }
+            else
+            {
+                var project = (Project)item.WorkspaceObject;
+                paths.Add(project.BaseDirectory);
+            }
+
+            return paths;
         }
     }
 }

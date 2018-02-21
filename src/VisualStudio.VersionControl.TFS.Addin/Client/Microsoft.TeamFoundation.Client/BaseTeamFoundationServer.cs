@@ -57,6 +57,7 @@ namespace Microsoft.TeamFoundation.Client
                 return false;
             if (ReferenceEquals(this, other))
                 return true;
+          
             return other.Uri == Uri;
         }
 
@@ -71,6 +72,7 @@ namespace Microsoft.TeamFoundation.Client
             var cast = obj as BaseTeamFoundationServer;
             if (cast == null)
                 return false;
+          
             return Equals(cast);
         }
 

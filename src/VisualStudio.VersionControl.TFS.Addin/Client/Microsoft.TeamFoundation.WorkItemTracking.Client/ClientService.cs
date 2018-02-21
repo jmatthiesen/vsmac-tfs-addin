@@ -3,8 +3,9 @@
 //
 // Author:
 //       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
+//       Javier Suárez Ruiz  <javiersuarezruiz@hotmail.com>
 //
-// Copyright (c) 2013 Ventsislav Mladenov
+// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -71,6 +72,8 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
                 return "http://schemas.microsoft.com/TeamFoundation/2005/06/WorkItemTracking/ClientServices/03";
             }
         }
+
+        public override Uri Url => new Uri(base.Url.OriginalString.Replace("TeamFoundation", string.Empty));
 
         #endregion
 

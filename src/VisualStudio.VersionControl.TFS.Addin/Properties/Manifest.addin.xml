@@ -5,6 +5,11 @@
     <Extension path="/MonoDevelop/VersionControl/VersionControlSystems">
         <Class class="MonoDevelop.VersionControl.TFS.TeamFoundationServerVersionControl"/>
     </Extension>
+
+    <!-- Commit Dialog -->
+    <Extension path = "/MonoDevelop/VersionControl/CommitDialogExtensions">
+        <Class class="MonoDevelop.VersionControl.TFS.Extensions.TeamFoundationServerCommitDialogExtension" />
+    </Extension>
     
     <!-- Commands -->
     <Extension path = "/MonoDevelop/Ide/Commands">
@@ -31,6 +36,13 @@
                 id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.LocateInSourceExplorer"
                 _label = "_Locate in Source Explorer"  
                 description = "Locate in Source Explorer." />
+            <Command id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.ResolveConflicts"
+                _label = "_Resolve Conflicts"
+                description = "Resolve Conflicts."/>
+            <Command id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.ResolveConflictsMenu"
+                _label = "_Resolve Conflicts"
+                defaultHandler = "MonoDevelop.VersionControl.TFS.Commands.ResolveConflictsHandler"
+                description = "Resolve Conflicts."/>
         </Category>
     </Extension>
 
@@ -41,6 +53,8 @@
             <CommandItem id="MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.ConnectToServer" />  
             <CommandItem id="MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.TeamExplorer" />
             <CommandItem id="MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.SourceControlExplorer" />
+            <SeparatorItem/>
+            <CommandItem id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.ResolveConflictsMenu" /> 
         </ItemSet>
     </Extension>  
 
@@ -57,6 +71,9 @@
         </Condition>
         <Condition id="ItemType" value="IFileItem|IFolderItem">
             <CommandItem id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.LocateInSourceExplorer"/>
+        </Condition>   
+        <Condition id="ItemType" value="Solution|Project">
+            <CommandItem id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.ResolveConflicts" />
         </Condition>
     </Extension>
     

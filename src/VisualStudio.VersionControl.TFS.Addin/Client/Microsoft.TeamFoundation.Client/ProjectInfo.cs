@@ -45,6 +45,7 @@ namespace Microsoft.TeamFoundation.Client
             {
                 if (!string.IsNullOrEmpty(Uri) && Uri.Length > 36)
                     return Uri.Remove(0, 36); //Remove vstfs:///Classification/TeamProject/
+              
                 return string.Empty;
             }
         }
@@ -59,6 +60,7 @@ namespace Microsoft.TeamFoundation.Client
             projectInfo.Uri = element.Element(nameSpace + "Uri").Value;
             projectInfo.Status = (ProjectState)Enum.Parse(typeof(ProjectState), element.Element(nameSpace + "Status").Value);
             projectInfo.Collection = collection;
+          
             return projectInfo;
         }
 
@@ -99,6 +101,7 @@ namespace Microsoft.TeamFoundation.Client
                 return false;
             if (ReferenceEquals(this, other))
                 return true;
+            
             return other.Name == Name;
         }
 
@@ -113,6 +116,7 @@ namespace Microsoft.TeamFoundation.Client
             ProjectInfo cast = obj as ProjectInfo;
             if (cast == null)
                 return false;
+            
             return Equals(cast);
         }
 
