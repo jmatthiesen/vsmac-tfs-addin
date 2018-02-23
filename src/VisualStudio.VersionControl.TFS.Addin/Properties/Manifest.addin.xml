@@ -85,7 +85,7 @@
     
     <!-- Options -->
     <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/VersionControl">
-        <Section id = "Team Foundation Server" _label = "Team Foundation Server" class = "MonoDevelop.VersionControl.TFS.Gui.Panels.SettingsPanel" />
+        <Section id = "Team Foundation Server" _label = "Team Foundation Server (Preview)" class = "MonoDevelop.VersionControl.TFS.Gui.Panels.SettingsPanel" />
     </Extension>
     
 </ExtensionModel>

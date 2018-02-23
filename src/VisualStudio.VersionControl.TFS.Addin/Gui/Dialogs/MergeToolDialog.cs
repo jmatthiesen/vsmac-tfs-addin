@@ -1,5 +1,4 @@
-﻿using System.Text;
-using MonoDevelop.Core;
+﻿using MonoDevelop.Core;
 using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 
@@ -51,17 +50,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             commandSelectButton.WidthRequest = GuiSettings.ButtonWidth;
             table.Add(commandSelectButton, 2, 1);
 
-            StringBuilder argumentsTooltip = new StringBuilder();
-            argumentsTooltip.AppendLine("%1 - Local File");
-            argumentsTooltip.AppendLine("%2 - Base File");
-            argumentsTooltip.AppendLine("%3 - Their File");
-
-            argumentsTooltip.AppendLine("%4 - Local label");
-            argumentsTooltip.AppendLine("%5 - Base label");
-            argumentsTooltip.Append("%6 - Their label");
-
-            _argumentsEntry.TooltipText = argumentsTooltip.ToString();
-            _argumentsEntry.Text = "%1 %2 %3";
+            _argumentsEntry.TooltipText = GettextCatalog.GetString("Arguments");
             table.Add(_argumentsEntry, 1, 2, 1, 2);
 
             _content.PackStart(table);
@@ -96,6 +85,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             using (var fileSelect = new OpenFileDialog("Choose executable"))
             {
                 fileSelect.Multiselect = false;
+
                 if (fileSelect.Run(this))
                 {
                     _commandNameEntry.TooltipText = _commandNameEntry.Text = fileSelect.FileName;

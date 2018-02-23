@@ -26,6 +26,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
             PackStart(new Label(GettextCatalog.GetString("Lock Level:")));
             PackStart(_lockLevelBox);
         
+            PackStart(new Label(GettextCatalog.GetString("Merge Tool:")));
             _mergeToolButton = new Button(GettextCatalog.GetString("Configure Merge Tool"));
             _mergeToolButton.Clicked += OnConfigMergeTool;
             PackStart(_mergeToolButton);
@@ -59,7 +60,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
             {
                 if (mergeToolDialog.Run(ParentWindow) == Command.Ok)
                 {
-
+                    TeamFoundationServerClient.Settings.MergeTool = mergeToolDialog.MergeToolInfo;
+                    TeamFoundationServerClient.Settings.SaveSettings();
                 }
             }
         }

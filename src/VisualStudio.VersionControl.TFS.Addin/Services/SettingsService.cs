@@ -140,7 +140,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return _activeWorkspaces[collection.Id];
         }
 
-        void SaveSettings()
+        public void SaveSettings()
         {
             using (var file = File.Create(ConfigFile))
             {

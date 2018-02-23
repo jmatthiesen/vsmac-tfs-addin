@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.TeamFoundation.VersionControl.Client.Enums;
@@ -142,7 +143,31 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         void AcceptMerge()
         {
-            // TODO:
+            var mergeToolInfo = TeamFoundationServerClient.Settings.MergeTool;
+
+            if (mergeToolInfo != null)
+            {
+                var conflict = _listStore.GetValue(_listView.SelectedRow, _itemField);
+                var downloadService = _repository.VersionControlService.Collection.GetService<VersionControlDownloadService>();
+
+                var baseFile = downloadService.DownloadToTemp(conflict.BaseDowloadUrl);
+                var theirsFile = downloadService.DownloadToTemp(conflict.TheirDowloadUrl);
+              
+                var arguments = mergeToolInfo.Arguments;
+          
+                ProcessStartInfo info = new ProcessStartInfo();
+                info.FileName = mergeToolInfo.CommandName;
+                info.Arguments = arguments;
+                var process = Process.Start(info);
+                process.WaitForExit();
+
+                FileHelper.FileMove(baseFile, conflict.TargetLocalItem, true);
+                FileHelper.FileDelete(theirsFile);
+
+                conflict = _listStore.GetValue(_listView.SelectedRow, _itemField);
+                _repository.Resolve(conflict, ResolutionType.AcceptMerge);
+                LoadConflicts();
+            }
         }
 
         void AcceptServerClicked()
