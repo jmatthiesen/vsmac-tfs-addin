@@ -7,6 +7,7 @@ using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client.Enums;
 using MonoDevelop.Core;
 using MonoDevelop.VersionControl.TFS.Helpers;
+using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
@@ -32,6 +33,8 @@ namespace MonoDevelop.VersionControl.TFS.Services
                 SaveSettings();
             }
         }
+
+        public MergeToolInfo MergeTool { get; set; }
 
         public List<BaseTeamFoundationServer> RegistredServers
         {
@@ -146,6 +149,10 @@ namespace MonoDevelop.VersionControl.TFS.Services
                 doc.Root.Add(new XElement("Servers", _registredServers.Select(x => x.ToLocalXml())));
                 doc.Root.Add(new XElement("Workspaces", _activeWorkspaces.Select(a => new XElement("Workspace", new XAttribute("Id", a.Key), new XAttribute("Name", a.Value)))));
                 doc.Root.Add(new XElement("CheckOutLockLevel", (int)CheckOutLockLevel));
+
+                if (MergeTool != null)
+                    doc.Root.Add(new XElement("MergeTool", new XAttribute("Command", MergeTool.CommandName), new XAttribute("Arguments", MergeTool.Arguments)));
+                
                 doc.Save(file);
                 file.Close();
             }

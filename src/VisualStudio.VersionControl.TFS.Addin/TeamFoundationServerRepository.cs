@@ -29,6 +29,22 @@ namespace MonoDevelop.VersionControl.TFS
 
         internal RepositoryService VersionControlService { get; set; }
 
+        public override bool AllowLocking
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public override bool AllowModifyUnlockedFiles
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override string GetBaseText(FilePath localFile)
         {
             var workspace = GetWorkspaceByLocalPath(localFile);
@@ -80,6 +96,39 @@ namespace MonoDevelop.VersionControl.TFS
             }
 
             return true;
+        }
+
+        public override DiffInfo GenerateDiff(FilePath baseLocalPath, VersionInfo versionInfo)
+        {
+            if (Directory.Exists(versionInfo.LocalPath))
+                return null;
+            
+            string text;
+          
+            if (versionInfo.Status.HasFlag(VersionStatus.ScheduledAdd) || versionInfo.Status.HasFlag(VersionStatus.ScheduledDelete))
+            {
+                if (versionInfo.Status.HasFlag(VersionStatus.ScheduledAdd))
+                {
+                    var lines = File.ReadAllLines(versionInfo.LocalPath);
+                    text = string.Join(Environment.NewLine, lines.Select(l => "+" + l));
+                  
+                    return new DiffInfo(baseLocalPath, versionInfo.LocalPath, text);
+                }
+
+                if (versionInfo.Status.HasFlag(VersionStatus.ScheduledDelete))
+                {
+                    var workspace = GetWorkspaceByServerPath(versionInfo.RepositoryPath);
+                    var item = workspace.GetItem(versionInfo.RepositoryPath, ItemType.File, true);
+                    var lines = workspace.GetItemContent(item).Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    text = string.Join(Environment.NewLine, lines.Select(l => "-" + l));
+                  
+                    return new DiffInfo(baseLocalPath, versionInfo.LocalPath, text);
+                }
+
+                return null;
+            }
+
+            return null;
         }
 
         public void Resolve(Conflict conflict, ResolutionType resolutionType)

@@ -1,13 +1,15 @@
 ﻿using Xwt;
 using MonoDevelop.Core;
 using Microsoft.TeamFoundation.VersionControl.Client.Enums;
+using System;
+using MonoDevelop.VersionControl.TFS.Gui.Dialogs;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
     public class SettingsWidget : VBox
     {
         ComboBox _lockLevelBox;
-        
+        Button _mergeToolButton;
         public SettingsWidget()
         {
             Init();
@@ -23,6 +25,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
         {
             PackStart(new Label(GettextCatalog.GetString("Lock Level:")));
             PackStart(_lockLevelBox);
+        
+            _mergeToolButton = new Button(GettextCatalog.GetString("Configure Merge Tool"));
+            _mergeToolButton.Clicked += OnConfigMergeTool;
+            PackStart(_mergeToolButton);
         }
 
         public void ApplyChanges()
@@ -45,6 +51,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
             
 
             return lockLevelBox;
+        }
+
+        void OnConfigMergeTool(object sender, EventArgs e)
+        {
+            using (var mergeToolDialog = new MergeToolDialog(TeamFoundationServerClient.Settings.MergeTool))
+            {
+                if (mergeToolDialog.Run(ParentWindow) == Command.Ok)
+                {
+
+                }
+            }
         }
     }
 }
