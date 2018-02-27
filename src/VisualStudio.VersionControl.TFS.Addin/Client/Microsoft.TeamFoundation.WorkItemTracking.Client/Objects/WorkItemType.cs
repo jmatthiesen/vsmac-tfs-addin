@@ -3,8 +3,9 @@
 //
 // Author:
 //       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
+//       Javier Suárez Ruiz  <javiersuarezruiz@hotmail.com>
 //
-// Copyright (c) 2013 Ventsislav Mladenov
+// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +36,14 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
 
         [TableFieldName("NameConstantID")]
         public int NameConstantId { get; set; }
-        //public Constant Name { get; set; }
+
+        public Constant Name { get; set; }
+       
         [TableFieldName("ProjectID")]
         public int ProjectId { get; set; }
-        //public Project Project { get; set; }
+
+        public Project Project { get; set; }
+       
         [TableFieldName("fDeleted")]
         public bool IsDeleted { get; set; }
     }

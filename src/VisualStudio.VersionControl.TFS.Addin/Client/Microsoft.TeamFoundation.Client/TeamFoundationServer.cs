@@ -54,6 +54,7 @@ namespace Microsoft.TeamFoundation.Client
                                                       password,
                                                       isPasswordSavedInXml);
                 server.ProjectCollections = element.Elements("ProjectCollection").Select(x => ProjectCollection.FromLocalXml(server, x)).ToList();
+             
                 return server;
             }
             catch
@@ -71,8 +72,10 @@ namespace Microsoft.TeamFoundation.Client
                                     new XAttribute("Domain", Credentials.Domain),
                                     new XAttribute("UserName", Credentials.UserName),
                                     ProjectCollections.Select(p => p.ToLocalXml()));
+          
             if (IsPasswordSavedInXml)
                 serverElement.Add(new XAttribute("Password", Credentials.Password));
+         
             return serverElement;
         }
 

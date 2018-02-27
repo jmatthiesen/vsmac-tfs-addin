@@ -85,11 +85,11 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
     internal class Hunk
     {
         static readonly int CONTEXT = 3;
-        private DiffItem item;
-        private int ctx1Start = 0;
-        private int ctx2Start = 0;
-        private int ctx1End = 0;
-        private int ctx2End = 0;
+        DiffItem item;
+        int ctx1Start = 0;
+        int ctx2Start = 0;
+        int ctx1End = 0;
+        int ctx2End = 0;
         public int ctxLineCnt;
 
         public DiffItem Item { get { return item; } }

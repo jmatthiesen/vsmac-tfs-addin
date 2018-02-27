@@ -36,8 +36,8 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 		private string message;
 		private string serverItem;
 
-		internal ConflictEventArgs(Workspace workspace, string message,
-															 string serverItem)
+		internal ConflictEventArgs(Workspace workspace, string message,				 
+                                   string serverItem)
 			{
 				this.workspace = workspace;
 				this.message = message;

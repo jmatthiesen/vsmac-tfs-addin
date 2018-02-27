@@ -3,8 +3,9 @@
 //
 // Author:
 //       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
+//       Javier Suárez Ruiz  <javiersuarezruiz@hotmail.com>
 //
-// Copyright (c) 2013 Ventsislav Mladenov
+// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +25,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
 using Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata;
 
 namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
@@ -39,13 +39,19 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
 
         [TableFieldName("WorkItemTypeID")]
         public int WorkItemTypeId { get; set; }
-        //public WorkItemType WorkItemType { get; set; }
+
+        public WorkItemType WorkItemType { get; set; }
+
         [TableFieldName("FromStateConstID")]
         public int FromStateId { get; set; }
-        //public Constant FromState { get; set; }
+
+        public Constant FromState { get; set; }
+
         [TableFieldName("ToStateConstID")]
         public int ToStateId { get; set; }
-        //public Constant ToState { get; set; }
+
+        public Constant ToState { get; set; }
+
         [TableFieldName("fDeleted")]
         public bool IsDeleted { get; set; }
     }

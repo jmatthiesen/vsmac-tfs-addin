@@ -1,21 +1,23 @@
-//
 // NodesToXml.cs
-//
-// Author:
-//       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
-//
-// Copyright (c) 2013 Ventsislav Mladenov
-//
+// 
+// Authors:
+//       Ventsislav Mladenov
+//       Javier Suárez Ruiz
+// 
+// The MIT License (MIT)
+// 
+// Copyright (c) 2013-2018 Ventsislav Mladenov, Javier Suárez Ruiz
+// 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-//
+// 
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-//
+// 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +34,7 @@ using Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where;
 
 namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
 {
-    class NodesToXml
+    sealed class NodesToXml
     {
         readonly NodeList nodes;
 
@@ -50,8 +52,6 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
             writer.WriteAttributeString("Operator", node.ToOperator());
             var constantNode = (ConstantNode)node.Right; //All Nodes to Right should be Constants.
             var strValue = Convert.ToString(constantNode.Value, CultureInfo.InvariantCulture);
-//                if (node.Condition == Condition.NotEquals && string.IsNullOrEmpty(strValue))
-//                    return null;
             writer.WriteElementString(constantNode.DataType.ToString(), strValue);
             writer.WriteEndElement();
         }
@@ -69,7 +69,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
             settings.Encoding = Encoding.UTF8;
             settings.Indent = true;
             settings.OmitXmlDeclaration = true;
-            //settings.NewLineChars = Environment.NewLine;
+
             using (XmlWriter writer = XmlWriter.Create(builder, settings))
             {
                 if (nodes.Count == 1 && nodes[0].NodeType == NodeType.Condition)
@@ -80,12 +80,13 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                 {
                     if (nodes[0].NodeType != NodeType.Operator)
                         throw new Exception("Invalid Node Order");
+                    
                     var operatorNode = (OperatorNode)nodes[0];
                     WriterStartGroup(operatorNode, writer);
+                  
                     for (int i = 1; i < nodes.Count; i++)
                     {
-                        var node = this.nodes[i];
-
+                        var node = nodes[i];
                         if (node.NodeType == NodeType.OpenBracket)
                         {
                             i++;
@@ -93,16 +94,16 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                             WriterStartGroup(op, writer);
                             continue;
                         }
-
                         if (node.NodeType == NodeType.CloseBracket)
                             writer.WriteEndElement();
-                        
                         if (node.NodeType == NodeType.Condition)
                             WriteExpression((ConditionNode)node, writer);
                     }
+
                     writer.WriteEndElement();
                 }
             }
+
             return builder.ToString();
         }
     }

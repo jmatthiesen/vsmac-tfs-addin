@@ -14,13 +14,14 @@
 
         public string Password { get; set; }
 
-        private string domain;
+        string domain;
         public string Domain 
         { 
             get
             {
                 if (serverType != ServerType.TFS)
                     return string.Empty;
+                
                 return domain;
             } 
             set
@@ -29,7 +30,7 @@
             }
         }
 
-        private string userName;
+        string userName;
         public string UserName 
         { 
             get

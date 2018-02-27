@@ -77,9 +77,9 @@ namespace Microsoft.TeamFoundation.Client
         public XElement ToLocalXml()
         {
             return new XElement("Project", 
-                new XAttribute("Name", this.Name),
-                new XAttribute("Status", this.Status),
-                new XAttribute("Uri", this.Uri));
+                new XAttribute("Name", Name),
+                new XAttribute("Status", Status),
+                new XAttribute("Uri", Uri));
         }
 
         #region Equal

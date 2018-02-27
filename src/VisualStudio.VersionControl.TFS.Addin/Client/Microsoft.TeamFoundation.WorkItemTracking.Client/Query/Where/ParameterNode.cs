@@ -30,7 +30,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
     {
         public ParameterNode(string parameter)
         {
-            this.ParameterName = parameter.TrimStart('@');
+            ParameterName = parameter.TrimStart('@');
         }
 
         public override NodeType NodeType { get { return NodeType.Parameter; } }

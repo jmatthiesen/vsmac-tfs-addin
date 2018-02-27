@@ -37,9 +37,10 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
         public void RemoveFieldsAndValues()
         {
             var output = new List<Node>();
-            for (int i = 0; i < this.Count; i++)
+            for (int i = 0; i < Count; i++)
             {
                 var node = this[i];
+
                 if (node.NodeType != NodeType.Condition &&
                     node.NodeType != NodeType.Field &&
                     node.NodeType != NodeType.Constant &&
@@ -56,14 +57,15 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
                     output.Add(condition);
                 }
             }
-            this.Clear();
-            this.AddRange(output);
+
+            Clear();
+            AddRange(output);
         }
 
         public void ConvertInToOrs()
         {
             var output = new List<Node>();
-            for (int i = 0; i < this.Count; i++)
+            for (int i = 0; i < Count; i++)
             {
                 var node = this[i];
                 if (node.NodeType == NodeType.Condition)
@@ -91,8 +93,9 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
                 else
                     output.Add(node);
             }
-            this.Clear();
-            this.AddRange(output);
+
+            Clear();
+            AddRange(output);
         }
 
         public void Optimize()
@@ -102,10 +105,10 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
             RemoveUnUsedBrackets();
         }
 
-        private int FindMatchingCloseBracket(int openBracketIndex)
+        int FindMatchingCloseBracket(int openBracketIndex)
         {
             int bracketCount = 0;
-            for (int i = openBracketIndex; i < this.Count; i++)
+            for (int i = openBracketIndex; i < Count; i++)
             {
                 var node = this[i];
                 if (node.NodeType == NodeType.OpenBracket)
@@ -126,36 +129,43 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
                 throw new Exception("Not an open bracket");
             var subList = new NodeList();
             var closeBracketIndex = FindMatchingCloseBracket(openBracketIndex);
+
             //Do not add open and closed brackets.
             for (int i = openBracketIndex + 1; i < closeBracketIndex; i++)
             {
                 subList.Add(this[i]);
             }
+
             //Remove other inner brackets.
             subList.RemoveUnUsedBrackets();
+
             return subList;
         }
 
         public void RemoveUnUsedBrackets()
         {
             //Remove unused brackets (([a] = 2)) == [a] = 2
-            if (this[0].NodeType != NodeType.OpenBracket || this[this.Count - 1].NodeType != NodeType.CloseBracket)
+            if (this[0].NodeType != NodeType.OpenBracket || this[Count - 1].NodeType != NodeType.CloseBracket)
                 return;
+            
             int brackCnt = 0;
-            for (int i = 1; i < this.Count - 1; i++)
+            for (int i = 1; i < Count - 1; i++)
             {
                 var node = this[i];
+               
                 if (node.NodeType == NodeType.OpenBracket)
                     brackCnt++;
+
                 if (node.NodeType == NodeType.CloseBracket)
                     brackCnt--;
+                
                 if (brackCnt < 0) //Every open bracket should have close bracket , ([a] = 2) and ([b] = @p) 
                     return; 
             }
             if (brackCnt == 0)
             {
-                this.RemoveAt(this.Count - 1); //Remove last
-                this.RemoveAt(0); //Remove first.
+                RemoveAt(Count - 1); //Remove last
+                RemoveAt(0); //Remove first.
             }
             RemoveUnUsedBrackets();
         }
@@ -163,11 +173,11 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
         public void ExtractOperatorForward()
         {
             var newNodes = ExtractOperatorForward(0, this.Count);
-            this.Clear();
-            this.AddRange(newNodes);
+            Clear();
+            AddRange(newNodes);
         }
 
-        private NodeList ExtractOperatorForward(int from, int to)
+        NodeList ExtractOperatorForward(int from, int to)
         {
             NodeList list = new NodeList();
             Operator? currentOperator = null;
@@ -196,6 +206,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
                     {
                         if (currentOperator == operatorNode.Operator)
                             continue;
+                        
                         list.Add(operatorNode);
                     }
                 }
@@ -216,6 +227,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
                     list.Insert(list.Count - 1, new CloseBracketNode());
                 }
             }
+
             return list;
         }
 
@@ -225,7 +237,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
         /// <param name="fields">Fields.</param>
         public void FixFields(FieldList fields)
         {
-            for (int i = 0; i < this.Count; i++)
+            for (int i = 0; i < Count; i++)
             {
                 if (this[i].NodeType == NodeType.Condition)
                 {
@@ -237,6 +249,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
                     {
                         fieldNode.Field = fields[-2].ReferenceName;
                         condition.Condition = Condition.Under;
+
                         //Fix Project Name to Project Id
                         if (condition.Right.NodeType == NodeType.Constant)
                         {
@@ -257,6 +270,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
                     {
                         fieldNode.Field = fields[-104].ReferenceName;
                         condition.Condition = Condition.Under;
+
                         //Fix Iteration Name to Iteration Id
                         if (condition.Right.NodeType == NodeType.Constant)
                         {
@@ -283,7 +297,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
 
         public void FillFieldTypes(FieldList fields)
         {
-            for (int i = 0; i < this.Count; i++)
+            for (int i = 0; i < Count; i++)
             {
                 if (this[i].NodeType == NodeType.Condition)
                 {

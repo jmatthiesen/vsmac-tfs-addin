@@ -33,6 +33,8 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
     [FlagsAttribute] 
 	public enum ShelvingOptions
 	{
-		Move, None, Replace,
+		Move,
+        None, 
+        Replace
 	}
 }

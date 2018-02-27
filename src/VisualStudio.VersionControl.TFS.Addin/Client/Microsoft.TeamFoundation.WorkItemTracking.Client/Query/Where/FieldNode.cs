@@ -30,7 +30,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
     {
         public FieldNode(string field)
         {
-            this.Field = field.Trim('[', ']');
+            Field = field.Trim('[', ']');
         }
 
         public override NodeType NodeType { get { return NodeType.Field; } }

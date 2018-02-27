@@ -3,8 +3,9 @@
 //
 // Author:
 //       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
+//       Javier Suárez Ruiz  <javiersuarezruiz@hotmail.com>
 //
-// Copyright (c) 2013 Ventsislav Mladenov
+// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +33,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
 {
     public class CachedMetaData
     {
-        private static CachedMetaData instance;
+        static CachedMetaData instance;
 
         public static CachedMetaData Instance
         {
@@ -46,13 +47,13 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
         {
             var hierarchy = clientService.GetHierarchy();
             ExtractProjects(hierarchy);
-            this.Fields = new FieldList(clientService.GetFields());
-            this.Constants = clientService.GetConstants();
+            Fields = new FieldList(clientService.GetFields());
+            Constants = clientService.GetConstants();
             ExtractWorkItemTypes(clientService);
             ExtractActions(clientService);
         }
 
-        private void ExtractProjects(List<Hierarchy> hierarchy)
+        void ExtractProjects(List<Hierarchy> hierarchy)
         {
             const int projectType = -42;
 
@@ -66,28 +67,30 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
             Iterations.Build(hierarchy);
         }
 
-        private void ExtractWorkItemTypes(ClientService clientService)
+        void ExtractWorkItemTypes(ClientService clientService)
         {
             var types = clientService.GetWorkItemTypes();
-//            foreach (var type in types)
-//            {
-//                var type1 = type;
-//                type.Project = this.Projects.Single(p => p.Id == type1.ProjectId);
-//                type.Name = this.Constants.Single(c => c.Id == type1.NameConstantId);
-//            }
+
+            foreach (var type in types)
+            {
+                var type1 = type;
+                type.Project = Projects.Single(p => p.Id == type1.ProjectId);
+                type.Name = Constants.Single(c => c.Id == type1.NameConstantId);
+            }
+
             WorkItemTypes = types;
         }
 
-        private void ExtractActions(ClientService clientService)
+        void ExtractActions(ClientService clientService)
         {
             var actions = clientService.GetActions();
-//            foreach (var action in actions)
-//            {
-//                var action1 = action;
-//                action.WorkItemType = this.WorkItemTypes.Single(t => t.Id == action1.WorkItemTypeId);
-//                action.FromState = this.Constants.Single(c => c.Id == action1.FromStateId);
-//                action.ToState = this.Constants.Single(c => c.Id == action1.ToStateId);
-//            }
+            foreach (var action in actions)
+            {
+                var action1 = action;
+                action.WorkItemType = WorkItemTypes.Single(t => t.Id == action1.WorkItemTypeId);
+                action.FromState = Constants.Single(c => c.Id == action1.FromStateId);
+                action.ToState = Constants.Single(c => c.Id == action1.ToStateId);
+            }
             Actions = actions;
         }
 
@@ -101,6 +104,6 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
 
         public List<WorkItemType> WorkItemTypes { get; set; }
 
-        public List<Microsoft.TeamFoundation.WorkItemTracking.Client.Objects.Action> Actions { get; set; }
+        public List<Action> Actions { get; set; }
     }
 }

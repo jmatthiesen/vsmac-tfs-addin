@@ -273,6 +273,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
                         new XElement("InsertText", new XAttribute("FieldDisplayName", "History"), new XAttribute("FieldName", "System.History"), historyMsg),
                         new XElement("InsertResourceLink", new XAttribute("Comment", oneLineComment), new XAttribute("FieldName", "System.BISLinks"), new XAttribute("LinkType", "Fixed in Changeset"), new XAttribute("Location", changeSetLink))
                     ))));
+            
             invoker.InvokeResponse();
         }
 

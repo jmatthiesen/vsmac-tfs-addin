@@ -23,6 +23,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System;
 using System.Linq;
 
@@ -41,6 +42,7 @@ namespace Microsoft.TeamFoundation.Client
             var uriBuilder = new UriBuilder(baseUri);
             var splOpt = StringSplitOptions.RemoveEmptyEntries;
             uriBuilder.Path = string.Join(urlSeparator[0], uriBuilder.Path.Split(urlSeparator, splOpt).Union(path.Split(urlSeparator, splOpt)));
+
             return uriBuilder.Uri;
         }
 
@@ -51,6 +53,7 @@ namespace Microsoft.TeamFoundation.Client
             var items = path.Split(urlSeparator, StringSplitOptions.RemoveEmptyEntries);
             if (items.Length > 0)
                 return items[0];
+
             return string.Empty;
         }
     }

@@ -3,8 +3,9 @@
 //
 // Author:
 //       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
+//       Javier Suárez Ruiz  <javiersuarezruiz@hotmail.com>
 //
-// Copyright (c) 2013 Ventsislav Mladenov
+// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +34,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
 {
     public class LexalParser
     {
-        private enum CursorState
+        enum CursorState
         {
             None,
             FieldName,
@@ -43,7 +44,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
             ArrayOfValues,
             Operator,
             OpenBracket,
-            CloseBracket,
+            CloseBracket
         }
 
         const char StringDelimeter = '\'';
@@ -73,26 +74,26 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
             int fromIndex = query.IndexOf(FromWord, StringComparison.OrdinalIgnoreCase);
 
             if (selectIndex > -1) //Should have but for tests.
-                this.selectClause = query.Substring(selectIndex + SelectKeyWord.Length, fromIndex - selectIndex - SelectKeyWord.Length);
+                selectClause = query.Substring(selectIndex + SelectKeyWord.Length, fromIndex - selectIndex - SelectKeyWord.Length);
             else
-                this.selectClause = string.Empty;
+                selectClause = string.Empty;
 
             if (orderByIndex > -1)
             {
-                this.whereClause = query.Substring(whereIndex + WhereKeyWord.Length, orderByIndex - whereIndex - WhereKeyWord.Length);
-                this.orderByClause = query.Substring(orderByIndex + OrderByKeyWord.Length);
+                whereClause = query.Substring(whereIndex + WhereKeyWord.Length, orderByIndex - whereIndex - WhereKeyWord.Length);
+                orderByClause = query.Substring(orderByIndex + OrderByKeyWord.Length);
             }
             else
             {
-                this.whereClause = query.Substring(whereIndex + WhereKeyWord.Length);
+                whereClause = query.Substring(whereIndex + WhereKeyWord.Length);
             }
 
-            this.selectClause = this.selectClause.Trim();
-            this.whereClause = this.whereClause.Trim();
-            this.orderByClause = this.orderByClause.Trim();
+            selectClause = selectClause.Trim();
+            whereClause = whereClause.Trim();
+            orderByClause = orderByClause.Trim();
         }
 
-        private Node SetState(CursorState state, string word)
+        Node SetState(CursorState state, string word)
         {
             Node node = null;
             if (state != currentState)
@@ -131,28 +132,30 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                 }
                 if (node != null)
                     nodes.Add(node);
+                
                 currentState = state;
             }
+
             return node;
         }
 
-        private bool InState(params CursorState[] states)
+        bool InState(params CursorState[] states)
         {
             return states.Any(s => s == currentState);
         }
 
-        private bool IsWordOperator(string word)
+        bool IsWordOperator(string word)
         {
             return string.Equals(word, "and", StringComparison.OrdinalIgnoreCase) || string.Equals(word, "or", StringComparison.OrdinalIgnoreCase);
         }
 
-        private bool IsNextWordOperator(int i)
+        bool IsNextWordOperator(int i)
         {
             var word = GetNextWord(i);
             return IsWordOperator(word.Item1);
         }
 
-        private string ReadOperator(ref int i)
+        string ReadOperator(ref int i)
         {
             StringBuilder builder = new StringBuilder();
             for (int j = i; j < whereClause.Length; j++)
@@ -165,13 +168,16 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                 }
                 builder.Append(whereClause[j]);
             }
+
             var @operator = builder.ToString().Trim();
+           
             if (whereClause[i] == OpenBracket)
                 i--;
+            
             return @operator;
         }
 
-        private void MoveToSymbol(ref int i, int symbol)
+        void MoveToSymbol(ref int i, int symbol)
         {
             for (int j = i; j < whereClause.Length; j++)
             {
@@ -181,17 +187,17 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
             }
         }
 
-        private void ReadOpenBracket(ref int i)
+        void ReadOpenBracket(ref int i)
         {
             MoveToSymbol(ref i, OpenBracket);
         }
 
-        private void ReadCloseBracket(ref int i)
+        void ReadCloseBracket(ref int i)
         {
             MoveToSymbol(ref i, CloseBracket);
         }
 
-        private char MoveToNextNonWhiteSpace(ref int i)
+        char MoveToNextNonWhiteSpace(ref int i)
         {
             for (int j = i; j < whereClause.Length; j++)
             {
@@ -203,16 +209,18 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                     return whereClause[j];
                 }
             }
+
             return NullChar;
         }
 
-        private bool IsNextSymbol(int i, char symbol)
+        bool IsNextSymbol(int i, char symbol)
         {
             var nextSymbol = MoveToNextNonWhiteSpace(ref i);
+          
             return nextSymbol == symbol;
         }
 
-        private string ReadParameter(ref int i)
+        string ReadParameter(ref int i)
         {
             StringBuilder builder = new StringBuilder();
             if (whereClause[i] != ParameterStart)
@@ -224,12 +232,14 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                 {
                     break;
                 }
+
                 builder.Append(whereClause[j]);
             }
+
             return builder.ToString();
         }
 
-        private string ReadStringConstant(ref int i)
+        string ReadStringConstant(ref int i)
         {
             StringBuilder builder = new StringBuilder();
             for (int j = i + 1; j < whereClause.Length; j++)
@@ -239,10 +249,11 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                 if (whereClause[j] == StringDelimeter)
                     break;
             }
+
             return StringDelimeter + builder.ToString();
         }
 
-        private string ReadNumberConstant(ref int i)
+        string ReadNumberConstant(ref int i)
         {
             StringBuilder builder = new StringBuilder();
             for (int j = i; j < whereClause.Length; j++)
@@ -258,13 +269,14 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                 }
                 builder.Append(whereClause[j]);
             }
+
             return builder.ToString();
 //            var word = GetNextWord(i);
 //            i = word.Item2;
 //            return word.Item1;
         }
 
-        private string ReadConstant(ref int i)
+        string ReadConstant(ref int i)
         {
             if (whereClause[i] == StringDelimeter)
                 return ReadStringConstant(ref i);
@@ -272,17 +284,18 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                 return ReadNumberConstant(ref i);
         }
 
-        private string ReadArrayOfValues(ref int i)
+        string ReadArrayOfValues(ref int i)
         {
             var ch = MoveToNextNonWhiteSpace(ref i);
             if (ch != OpenBracket)
                 throw new Exception("Invalid Array Of Values");
             var copyI = i;
             MoveToSymbol(ref i, CloseBracket);
+
             return whereClause.Substring(copyI, i - copyI + 1).Trim(Brackets);
         }
 
-        private string ReadField(ref int i)
+        string ReadField(ref int i)
         {
             StringBuilder builder = new StringBuilder();
             if (whereClause[i] != FieldStart)
@@ -299,7 +312,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
             return builder.ToString();
         }
 
-        private Tuple<string, int> GetNextWord(int i)
+        Tuple<string, int> GetNextWord(int i)
         {
             StringBuilder builder = new StringBuilder();
             var k = i;
@@ -315,7 +328,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
             return new Tuple<string, int>(builder.ToString().Trim().Trim(Brackets), k + 1);
         }
 
-        private string ReadCondition(ref int i)
+        string ReadCondition(ref int i)
         {
             var word = GetNextWord(i);
             if (string.Equals(word.Item1, "IN", StringComparison.OrdinalIgnoreCase))
@@ -353,10 +366,11 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                 }
                 builder.Append(whereClause[j]);
             }
+
             return builder.ToString().Trim();
         }
 
-        private string ReadValue(ref int i)
+        string ReadValue(ref int i)
         {
             var startChar = MoveToNextNonWhiteSpace(ref i);
             string result = string.Empty;
@@ -368,6 +382,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                 result = ReadNumberConstant(ref i);
             if (whereClause[i] == CloseBracket) //If After Value is Close bracket with no space. 
                 i--;
+            
             return result;
         }
 
@@ -452,6 +467,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                     list.Add(new SelectNode(item));
                 }
             }
+
             return list;
         }
 
@@ -477,13 +493,15 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
             return list;
         }
 
-        private void AnalyzeNodes()
+        void AnalyzeNodes()
         {
             var openBracketsCount = nodes.Count(x => x.NodeType == NodeType.OpenBracket);
             var closeBracketsCount = nodes.Count(x => x.NodeType == NodeType.CloseBracket);
             var exception = new Exception("Could not parse where clause correctly");
+          
             if (openBracketsCount != closeBracketsCount)
                 throw exception;
+            
             for (int i = 0; i < nodes.Count; i++)
             {
                 //The order should be field condition value operator field condition value ....
@@ -495,16 +513,20 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                         throw exception;
                     }
                 }
+
                 //Next node should be operator or end, skip close brackets
                 if (nodes[i].NodeType == NodeType.Constant || nodes[i].NodeType == NodeType.Parameter || nodes[i].NodeType == NodeType.ArrayOfValues)
                 {
                     bool found = true;
+
                     for (int j = i + 1; j < nodes.Count; j++)
                     {
                         if (nodes[j].NodeType == NodeType.CloseBracket)
                             continue;
+                       
                         if (nodes[j].NodeType == NodeType.Operator)
                             break;
+                        
                         if (nodes[j].NodeType == NodeType.Field ||
                             nodes[j].NodeType == NodeType.Condition ||
                             nodes[j].NodeType == NodeType.Parameter ||
@@ -516,6 +538,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
                             break;
                         }
                     }
+
                     if (!found)
                         throw exception;
                 }

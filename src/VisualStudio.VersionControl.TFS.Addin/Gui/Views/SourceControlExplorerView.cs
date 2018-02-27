@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Gtk;
@@ -536,6 +535,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         {
             if (string.IsNullOrEmpty(name))
                 return;
+            
             TreeIter iter = TreeIter.Zero;
             _listStore.Foreach((model, path, it) =>
             {
@@ -547,8 +547,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 }
                 return false;
             });
+
             if (iter.Equals(TreeIter.Zero))
                 return;
+            
             _listView.Selection.SelectIter(iter);
             var treePath = _listStore.GetPath(iter);
             _listView.ScrollToCell(treePath, _listView.Columns[0], false, 0, 0);

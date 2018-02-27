@@ -32,8 +32,8 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 {
     public sealed class CheckinNoteFieldValue 
 	{
-		private string name;
-		private string value;
+		string name;
+		string value;
 
 		public CheckinNoteFieldValue(string name, string value)
 		{
@@ -60,6 +60,5 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 			get { return value; }
 			set { this.value = value; }
 		}
-
 	}
 }

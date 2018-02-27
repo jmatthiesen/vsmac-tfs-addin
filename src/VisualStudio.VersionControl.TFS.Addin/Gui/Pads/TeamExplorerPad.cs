@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.TeamFoundation.Client;
+using Microsoft.TeamFoundation.WorkItemTracking.Client;
 using MonoDevelop.Components;
 using MonoDevelop.Components.Docking;
 using MonoDevelop.Core;
@@ -13,13 +14,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 {
     public class TeamExplorerPad : PadContent
     {
-        enum TeamExplorerNodeType
+        public enum TeamExplorerNodeType
         {
             Server,
             ProjectCollection,
             Project,
             SourceControl,
-            WorkItems
+            WorkItems,
+            WorkItemQueryType,
+            WorkItemQuery
         }
 
         VBox _content;
@@ -97,12 +100,25 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
                     node.AddChild().SetValue(_name, pc.Name)
                         .SetValue(_type, TeamExplorerNodeType.ProjectCollection)
                         .SetValue(_item, pc);
-                    
+
+                    var workItemManager = new WorkItemManager(pc);
+
                     foreach (ProjectInfo projectInfo in pc.Projects.OrderBy(x => x.Name))
                     {
                         node.AddChild().SetValue(_name, projectInfo.Name)
                             .SetValue(_type, TeamExplorerNodeType.Project)
                             .SetValue(_item, projectInfo);
+
+                        var workItemProject = workItemManager.GetByGuid(projectInfo.Guid);
+                    
+                        if (workItemProject != null)
+                        {
+                            node.AddChild()
+                                .SetValue(_name, "Work Items")
+                                .SetValue(_type, TeamExplorerNodeType.WorkItems);
+                        
+                            node.MoveToParent();
+                        }
 
                         node.AddChild()
                             .SetValue(_name, "Source Control")
@@ -145,6 +161,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
                 node.MoveToParent();
                 var project = (ProjectInfo)node.GetValue(_item);
                 SourceControlExplorerView.Show(project.Collection);
+            }
+
+            if (nodeType == TeamExplorerNodeType.WorkItems)
+            {
+                node.MoveToParent();
+                var project = (ProjectInfo)node.GetValue(_item);
+                WorkItemsView.Show(project);
             }
         }
 

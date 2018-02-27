@@ -33,8 +33,8 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 {
     public sealed class DiffItemLocalFile : IDiffItem
 	{
-		private string fileName;
-		private int encoding;
+		string fileName;
+		int encoding;
 
 		public DiffItemLocalFile (String fileName, int encoding, 
 															DateTime lastModifiedDate)

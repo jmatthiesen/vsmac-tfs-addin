@@ -142,6 +142,7 @@ namespace Microsoft.TeamFoundation.Client
                 return false;
             if (ReferenceEquals(this, other))
                 return true;
+            
             return other.Id == Id;
         }
 
@@ -156,6 +157,7 @@ namespace Microsoft.TeamFoundation.Client
             ProjectCollection cast = obj as ProjectCollection;
             if (cast == null)
                 return false;
+            
             return Equals(cast);
         }
 

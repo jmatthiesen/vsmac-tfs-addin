@@ -11,7 +11,7 @@ namespace Microsoft.TeamFoundation.Client
         public VisualStudioOnlineTFS(Uri url, string name, string userName, string authUserName, string password, bool isPasswordSavedInXml)
             : base(url, name, userName, password, isPasswordSavedInXml)
         {
-            this.AuthUserName = authUserName;
+            AuthUserName = authUserName;
         }
 
         public static VisualStudioOnlineTFS FromLocalXml(XElement element, string password, bool isPasswordSavedInXml)
@@ -37,13 +37,16 @@ namespace Microsoft.TeamFoundation.Client
         {
             var serverElement = new XElement("Server",
                                         new XAttribute("Type", (int)ServerType.VisualStudio),
-                                        new XAttribute("Name", this.Name),
-                                        new XAttribute("Url", this.Uri),
-                                        new XAttribute("UserName", this.UserName),
-                                        new XAttribute("AuthUserName", this.AuthUserName),
-                this.ProjectCollections.Select(p => p.ToLocalXml()));
+                                        new XAttribute("Name", Name),
+                                        new XAttribute("Url", Uri),
+                                        new XAttribute("UserName", UserName),
+                                        new XAttribute("AuthUserName", AuthUserName),
+                
+            ProjectCollections.Select(p => p.ToLocalXml()));
+            
             if (IsPasswordSavedInXml)
-                serverElement.Add(new XAttribute("Password", this.Password));
+                serverElement.Add(new XAttribute("Password", Password));
+         
             return serverElement;
         }
 
@@ -53,7 +56,8 @@ namespace Microsoft.TeamFoundation.Client
         {
             get
             {
-                var credentialBuffer = Encoding.UTF8.GetBytes(AuthUserName + ":" + this.Password);
+                var credentialBuffer = Encoding.UTF8.GetBytes(AuthUserName + ":" + Password);
+               
                 return "Basic " + Convert.ToBase64String(credentialBuffer);
             }
         }
