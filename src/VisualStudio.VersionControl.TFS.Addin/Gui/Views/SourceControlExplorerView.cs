@@ -412,6 +412,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         void OnListItemClicked(object sender, RowActivatedArgs e)
         {
             TreeIter iter;
+
             if (!_listStore.GetIter(out iter, e.Path))
                 return;
 
@@ -429,7 +430,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 {
                     if (item.IsInWorkspace)
                     {
-                        if (MonoDevelop.Projects.Services.ProjectService.IsWorkspaceItemFile(item.LocalItem))
+                        if (Projects.Services.ProjectService.IsWorkspaceItemFile(item.LocalItem))
                         {
                             IdeApp.Workspace.OpenWorkspaceItem(item.LocalItem, true);
                         }

@@ -1,7 +1,7 @@
 //
 // Microsoft.TeamFoundation.WorkItemTracking.Client.WorkItem
 //
-// Authors:
+// Author:
 //	Joel Reed (joelwreed@gmail.com)
 //
 // Copyright (C) 2007 Joel Reed
@@ -44,10 +44,12 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
             get
             {
                 object val;
-                if (this.WorkItemInfo.TryGetValue("System.AreaId", out val))
+
+                if (WorkItemInfo.TryGetValue("System.AreaId", out val))
                 {
                     return Convert.ToInt32(val);
                 }
+
                 return -1;
             }
         }
@@ -57,15 +59,18 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
             get
             {
                 object val;
-                if (this.WorkItemInfo.TryGetValue("System.WorkItemType", out val))
+                if (WorkItemInfo.TryGetValue("System.WorkItemType", out val))
                 {
                     var strType = Convert.ToString(val);
+
                     var workItems = from wt in CachedMetaData.Instance.WorkItemTypes
                                                    join c in CachedMetaData.Instance.Constants on wt.NameConstantId equals c.Id
-                                                   where wt.ProjectId == this.ProjectId && string.Equals(c.Value, strType, StringComparison.OrdinalIgnoreCase)
+                                                   where wt.ProjectId == ProjectId && string.Equals(c.Value, strType, StringComparison.OrdinalIgnoreCase)
                                                    select wt;
+                    
                     return workItems.SingleOrDefault();
                 }
+
                 return null;
             }
         }
@@ -75,20 +80,25 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Objects
             string fieldName = "System.State";
             string actionName = "Microsoft.VSTS.Actions.Checkin";
             object val;
-            var type = this.Type;
-            if (type != null && this.WorkItemInfo.TryGetValue(fieldName, out val))
+            var type = Type;
+          
+            if (type != null && WorkItemInfo.TryGetValue(fieldName, out val))
             {
                 var currentState = Convert.ToString(val);
+
                 var query = from a in CachedMetaData.Instance.Actions
                                         join fc in CachedMetaData.Instance.Constants on a.FromStateId equals fc.Id
                                         join tc in CachedMetaData.Instance.Constants on a.FromStateId equals tc.Id
                                         where string.Equals(a.Name, actionName, StringComparison.OrdinalIgnoreCase) &&
                                             a.WorkItemTypeId == type.Id && string.Equals(fc.Value, currentState, StringComparison.OrdinalIgnoreCase)
                                         select tc;
+             
                 var toConstant = query.SingleOrDefault();
+               
                 if (toConstant != null)
                     return toConstant.Value;
             }
+
             return string.Empty;
         }
     }

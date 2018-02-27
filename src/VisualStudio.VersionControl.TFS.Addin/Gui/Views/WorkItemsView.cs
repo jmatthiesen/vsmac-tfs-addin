@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.WorkItemTracking.Client;
@@ -9,6 +10,7 @@ using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.ProgressMonitoring;
+using Xwt;
 using static MonoDevelop.VersionControl.TFS.Gui.Pads.TeamExplorerPad;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Views
@@ -18,8 +20,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         Gtk.VBox _view;
         Gtk.TreeView _treeView;
         Gtk.TreeStore _treeStore;
-        Gtk.TreeView _listView;
-        Gtk.TreeStore _listStore;
+        TreeView _listView;
+        DataField<WorkItem> _workItemField;
+        TreeStore _listStore;
 
         #region Constructor
 
@@ -36,6 +39,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 progress.BeginTask("Loading...", 2);
                 LoadWorkItems(project);
                 progress.Step(1);
+                ExpandAllWorkItems();
                 progress.EndTask();
             }
         }
@@ -63,9 +67,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             treeColumn.SetAttributes(textRenderer, "text", 0);
             _treeView.AppendColumn(treeColumn);
 
-            _listView = new Gtk.TreeView();
-            _listView.Selection.Mode = Gtk.SelectionMode.Multiple;
-            _listStore = new Gtk.TreeStore(typeof(string));
+            _listView = new TreeView();
+            _workItemField = new DataField<WorkItem>();
         }
 
         void BuildGui()
@@ -78,7 +81,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             mainBox.Pack1(treeViewBox, false, false);
 
             Gtk.VBox rightBox = new Gtk.VBox();
-            rightBox.PackStart(_listView, true, true, 0);
+            rightBox.PackStart(new XwtControl(_listView), true, true, 0);
             mainBox.Pack2(rightBox, true, true);
 
             _view.PackStart(mainBox, true, true, 0);
@@ -89,7 +92,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         {
             _treeView.Selection.Changed += OnWorkItemChanged;
             _treeView.RowActivated += OnTreeViewItemClicked;
-        }
+        }    
 
         void LoadWorkItems(ProjectInfo project)
         {
@@ -148,9 +151,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _treeView.Model = _treeStore;
         }
 
+        void ExpandAllWorkItems()
+        {
+            _treeView.ExpandAll();
+        }
+
         void LoadQueries(StoredQuery query)
         {
-            _listStore.Clear();
+            _listView.Columns.Clear();
 
             using (var progress = new MessageDialogProgressMonitor(true, false, false))
             {
@@ -161,6 +169,50 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 if (data.Count > 0)
                 {
                     var firstItem = data[0];
+                    List<IDataField> dataFields = new List<IDataField>();
+                    var mapping = new Dictionary<Field, IDataField<object>>();
+                 
+                    foreach (var item in firstItem.WorkItemInfo.Keys)
+                    {
+                        var field = fields[item];
+                        var dataField = new DataField<object>();
+                        dataFields.Add(dataField);
+                        mapping.Add(field, dataField);
+                    }
+
+                    if (dataFields.Any())
+                    {
+                        _workItemField = new DataField<WorkItem>();
+                        dataFields.Insert(0, _workItemField);
+                        _listStore = new TreeStore(dataFields.ToArray());
+                       
+                        foreach (var map in mapping)
+                        {
+                            _listView.Columns.Add(map.Key.Name, map.Value);
+                        }
+
+                        _listView.DataSource = _listStore;
+
+                        foreach (var workItem in data)
+                        {
+                            var row = _listStore.AddNode();
+                            row.SetValue(_workItemField, workItem);
+
+                            foreach (var map in mapping)
+                            {
+                                object value;
+
+                                if (workItem.WorkItemInfo.TryGetValue(map.Key.ReferenceName, out value))
+                                {
+                                    row.SetValue(map.Value, value);
+                                }
+                                else
+                                {
+                                    row.SetValue(map.Value, null);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

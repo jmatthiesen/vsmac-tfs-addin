@@ -1,7 +1,7 @@
 //
 // Action.cs
 //
-// Author:
+// Authors:
 //       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
 //       Javier Suárez Ruiz  <javiersuarezruiz@hotmail.com>
 //
