@@ -1,7 +1,7 @@
 //
 // Microsoft.TeamFoundation.VersionControl.Client.RecursionType
 //
-// Authors:
+// Author:
 //	Joel Reed (joelwreed@gmail.com)
 //
 // Copyright (C) 2007 Joel Reed

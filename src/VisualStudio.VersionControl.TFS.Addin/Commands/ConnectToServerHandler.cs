@@ -11,9 +11,15 @@ namespace MonoDevelop.VersionControl.TFS.Commands
             var RootWindow = IdeApp.Workbench.RootWindow;
             Xwt.MessageDialog.RootWindow = Xwt.Toolkit.CurrentEngine.WrapWindow(IdeApp.Workbench.RootWindow);
 
-            using (var dialog = new ConnectToServerDialog())
+            using (var chooseVersionControlDialog = new ChooseVersionControlDialog())
             {
-                dialog.Run(Xwt.MessageDialog.RootWindow);
+                if (chooseVersionControlDialog.Run() == Xwt.Command.Ok)
+                {
+                    using (var dialog = new ConnectToServerDialog())
+                    {
+                        dialog.Run(Xwt.MessageDialog.RootWindow);
+                    }
+                }
             }
         }
 
