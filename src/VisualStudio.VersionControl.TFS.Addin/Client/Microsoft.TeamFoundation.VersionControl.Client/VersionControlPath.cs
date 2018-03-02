@@ -45,8 +45,10 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             {
                 if (this == RootFolder)
                     return null;
+                
                 string[] parentPath = new string[pathParts.Length - 1]; 
                 Array.Copy(pathParts, 0, parentPath, 0, pathParts.Length - 1);
+
                 return RootFolder + string.Join(Separator.ToString(), parentPath); 
             }
         }
@@ -55,7 +57,9 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         {
             if (!IsServerItem(path))
                 throw new Exception("Not a server path");
+            
             this.path = path;
+           
             if (!string.Equals(path, RootFolder, StringComparison.Ordinal))
                 pathParts = path.Split(Separator).Skip(1).ToArray();
             else

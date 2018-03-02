@@ -63,6 +63,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
             {
                 Projects.Add(new Project { Id = item.AreaId, Guid = item.Guid, Name = item.Name });
             }
+
             Iterations = new IterationList(Projects);
             Iterations.Build(hierarchy);
         }
@@ -84,6 +85,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
         void ExtractActions(ClientService clientService)
         {
             var actions = clientService.GetActions();
+         
             foreach (var action in actions)
             {
                 var action1 = action;
@@ -91,6 +93,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
                 action.FromState = Constants.Single(c => c.Id == action1.FromStateId);
                 action.ToState = Constants.Single(c => c.Id == action1.ToStateId);
             }
+
             Actions = actions;
         }
 

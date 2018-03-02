@@ -142,6 +142,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
         Dictionary<int, Tuple<string,string>> BuildMapping(XElement[] columns)
         {
             var result = new Dictionary<int, Tuple<string,string>>();
+           
             for (int i = 0; i < columns.Length; i++)
             {
                 var column = columns[i];
@@ -164,6 +165,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
             var columns = GetColumns(table);
             var mapping = BuildMapping(columns);
             var rows = table.Element(ns + "rows").Elements(ns + "r");
+           
             foreach (var row in rows)
             {
                 var fields = row.Elements(ns + "f").ToArray();
@@ -178,6 +180,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata
                     obj[map.Item1] = DataTypeConverter.Convert(field.Value, map.Item2);
                     indexer++;
                 }
+
                 result.Add(obj);
             }
 

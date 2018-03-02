@@ -1,7 +1,7 @@
 //
 // Microsoft.TeamFoundation.Server.ProjectInfo
 //
-// Authors:
+// Author:
 //	Joel Reed (joelwreed@gmail.com)
 //
 // Copyright (C) 2007 Joel Reed
@@ -71,6 +71,7 @@ namespace Microsoft.TeamFoundation.Client
             projectInfo.Uri = element.Attribute("Uri").Value;
             projectInfo.Status = (ProjectState)Enum.Parse(typeof(ProjectState), element.Attribute("Status").Value);
             projectInfo.Collection = collection;
+         
             return projectInfo;
         }
 
@@ -99,6 +100,7 @@ namespace Microsoft.TeamFoundation.Client
         {
             if (ReferenceEquals(null, other))
                 return false;
+            
             if (ReferenceEquals(this, other))
                 return true;
             
@@ -111,9 +113,12 @@ namespace Microsoft.TeamFoundation.Client
         {
             if (ReferenceEquals(null, obj))
                 return false;
+            
             if (ReferenceEquals(this, obj))
                 return true;
+            
             ProjectInfo cast = obj as ProjectInfo;
+
             if (cast == null)
                 return false;
             

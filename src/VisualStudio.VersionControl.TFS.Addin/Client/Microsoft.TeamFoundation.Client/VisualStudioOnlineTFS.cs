@@ -25,6 +25,7 @@ namespace Microsoft.TeamFoundation.Client
                                                        password,
                                                        isPasswordSavedInXml);
                 server.ProjectCollections = element.Elements("ProjectCollection").Select(x => ProjectCollection.FromLocalXml(server, x)).ToList();
+               
                 return server;
             }
             catch

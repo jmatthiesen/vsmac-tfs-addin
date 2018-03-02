@@ -53,13 +53,16 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
             var constants = CachedMetaData.Instance.Constants;
             var userNameBuilder = new StringBuilder();
             var server = collection.Server as INetworkServer;
+         
             if (server != null && !string.IsNullOrEmpty(server.Credentials.Domain))
             {
                 userNameBuilder.Append(server.Credentials.Domain + "\\");
             }
+
             userNameBuilder.Append(collection.Server.UserName);
             var userName = userNameBuilder.ToString();
             var me = constants.FirstOrDefault(c => string.Equals(c.Value, userName, StringComparison.OrdinalIgnoreCase));
+         
             if (me != null)
             {
                 WorkItemsContext.WhoAmI = me.DisplayName;
@@ -83,6 +86,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
         {
             var list = clientService.GetStoredQueries(project).Where(q => string.Equals(WorkItemsContext.MySID, q.Owner) && !q.IsDeleted).ToList();
             list.ForEach(sq => sq.Collection = collection);
+           
             return list;
         }
 

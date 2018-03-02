@@ -146,6 +146,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                 doc.Root.Add(new XElement("Servers", _registredServers.Select(x => x.ToLocalXml())));
                 doc.Root.Add(new XElement("Workspaces", _activeWorkspaces.Select(a => new XElement("Workspace", new XAttribute("Id", a.Key), new XAttribute("Name", a.Value)))));
                 doc.Root.Add(new XElement("CheckOutLockLevel", (int)CheckOutLockLevel));
+            
                 doc.Save(file);
                 file.Close();
             }

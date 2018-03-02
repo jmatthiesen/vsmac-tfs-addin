@@ -4,8 +4,9 @@
 // Authors:
 //	Joel Reed (joelwreed@gmail.com)
 //  Ventsislav Mladenov (ventsislav.mladenov@gmail.com)
+//  Javier Suárez Ruiz (javiersuarezruiz@hotmail.com)
 //
-// Copyright (C) 2013 Joel Reed, Ventsislav Mladenov
+// Copyright (C) 2018 Joel Reed, Ventsislav Mladenov, Javier Suárez Ruiz
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -39,7 +40,7 @@ namespace Microsoft.TeamFoundation.Client
         public TeamFoundationServer(Uri uri, string name, string domain, string userName, string password, bool isPasswordSavedInXml)
             : base(uri, name, userName, password, isPasswordSavedInXml)
         {
-            this.Domain = domain;
+            Domain = domain;
             Credentials = new NetworkCredential(UserName, Password, Domain);
         }
 

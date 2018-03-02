@@ -21,6 +21,7 @@ namespace Microsoft.TeamFoundation.Client
         public static BaseTeamFoundationServer Create(XElement element, string password, bool isPasswordSavedInXml)
         {
             var type = element.Attribute("Type");
+
             if (type == null || (ServerType)Convert.ToInt32(type.Value) == ServerType.TFS)
             {
                 return TeamFoundationServer.FromLocalXml(element, password, isPasswordSavedInXml);

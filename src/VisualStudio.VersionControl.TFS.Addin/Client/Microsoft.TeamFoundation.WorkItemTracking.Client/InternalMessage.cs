@@ -59,7 +59,6 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 
 		public XmlReader ResponseReader(HttpWebResponse response)
 		{
-			//Console.WriteLine(new StreamReader(response.GetResponseStream()).ReadToEnd());
 			StreamReader sr = new StreamReader(response.GetResponseStream(), new UTF8Encoding (false), false);
 			XmlReader reader = new XmlTextReader(sr);
 
