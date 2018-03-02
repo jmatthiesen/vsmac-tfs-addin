@@ -60,8 +60,6 @@ namespace Microsoft.TeamFoundation.Client.Services
             }
         }
 
-        public override Uri Url => new Uri(base.Url.OriginalString.Replace("TeamFoundation", string.Empty));
-
         public override IServiceResolver ServiceResolver
         {
             get

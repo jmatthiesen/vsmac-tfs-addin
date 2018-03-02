@@ -31,17 +31,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using System.Linq;
-using MonoDevelop.Core;
-using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using Microsoft.TeamFoundation.VersionControl.Client.Enums;
-using MonoDevelop.Ide;
-using Microsoft.TeamFoundation.WorkItemTracking.Client;
+using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using Microsoft.TeamFoundation.WorkItemTracking.Client.Enums;
-using MonoDevelop.Projects;
+using MonoDevelop.Core;
+using MonoDevelop.Ide;
 using MonoDevelop.Ide.ProgressMonitoring;
+using MonoDevelop.Projects;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
@@ -143,6 +142,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                                                      bool includeDownloadInfo)
         {
             string[] items = { item };
+         
             return GetPendingChanges(items, rtype, includeDownloadInfo);
         }
 
@@ -156,6 +156,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         {
 
             var itemSpecs = new List<ItemSpec>(items.Select(i => new ItemSpec(i, rtype)));
+         
             return VersionControlService.QueryPendingChangesForWorkspace(this, itemSpecs, includeDownloadInfo);
         }
 
@@ -167,6 +168,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         public List<PendingSet> GetPendingSets(string item, RecursionType recurse)
         {
             ItemSpec[] items = { new ItemSpec(item, recurse) };
+         
             return VersionControlService.QueryPendingSets(Name, OwnerName, string.Empty, string.Empty, items, false);
         }
 
@@ -471,7 +473,6 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             string computer = element.Attribute("computer").Value;
             string name = element.Attribute("name").Value;
             string owner = element.Attribute("owner").Value;
-            //bool isLocal = Convert.ToBoolean(element.Attribute("islocal").Value);
 
             string comment = element.Element(XmlNamespaces.GetMessageElementName("Comment")).Value;
             DateTime lastAccessDate = DateTime.Parse(element.Element(XmlNamespaces.GetMessageElementName("LastAccessDate")).Value);
@@ -498,6 +499,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             {
                 element.Add(new XElement(ns + "Folders", Folders.Select(f => f.ToXml(ns))));
             }
+
             return element;
         }
 
@@ -530,8 +532,10 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         public int CompareTo(Workspace other)
         {
             var nameCompare = string.Compare(Name, other.Name, StringComparison.Ordinal);
+         
             if (nameCompare != 0)
                 return nameCompare;
+          
             return string.Compare(OwnerName, other.OwnerName, StringComparison.Ordinal);
         }
 
@@ -543,8 +547,10 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         {
             if (ReferenceEquals(null, other))
                 return false;
+          
             if (ReferenceEquals(this, other))
                 return true;
+         
             return string.Equals(other.Name, Name) && string.Equals(other.OwnerName, OwnerName);
         }
 
@@ -554,11 +560,15 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         {
             if (ReferenceEquals(null, obj))
                 return false;
+          
             if (ReferenceEquals(this, obj))
                 return true;
+           
             Workspace cast = obj as Workspace;
+          
             if (cast == null)
                 return false;
+            
             return Equals(cast);
         }
 
@@ -613,6 +623,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             {
                 FileHelper.Delete(operation.ItemType, operation.TargetLocalItem);
             }
+         
             return null;
         }
 
@@ -629,6 +640,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                 string path = string.IsNullOrEmpty(operation.TargetLocalItem) ? operation.SourceLocalItem : operation.TargetLocalItem;
                 MakeFileWritable(path);
             }
+           
             return new UpdateLocalVersion(operation.ItemId, operation.TargetLocalItem, operation.VersionServer);
         }
 
@@ -639,8 +651,10 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                 var path = DownloadFile(operation, downloadService);
                 if (operation.ItemType == ItemType.File)
                     MakeFileReadOnly(path);
+              
                 return new UpdateLocalVersion(operation.ItemId, path, operation.VersionServer);
             }
+
             return null;
         }
 
@@ -689,6 +703,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                     LoggingService.Log(MonoDevelop.Core.Logging.LogLevel.Info, "Can not delete path:" + path);
                 }
             }
+
             return new UpdateLocalVersion(operation.ItemId, null, operation.VersionServer);
         }
 
@@ -963,7 +978,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                 return string.Empty;
             if (item.DeletionId > 0)
                 return string.Empty;
-            var dowloadService = this.ProjectCollection.GetService<VersionControlDownloadService>();
+            var dowloadService = ProjectCollection.GetService<VersionControlDownloadService>();
             var tempName = dowloadService.DownloadToTemp(item.ArtifactUri);
             var text = item.Encoding > 0 ? File.ReadAllText(tempName, Encoding.GetEncoding(item.Encoding)) :
                        File.ReadAllText(tempName);

@@ -38,9 +38,9 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
     {
         public UpdateLocalVersion(int itemId, string targetLocalItem, int localVersion)
         {
-            this.ItemId = itemId;
-            this.TargetLocalItem = targetLocalItem;
-            this.LocalVersion = localVersion;
+            ItemId = itemId;
+            TargetLocalItem = targetLocalItem;
+            LocalVersion = localVersion;
         }
 
         public int ItemId { get; private set; }
@@ -56,14 +56,15 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                          new XAttribute("lver", LocalVersion));
             if (!string.IsNullOrEmpty(TargetLocalItem))
                 el.Add(new XAttribute("tlocal", TfsPath.FromPlatformPath(TargetLocalItem)));
+          
             return el;
         }
     }
 
     internal sealed class UpdateLocalVersionQueue
     {
-        private readonly List<UpdateLocalVersion> updates;
-        private readonly Workspace workspace;
+        readonly List<UpdateLocalVersion> updates;
+        readonly Workspace workspace;
 
         public UpdateLocalVersionQueue(Workspace workspace)
         {
@@ -82,8 +83,8 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 
         internal void QueueUpdate(UpdateLocalVersion update)
         {
-            if (!this.updates.Any(u => u.ItemId == update.ItemId && u.LocalVersion == update.LocalVersion && string.Equals(u.TargetLocalItem, update.TargetLocalItem)))
-                this.updates.Add(update);
+            if (!updates.Any(u => u.ItemId == update.ItemId && u.LocalVersion == update.LocalVersion && string.Equals(u.TargetLocalItem, update.TargetLocalItem)))
+                updates.Add(update);
         }
 
         internal IEnumerable<XElement> ToXml(XNamespace ns)

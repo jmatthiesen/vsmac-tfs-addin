@@ -35,11 +35,11 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 {
     internal class Message
     {
-        private static readonly XNamespace SoapNs = "http://schemas.xmlsoap.org/soap/envelope/";
-        private readonly WebRequest request;
-        private readonly XDocument document;
-        private readonly XElement messageElement;
-        private readonly string methodName;
+        static readonly XNamespace SoapNs = "http://schemas.xmlsoap.org/soap/envelope/";
+        readonly WebRequest request;
+        readonly XDocument document;
+        readonly XElement messageElement;
+        readonly string methodName;
 
         public WebRequest Request { get { return request; } }
 
@@ -77,30 +77,30 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             XNamespace xsiNs = XmlSchema.InstanceNamespace;
             XNamespace xsdNs = XmlSchema.Namespace;
 
-            this.document = new XDocument(new XDeclaration("1.0", "utf-8", "no"));
-            this.messageElement = new XElement(XmlNamespaces.GetMessageElementName(methodName));
+            document = new XDocument(new XDeclaration("1.0", "utf-8", "no"));
+            messageElement = new XElement(XmlNamespaces.GetMessageElementName(methodName));
             XElement messageEl = new XElement(SoapNs + "Envelope", 
                                      new XAttribute(XNamespace.Xmlns + "xsi", xsiNs),
                                      new XAttribute(XNamespace.Xmlns + "xsd", xsdNs),
                                      new XAttribute(XNamespace.Xmlns + "soap", SoapNs),
-                                     new XElement(SoapNs + "Body", this.messageElement));
+                                     new XElement(SoapNs + "Body", messageElement));
 
-            this.document.Add(messageEl);
+            document.Add(messageEl);
         }
 
         public void AddParam(string name, params object[] content)
         {
-            this.messageElement.Add(new XElement(XmlNamespaces.GetMessageElementName(name), content));
+            messageElement.Add(new XElement(XmlNamespaces.GetMessageElementName(name), content));
         }
 
         public void AddParam(XElement param)
         {
-            this.messageElement.Add(param);
+            messageElement.Add(param);
         }
 
         public void Save()
         {
-            document.Save(this.request.GetRequestStream());
+            document.Save(request.GetRequestStream());
         }
     }
 }

@@ -57,9 +57,9 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                 throw new Exception("Not a server path");
             this.path = path;
             if (!string.Equals(path, RootFolder, StringComparison.Ordinal))
-                this.pathParts = path.Split(Separator).Skip(1).ToArray();
+                pathParts = path.Split(Separator).Skip(1).ToArray();
             else
-                this.pathParts = new string[0];
+                pathParts = new string[0];
         }
 
         public string ItemName
@@ -68,6 +68,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             {
                 if (IsRoot)
                     return VersionControlPath.RootFolder;
+               
                 return pathParts[pathParts.Length - 1];
             }
         }
@@ -104,19 +105,22 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         {
             if (other == null)
                 return false;
+          
             if (other == RootFolder)
                 return true;
+           
             if (other == this)
                 return true;
+           
             bool isChild = true;
             for (int i = 0; i < other.pathParts.Length; i++)
             {
-                if (i > this.pathParts.Length - 1) //This could be a parent if has more items.
+                if (i > pathParts.Length - 1) //This could be a parent if has more items.
                 {
                     isChild = false;
                     break;
                 }
-                var thisPart = this.pathParts[i];
+                var thisPart = pathParts[i];
                 var otherPart = other.pathParts[i];
                 if (!string.Equals(thisPart, otherPart, StringComparison.OrdinalIgnoreCase))
                 {
@@ -124,6 +128,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                     break;
                 }
             }
+
             return isChild;
         }
 
@@ -131,11 +136,14 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         {
             if (parent == null)
                 throw new ArgumentNullException("parent");
+         
             if (!IsChildOrEqualTo(parent))
                 throw new Exception("Not a child");
+
             if (this == parent)
                 return string.Empty;
-            return string.Join(Separator.ToString(), this.pathParts.Skip(parent.pathParts.Length));
+            
+            return string.Join(Separator.ToString(), pathParts.Skip(parent.pathParts.Length));
         }
 
         #region Equal
@@ -155,8 +163,10 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         {
             if (ReferenceEquals(null, other))
                 return false;
+           
             if (ReferenceEquals(this, other))
                 return true;
+           
             return string.Equals(other.path, path, StringComparison.OrdinalIgnoreCase);
         }
 
@@ -166,11 +176,15 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         {
             if (ReferenceEquals(null, obj))
                 return false;
+
             if (ReferenceEquals(this, obj))
                 return true;
+           
             VersionControlPath cast = obj as VersionControlPath;
+           
             if (cast == null)
                 return false;
+           
             return Equals(cast);
         }
 

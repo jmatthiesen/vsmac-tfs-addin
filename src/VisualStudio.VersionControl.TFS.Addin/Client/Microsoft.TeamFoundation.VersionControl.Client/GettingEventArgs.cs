@@ -32,8 +32,8 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 {
     public class GettingEventArgs : System.EventArgs
     {
-        private Workspace workspace;
-        private OperationStatus status;
+        Workspace workspace;
+        OperationStatus status;
         internal GetOperation operation;
 
         internal GettingEventArgs(Workspace workspace, GetOperation operation)

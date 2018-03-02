@@ -52,6 +52,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
         {
             if (ReferenceEquals(null, other))
                 return false;
+            
             if (ReferenceEquals(this, other))
                 return true;
             
@@ -64,9 +65,12 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
         {
             if (ReferenceEquals(null, obj))
                 return false;
+            
             if (ReferenceEquals(this, obj))
                 return true;
+            
             BaseItem cast = obj as BaseItem;
+
             if (cast == null)
                 return false;
 

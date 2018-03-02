@@ -1,11 +1,10 @@
 //
 // TeamFoundationProjectCollection.cs
 //
-// Authors:
+// Author:
 //       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
-//       Javier Suárez Ruiz  <javiersuarezruiz@hotmail.com>   
 //
-// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
+// Copyright (c) 2013 Ventsislav Mladenov
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +25,9 @@
 // THE SOFTWARE.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using System.Linq;
-
 
 namespace Microsoft.TeamFoundation.Client.Services
 {
@@ -49,7 +47,7 @@ namespace Microsoft.TeamFoundation.Client.Services
         #endregion
 
         readonly string serviceUrl = "/TeamFoundation/Administration/v3.0/CatalogService.asmx";
-        readonly string projectCollectionsTypeId = "b2daa29e-33da-4881-9b42-0e25dcadae5d";
+        readonly string projectCollectionsTypeId = "26338d9e-d437-44aa-91f2-55880a328b54";
 
         public ProjectCollectionService(BaseTeamFoundationServer server)
         {
@@ -57,27 +55,29 @@ namespace Microsoft.TeamFoundation.Client.Services
             RelativeUrl = serviceUrl;
         }
 
-        IEnumerable<XElement> GetXmlCollections()
+        private IEnumerable<XElement> GetXmlCollections()
         {
             SoapInvoker invoker = new SoapInvoker(this);
-            var message = invoker.CreateEnvelope("QueryResources");
-            message.Add(new XElement(MessageNs + "resourceIdentifiers", new XElement(MessageNs + "guid", projectCollectionsTypeId)));
+            var message = invoker.CreateEnvelope("QueryResourcesByType");
+            message.Add(new XElement(MessageNs + "resourceTypes", new XElement(MessageNs + "guid", projectCollectionsTypeId)));
             var resultElement = invoker.InvokeResult();
-            return resultElement.XPathSelectElements("./msg:CatalogResources/msg:CatalogResource", this.NsResolver);
+          
+            return resultElement.XPathSelectElements("./msg:CatalogResources/msg:CatalogResource", NsResolver);
         }
 
         public List<ProjectCollection> GetProjectCollections()
         {
             var teamProjects = GetXmlCollections();
-            return new List<ProjectCollection>(teamProjects.Select(t => ProjectCollection.FromServerXml(this.Server, t)));
+
+            return new List<ProjectCollection>(teamProjects.Select(t => ProjectCollection.FromServerXml(Server, t)));
         }
 
         public List<ProjectCollection> GetProjectCollections(List<string> projectCollectionsIds)
         {
             var teamProjects = GetXmlCollections();
-            return new List<ProjectCollection>(teamProjects
-                .Where(tp => projectCollectionsIds.Any(id => string.Equals(id, tp.Attribute("Identifier").Value)))
-                .Select(tp => ProjectCollection.FromServerXml(Server, tp)));
+            return new List<ProjectCollection>(teamProjects             
+                                               .Where(tp => projectCollectionsIds.Any(id => string.Equals(id, tp.Attribute("Identifier").Value)))
+                                               .Select(tp => ProjectCollection.FromServerXml(Server, tp)));
         }
     }
 }

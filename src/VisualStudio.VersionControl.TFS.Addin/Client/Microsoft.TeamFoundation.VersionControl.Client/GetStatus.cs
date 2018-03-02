@@ -33,7 +33,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
     {
         internal GetStatus(int numOperations)
         {
-            this.NumOperations = numOperations;
+            NumOperations = numOperations;
         }
 
         public int NumOperations { get; private set; }

@@ -35,9 +35,9 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
 {
     public sealed class ItemSet
     {
-        private Item[] items;
-        private string pattern;
-        private string queryPath;
+        Item[] items;
+        string pattern;
+        string queryPath;
         //<QueryItemsResult xmlns="http://schemas.microsoft.com/TeamFoundation/2005/06/VersionControl/ClientServices/03">
         //  <ItemSet>
         //    <QueryPath>$/</QueryPath>
@@ -59,6 +59,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
 
             items.Sort();
             itemSet.items = items.ToArray();
+
             return itemSet;
         }
 

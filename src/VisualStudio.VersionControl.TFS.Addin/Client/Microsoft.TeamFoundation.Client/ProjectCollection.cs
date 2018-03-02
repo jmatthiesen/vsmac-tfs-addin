@@ -25,16 +25,17 @@
 // THE SOFTWARE.
 
 using System;
-using System.Xml.Linq;
-using System.Xml.XPath;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
 using Microsoft.TeamFoundation.Client.Services;
 
 namespace Microsoft.TeamFoundation.Client
 {
     public class ProjectCollection : IEquatable<ProjectCollection>, IComparable<ProjectCollection>
     {
+        const string LocationService = "/Services/v3.0/LocationService.asmx";
+
         LocationService locationService;
 
         private ProjectCollection()
@@ -56,11 +57,9 @@ namespace Microsoft.TeamFoundation.Client
             collection.Server = server;
             collection.Name = element.Attribute("DisplayName").Value;
             collection.Id = element.Attribute("Identifier").Value;
-            var locationServiceElement = element.XPathSelectElement("./msg:CatalogServiceReferences/msg:CatalogServiceReference/msg:ServiceDefinition[@serviceType='LocationService']",
-                                             TeamFoundationServerServiceMessage.NsResolver);
-            string locationService = locationServiceElement.Attribute("relativePath").Value;
-            collection.Url = UrlHelper.AddPathToUri(server.Uri, UrlHelper.GetFirstItemOfPath(locationService));
-            collection.LocationServiceUrl = UrlHelper.AddPathToUri(server.Uri, locationService);
+
+            collection.Url = server.Uri;    // UrlHelper.AddPathToUri(server.Uri, UrlHelper.GetFirstItemOfPath(LocationService));
+            collection.LocationServiceUrl = UrlHelper.AddPathToUri(server.Uri, LocationService);
             collection.locationService = new LocationService(collection);
         
             return collection;
@@ -140,6 +139,7 @@ namespace Microsoft.TeamFoundation.Client
         {
             if (ReferenceEquals(null, other))
                 return false;
+
             if (ReferenceEquals(this, other))
                 return true;
             
@@ -152,9 +152,12 @@ namespace Microsoft.TeamFoundation.Client
         {
             if (ReferenceEquals(null, obj))
                 return false;
+          
             if (ReferenceEquals(this, obj))
                 return true;
+          
             ProjectCollection cast = obj as ProjectCollection;
+           
             if (cast == null)
                 return false;
             

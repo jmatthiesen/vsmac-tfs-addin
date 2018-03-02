@@ -50,8 +50,10 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             string local = TfsPath.ToPlatformPath(element.Attribute("local").Value);
             string serverItem = element.Attribute("item").Value;
             var workFolder = new WorkingFolder(serverItem, local);
+           
             if (element.Attribute("type") != null)
                 workFolder.Type = (WorkingFolderType)Enum.Parse(typeof(WorkingFolderType), element.Attribute("type").Value);
+        
             return workFolder;
         }
 
@@ -83,11 +85,12 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         {
             if (VersionControlPath.IsServerItem(serverItem))
                 return;
+         
             string msg = String.Format("TF10125: The path '{0}' must start with {1}", serverItem, VersionControlPath.RootFolder);
             throw new VersionControlException(msg);
         }
 
-        public bool IsCloaked { get { return this.Type == WorkingFolderType.Cloak; } }
+        public bool IsCloaked { get { return Type == WorkingFolderType.Cloak; } }
 
         public string LocalItem { get; private set; }
 

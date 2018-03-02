@@ -26,22 +26,21 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using System.Xml;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
     public class TeamProjectFolderOptions
     {
-        private string comment = "";
-        private bool exclusiveCheckout = false;
-        private string sourceProject;
-        private string teamProject;
+        string comment = "";
+        bool exclusiveCheckout = false;
+        string sourceProject;
+        string teamProject;
 
         public TeamProjectFolderOptions(string teamProject)
         {
             this.teamProject = teamProject;
-            this.sourceProject = teamProject;
+            sourceProject = teamProject;
         }
 
         public TeamProjectFolderOptions(string teamProject, string sourceProject)

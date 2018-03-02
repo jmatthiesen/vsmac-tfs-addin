@@ -55,6 +55,7 @@ namespace Microsoft.TeamFoundation.Client
         {
             if (ReferenceEquals(null, other))
                 return false;
+         
             if (ReferenceEquals(this, other))
                 return true;
           
@@ -67,9 +68,12 @@ namespace Microsoft.TeamFoundation.Client
         {
             if (ReferenceEquals(null, obj))
                 return false;
+           
             if (ReferenceEquals(this, obj))
                 return true;
+           
             var cast = obj as BaseTeamFoundationServer;
+          
             if (cast == null)
                 return false;
           

@@ -72,9 +72,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
                 return "http://schemas.microsoft.com/TeamFoundation/2005/06/WorkItemTracking/ClientServices/03";
             }
         }
-
-        public override Uri Url => new Uri(base.Url.OriginalString.Replace("TeamFoundation", string.Empty));
-
+           
         #endregion
 
         #region implemented abstract members of TFSCollectionService
@@ -94,7 +92,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client
 
         XElement GetHeaderElement()
         {
-            return new XElement(this.MessageNs + "Id", requestId);
+            return new XElement(MessageNs + "Id", requestId);
         }
 
         List<T> GetMetadata<T>(MetadataRowSetNames table)

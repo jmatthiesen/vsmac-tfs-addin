@@ -104,10 +104,10 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 		/// <param name="ignoreSpace">When set to true, all whitespace characters are converted to a single space character before the comparation is done.</param>
 		/// <param name="ignoreCase">When set to true, all characters are converted to their lowercase equivivalence before the comparation is done.</param>
 		/// <returns>Returns a array of DiffItems that describe the differences.</returns>
-		public static DiffItem [] DiffText(Hashtable h,
-																			 string[] LinesA, string[] LinesB, 
-																			 bool trimSpace, bool ignoreSpace, 
-																			 bool ignoreCase) {
+		public static DiffItem [] DiffText(Hashtable h,							
+                                           string[] LinesA, string[] LinesB, 
+										   bool trimSpace, bool ignoreSpace, 
+                                           bool ignoreCase) {
 
 			// The A-Version of the data (original data) to be compared.
 			// strip off all cr, only use lf as textline separator.

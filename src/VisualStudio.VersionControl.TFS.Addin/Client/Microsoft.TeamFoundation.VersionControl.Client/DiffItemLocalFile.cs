@@ -36,8 +36,8 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 		string fileName;
 		int encoding;
 
-		public DiffItemLocalFile (String fileName, int encoding, 
-															DateTime lastModifiedDate)
+		public DiffItemLocalFile (String fileName, int encoding, 		
+                                  DateTime lastModifiedDate)
 		{
 			this.fileName = fileName;
 			this.encoding = encoding;

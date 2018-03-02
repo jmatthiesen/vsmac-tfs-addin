@@ -28,7 +28,6 @@
 //
 
 using System;
-using System.Runtime.ConstrainedExecution;
 
 namespace Microsoft.TeamFoundation.VersionControl.Client
 {
@@ -39,11 +38,12 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             get
             {
                 int p = (int)Environment.OSVersion.Platform;
+               
                 return (p == 4) || (p == 6) || (p == 128);
             }
         }
 
-        private static bool isRunningOnUnix = true;
+        static bool isRunningOnUnix = true;
         public static StringComparison PlatformComparison = StringComparison.InvariantCulture;
 
         static TfsPath()
@@ -62,6 +62,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             // TFS servers corrupt *nix type paths
             if (!isRunningOnUnix)
                 return path;
+            
             return path.Remove(0, 2).Replace('\\', '/');
         }
 
@@ -83,6 +84,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             {
                 path = path.Replace('/', '\\');
             }
+
             return path;
         }
 
@@ -93,6 +95,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             {
                 path = path.Replace('\\', '/');
             }
+
             return path;
         }
     }

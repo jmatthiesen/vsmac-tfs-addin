@@ -31,6 +31,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         Gtk.VBox _view;
         Gtk.Button _manageButton;
         Gtk.ComboBox _workspaceComboBox;
+        Gtk.Label _workspaceLabel;
+        Gtk.Label _noWorkspacesLabel;
         Gtk.ListStore _workspaceStore;
         Gtk.TreeView _treeView;
         Gtk.TreeStore _treeStore;
@@ -58,7 +60,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 progress.Step(1);
                 GetWorkspaces();
                 ExpandPath(VersionControlPath.RootFolder);
-
                 progress.EndTask();
             }
         }
@@ -109,6 +110,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _workspaceComboBox = new Gtk.ComboBox();
             _workspaceStore = new Gtk.ListStore(typeof(Workspace), typeof(string));
 
+            _workspaceLabel = new Gtk.Label(GettextCatalog.GetString("Workspace") + ":");
+            _noWorkspacesLabel = new Gtk.Label(GettextCatalog.GetString("No Workspaces"));
+
+            _workspaceLabel.Visible = false;
+            _workspaceComboBox.Visible = false;
+
             _treeView = new Gtk.TreeView();
             _treeStore = new Gtk.TreeStore(typeof(BaseItem), typeof(Gdk.Pixbuf), typeof(string));
 
@@ -120,7 +127,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         {
             Gtk.HBox headerBox = new Gtk.HBox();
 
-            headerBox.PackStart(new Gtk.Label(GettextCatalog.GetString("Workspace") + ":"), false, false, 0);
+            headerBox.PackStart(_workspaceLabel, false, false, 0);
+            headerBox.PackStart(_noWorkspacesLabel, false, false, 0);
 
             _workspaceComboBox.Model = _workspaceStore;
             var workspaceTextRenderer = new CellRendererText();
@@ -287,12 +295,23 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 }
             }
             _workspaceComboBox.Changed += OnChangeActiveWorkspaces;
+
             if (_workspaces.Count > 0)
             {
                 if (!activeWorkspaceRow.Equals(TreeIter.Zero))
                     _workspaceComboBox.SetActiveIter(activeWorkspaceRow);
                 else
                     _workspaceComboBox.Active = 0;
+       
+                _noWorkspacesLabel.Visible = false;
+                _workspaceLabel.Visible = true;
+                _workspaceComboBox.Visible = true;
+            }
+            else
+            {
+                _noWorkspacesLabel.Visible = true;
+                _workspaceLabel.Visible = false;
+                _workspaceComboBox.Visible = false;
             }
         }
 
@@ -306,14 +325,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             var node = _treeStore.AppendNode();
             _treeStore.SetValues(node, root.Item, ImageHelper.GetRepositoryImage(), root.Name);
             AddChilds(node, root.Children);
-            TreeIter firstNode;
-            if (_treeStore.GetIterFirst(out firstNode))
-            {
-                _treeView.ExpandRow(_treeStore.GetPath(firstNode), false);
-                _treeView.Selection.SelectIter(firstNode);
-            }
-            _treeView.Model = _treeStore;
 
+            _treeView.Model = _treeStore;
         }
 
         void AddChilds(TreeIter node, List<HierarchyItem> children)
@@ -324,10 +337,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 var childNode = _treeStore.AppendNode(node);
                 _treeStore.SetValue(childNode, 0, child.Item);
                 _treeStore.SetValue(childNode, 2, child.Name);
+               
                 if (_treeLevel == 1)
                     _treeStore.SetValue(childNode, 1, ImageHelper.GetRepositoryImage());
                 else
                     _treeStore.SetValue(childNode, 1, ImageHelper.GetItemImage(ItemType.Folder));
+               
                 AddChilds(childNode, child.Children);
             }
             _treeLevel--;
@@ -339,6 +354,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
             var versionControl = _projectCollection.GetService<RepositoryService>();
             var itemSet = versionControl.QueryItemsExtended(_currentWorkspace, new ItemSpec(serverPath, RecursionType.OneLevel), DeletedState.NonDeleted, ItemType.Any);
+        
             foreach (var item in itemSet.Skip(1).OrderBy(i => i.ItemType).ThenBy(i => i.TargetServerItem))
             {
                 var row = _listStore.Append();
@@ -352,19 +368,24 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                         _listStore.SetValue(row, 3, item.ChangeType.ToString());
                         _listStore.SetValue(row, 4, _currentWorkspace.OwnerName);
                     }
+
                     if (item.HasOtherPendingChange)
                     {
-                        var remoteChanges = this._currentWorkspace.GetPendingSets(item.SourceServerItem, RecursionType.None);
+                        var remoteChanges = _currentWorkspace.GetPendingSets(item.SourceServerItem, RecursionType.None);
                         List<string> changeNames = new List<string>();
                         List<string> userNames = new List<string>();
+                     
                         foreach (var remoteChange in remoteChanges)
                         {
                             var pChange = remoteChange.PendingChanges.FirstOrDefault();
+                          
                             if (pChange == null)
                                 continue;
+                            
                             changeNames.Add(pChange.ChangeType.ToString());
                             userNames.Add(remoteChange.Owner);
                         }
+
                         _listStore.SetValue(row, 3, string.Join(", ", changeNames));
                         _listStore.SetValue(row, 4, string.Join(", ", userNames));
                     }

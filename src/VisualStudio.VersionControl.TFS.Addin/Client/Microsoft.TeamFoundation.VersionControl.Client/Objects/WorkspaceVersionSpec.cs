@@ -46,11 +46,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
             this.Name = workspace.Name;
             this.ownerName = workspace.OwnerName;
         }
-        //        public WorkspaceVersionSpec(WorkspaceInfo workspaceInfo)
-        //        {
-        //            this.Name = workspaceInfo.Name;
-        //            this.ownerName = workspaceInfo.OwnerName;
-        //        }
+
         internal override XElement ToXml(XName element)
         {
             return new XElement(element,

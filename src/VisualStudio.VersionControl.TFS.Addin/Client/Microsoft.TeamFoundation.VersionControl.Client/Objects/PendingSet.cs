@@ -49,7 +49,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
     //</s:complexType>
     public class PendingSet
     {
-        private PendingSet()
+        PendingSet()
         {
             PendingChanges = new List<PendingChange>();
         }
@@ -60,6 +60,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
             pSet.Computer = element.GetAttribute("computer");
             pSet.Owner = element.GetAttribute("owner");
             pSet.PendingChanges.AddRange(element.Descendants(element.Name.Namespace + "PendingChange").Select(PendingChange.FromXml));
+         
             return pSet;
         }
 

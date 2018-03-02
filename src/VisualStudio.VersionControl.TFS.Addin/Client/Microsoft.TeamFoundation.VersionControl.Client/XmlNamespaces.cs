@@ -32,6 +32,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
     public static class XmlNamespaces
     {
         const string MessageNsUrl = "http://schemas.microsoft.com/TeamFoundation/2005/06/VersionControl/ClientServices/03";
+      
         public static readonly XNamespace MessageNs = MessageNsUrl;
 
         public static XName GetMessageElementName(string elementName)

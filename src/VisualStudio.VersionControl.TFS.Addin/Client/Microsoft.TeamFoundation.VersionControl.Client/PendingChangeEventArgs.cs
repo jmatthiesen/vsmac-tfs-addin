@@ -38,8 +38,8 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             this.pendingChange = pendingChange;
         }
 
-        private Workspace workspace;
-        private PendingChange pendingChange;
+        Workspace workspace;
+        PendingChange pendingChange;
 
         public Workspace Workspace
         {

@@ -31,14 +31,16 @@ namespace Microsoft.TeamFoundation.Client
 {
     public static class UrlHelper
     {
-        private static readonly string[] urlSeparator = { "/" };
+        static readonly string[] urlSeparator = { "/" };
 
         public static Uri AddPathToUri(Uri baseUri, string path)
         {
             if (baseUri == null)
                 throw new ArgumentNullException("baseUri");
+         
             if (path == null)
                 throw new ArgumentNullException("path");
+            
             var uriBuilder = new UriBuilder(baseUri);
             var splOpt = StringSplitOptions.RemoveEmptyEntries;
             uriBuilder.Path = string.Join(urlSeparator[0], uriBuilder.Path.Split(urlSeparator, splOpt).Union(path.Split(urlSeparator, splOpt)));
@@ -50,7 +52,9 @@ namespace Microsoft.TeamFoundation.Client
         {
             if (path == null)
                 throw new ArgumentNullException("path");
+           
             var items = path.Split(urlSeparator, StringSplitOptions.RemoveEmptyEntries);
+
             if (items.Length > 0)
                 return items[0];
 

@@ -1,7 +1,7 @@
 //
 // Microsoft.TeamFoundation.VersionControl.Client.Difference
 //
-// Authors:
+// Author:
 //	Joel Reed (joelwreed@gmail.com)
 //
 // Copyright (C) 2007 Joel Reed
@@ -64,9 +64,6 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 
             header += String.Format("{0},", ctxStartB + 1);
             header += String.Format("{0} @@", linesB);
-
-            //			header += String.Format("{0},{1},{2},{3}", 
-            //												item1.StartA, item1.deletedA, item1.StartB, item1.insertedB);
 
             stream.WriteLine(header);
 

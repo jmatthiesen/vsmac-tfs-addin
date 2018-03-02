@@ -39,8 +39,8 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
             if (string.IsNullOrEmpty(item))
                 throw new ArgumentException("Value cannot be null or empty.");
 
-            this.Item = item;
-            this.RecursionType = recursionType;
+            Item = item;
+            RecursionType = recursionType;
         }
 
         public ItemSpec(string item, RecursionType recursionType, int deletionId)
@@ -48,22 +48,23 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
             if (string.IsNullOrEmpty(item))
                 throw new ArgumentException("Value cannot be null or empty.");
 
-            this.Item = item;
-            this.RecursionType = recursionType;
-            this.DeletionId = deletionId;
+            Item = item;
+            RecursionType = recursionType;
+            DeletionId = deletionId;
         }
 
         internal XElement ToXml(XName element)
         {
             XElement result = new XElement(element);
-            if (this.RecursionType != RecursionType.None)
+            if (RecursionType != RecursionType.None)
                 result.Add(new XAttribute("recurse", RecursionType));
-            if (this.DeletionId != 0)
+            if (DeletionId != 0)
                 result.Add(new XAttribute("did", DeletionId));
             if (VersionControlPath.IsServerItem(Item))
                 result.Add(new XAttribute("item", Item));
             else
                 result.Add(new XAttribute("item", TfsPath.FromPlatformPath(Item)));
+            
             return result;
         }
 

@@ -73,16 +73,15 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             }
         }
 
-        public override Uri Url => new Uri(base.Url.OriginalString.Replace("TeamFoundation", string.Empty));
-
         #endregion
 
         readonly Random random = new Random();
 
-        private string GetTempFileName(string extension)
+        string GetTempFileName(string extension)
         {
             var num = random.Next();
             var tempDir = Path.Combine(Path.GetTempPath(), "TfSAddinDownload");
+
             if (!Directory.Exists(tempDir))
                 Directory.CreateDirectory(tempDir);
             
@@ -94,6 +93,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             try
             {
                 var client = new WebClient();
+              
                 if (Collection.Server is INetworkServer)
                 {
                     var server = (INetworkServer)Collection.Server;
@@ -108,6 +108,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                 {
                     throw new Exception("Known server");
                 }
+
                 var tempFileName = GetTempFileName(".gz");
                 UriBuilder bulder = new UriBuilder(Url);
                 bulder.Query = artifactUri;
@@ -143,10 +144,12 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         public string DownloadToTempWithName(string downloadUri, string fileName)
         {
             var path = DownloadToTemp(downloadUri);
+
             if (File.Exists(path))
             {
                 var name = Path.GetFileName(fileName);
                 var newName = Path.Combine(Path.GetDirectoryName(path), name);
+               
                 if (FileHelper.FileMove(path, newName, true))
                     return newName;
                 else
@@ -159,6 +162,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
         public string Download(string path, string artifactUri)
         {
             var tempPath = DownloadToTemp(artifactUri);
+         
             if (string.IsNullOrEmpty(tempPath) || !FileHelper.FileMove(tempPath, path, true))
                 return string.Empty;
             

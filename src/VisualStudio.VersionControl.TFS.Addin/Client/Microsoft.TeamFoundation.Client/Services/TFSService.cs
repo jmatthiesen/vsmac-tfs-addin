@@ -52,6 +52,7 @@ namespace Microsoft.TeamFoundation.Client.Services
             {
                 XmlNamespaceManager manager = new XmlNamespaceManager(new NameTable());
                 manager.AddNamespace("msg", MessageNs.ToString());
+              
                 return manager;
             }
         }

@@ -43,6 +43,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
         {
             if (element == null)
                 return null;
+            
             Item item = new Item();
             item.ServerItem = element.GetAttribute("item");
             item.ItemType = EnumHelper.ParseItemType(element.GetAttribute("type"));
@@ -56,12 +57,14 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
             {
                 item.IsBranch = GeneralHelper.XmlAttributeToBool(element.GetAttribute("isbranch"));
             }
+
             if (item.ItemType == ItemType.File)
             {
                 item.ContentLength = GeneralHelper.XmlAttributeToInt(element.GetAttribute("len"));
                 item.ArtifactUri = element.GetAttribute("durl");
                 item.HashValue = GeneralHelper.ToByteArray(element.GetAttribute("hash"));
             }
+
             return item;
         }
 

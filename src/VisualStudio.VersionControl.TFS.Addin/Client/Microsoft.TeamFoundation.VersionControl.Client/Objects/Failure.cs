@@ -87,18 +87,22 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
         {
             Failure failure = new Failure();
             failure.RequestType = EnumHelper.ParseRequestType(element.GetAttribute("req"));
+          
             if (!string.IsNullOrEmpty(element.GetAttribute("sev")))
             {
                 failure.SeverityType = EnumHelper.ParseSeverityType(element.GetAttribute("sev"));
             }
+
             failure.Code = element.GetAttribute("code");
             failure.ComputerName = element.GetAttribute("computer");
             failure.IdentityName = element.GetAttribute("ident");
             failure.LocalItem = element.GetAttribute("local");
             failure.ServerItem = element.GetAttribute("item");
             failure.ItemId = GeneralHelper.XmlAttributeToInt(element.GetAttribute("itemid"));
+          
             if (element.Element(element.Name.Namespace + "Message") != null)
                 failure.Message = element.Element(element.Name.Namespace + "Message").Value;
+        
             return failure;
         }
 
@@ -134,6 +138,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
                 FailureException exception;
                 if (!Enum.TryParse<FailureException>(Code, true, out exception))
                     exception = FailureException.Other;
+               
                 return exception;
             }
         }

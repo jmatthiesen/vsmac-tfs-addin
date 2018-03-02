@@ -45,15 +45,19 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
             var result = new CheckInResult();
             result.ChangeSet = Convert.ToInt32(el.GetAttribute("cset"));
             result.UndoneServerItems = new List<string>();
+         
             if (el.Element(ns + "UndoneServerItems") != null)
             {
                 result.UndoneServerItems.AddRange(el.Element(ns + "UndoneServerItems").Elements(ns + "string").Select(x => x.Value));
             }
+
             result.LocalVersionUpdates = new List<GetOperation>();
+       
             if (el.Element(ns + "LocalVersionUpdates") != null)
             {
                 result.LocalVersionUpdates.AddRange(el.Element(ns + "LocalVersionUpdates").Elements(ns + "GetOperation").Select(GetOperation.FromXml));
             }
+
             return result;
         }
 

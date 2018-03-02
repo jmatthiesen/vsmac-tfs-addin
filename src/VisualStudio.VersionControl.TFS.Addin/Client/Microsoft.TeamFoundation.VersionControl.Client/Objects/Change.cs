@@ -48,6 +48,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
                 change.ChangeType = (ChangeType)Enum.Parse(typeof(ChangeType), element.Attribute("type").Value.Replace(" ", ","), true);
             }
             change.Item = Item.FromXml(element.Element(element.Name.Namespace + "Item"));
+         
             return change;
         }
 

@@ -37,6 +37,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
             Conflict conflict = new Conflict();
             conflict.ConflictId = GeneralHelper.XmlAttributeToInt(element.GetAttribute("cid"));
             conflict.PendingChangeId = GeneralHelper.XmlAttributeToInt(element.GetAttribute("pcid"));
+           
             //Your
             conflict.YourChangeType = EnumHelper.ParseChangeType(element.GetAttribute("ychg"));
             conflict.YourServerItem = element.GetAttribute("ysitem");
@@ -48,6 +49,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
             conflict.YourDeletionId = GeneralHelper.XmlAttributeToInt(element.GetAttribute("ydid"));
             conflict.YourLocalChangeType = EnumHelper.ParseChangeType(element.GetAttribute("ylchg"));
             conflict.YourLastMergedVersion = GeneralHelper.XmlAttributeToInt(element.GetAttribute("ylmver"));
+          
             //Base
             conflict.BaseServerItem = element.GetAttribute("bsitem");
             conflict.BaseEncoding = GeneralHelper.XmlAttributeToInt(element.GetAttribute("benc"));
@@ -57,6 +59,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
             conflict.BaseDeletionId = GeneralHelper.XmlAttributeToInt(element.GetAttribute("bdid"));
             conflict.BaseItemType = EnumHelper.ParseItemType(element.GetAttribute("btype"));
             conflict.BaseChangeType = EnumHelper.ParseChangeType(element.GetAttribute("bchg"));
+          
             //Their
             conflict.TheirItemId = GeneralHelper.XmlAttributeToInt(element.GetAttribute("titemid"));
             conflict.TheirVersion = GeneralHelper.XmlAttributeToInt(element.GetAttribute("tver"));
@@ -80,6 +83,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
             conflict.YourDowloadUrl = element.GetAttribute("ydurl");
 
             conflict.Workspace = workspace;
+        
             return conflict;
         }
 

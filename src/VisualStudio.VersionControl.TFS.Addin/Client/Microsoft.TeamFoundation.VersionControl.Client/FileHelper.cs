@@ -106,6 +106,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                     FileService.NotifyFileRemoved(source);
                     return true;
                 }
+
                 return false;
             }
             catch
@@ -144,6 +145,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
                 if (overrideDetination && Directory.Exists(destination))
                     Directory.Delete(destination, true);
                 Directory.Move(source, destination);
+            
                 return true;
             }
             catch

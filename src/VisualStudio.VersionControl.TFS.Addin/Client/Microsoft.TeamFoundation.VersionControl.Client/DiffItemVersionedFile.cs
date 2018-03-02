@@ -33,13 +33,13 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 {
     public sealed class DiffItemVersionedFile : IDiffItem
     {
-        private string label;
-        private Item item;
+        string label;
+        Item item;
 
         public DiffItemVersionedFile(Item item)
         {
             this.item = item;
-            this.label = item.ServerItem;
+            label = item.ServerItem;
         }
 
         public DiffItemVersionedFile(int itemId, int changeset, string displayPath)

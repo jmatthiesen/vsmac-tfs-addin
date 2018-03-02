@@ -41,7 +41,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
     {
         const string NewLine = "\r\n";
         const string Boundary = "----------------------------8e5m2D6l5Q4h6";
-        const int ChunkSize = 512 * 1024; //Chunk Size 512 K
+        const int ChunkSize = 512 * 1024; // Chunk Size 512 K
         static readonly string uncompressedContentType = "application/octet-stream";
 //        private static readonly string compressedContentType = "application/gzip";
 
@@ -82,8 +82,6 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             }
         }
 
-        public override Uri Url => new Uri(base.Url.OriginalString.Replace("TeamFoundation", string.Empty));
-
         #endregion
 
         void CopyStream(Stream source, Stream destination)
@@ -115,6 +113,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             {
                 byte[] buffer = new byte[ChunkSize];
                 int cnt;
+
                 while((cnt = memory.Read(buffer, 0, ChunkSize)) > 0)
                 {
                     var range = GetRange(memory.Position - cnt, memory.Position, fileContent.Length);
@@ -125,17 +124,17 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
 
         void UploadPart(string fileName, string workspaceName, string workspaceOwner, int fileSize, string fileHash, string range, string contentType, byte[] bytes, int copyBytes)
         {
-            var request = (HttpWebRequest)WebRequest.Create(this.Url);
+            var request = (HttpWebRequest)WebRequest.Create(Url);
             request.Method = "POST";
 
             if (Collection.Server is INetworkServer)
             {
-                var server = (INetworkServer)this.Collection.Server;
+                var server = (INetworkServer)Collection.Server;
                 request.Credentials = server.Credentials;
             }
             else if (Collection.Server is IAuthServer)
             {
-                var server = (IAuthServer)this.Collection.Server;
+                var server = (IAuthServer)Collection.Server;
                 request.Headers.Add(HttpRequestHeader.Authorization, server.AuthString);
             }
             else

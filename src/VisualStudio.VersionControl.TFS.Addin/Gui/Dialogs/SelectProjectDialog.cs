@@ -3,7 +3,6 @@ using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using MonoDevelop.Core;
-using MonoDevelop.VersionControl.TFS.Gui;
 using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 

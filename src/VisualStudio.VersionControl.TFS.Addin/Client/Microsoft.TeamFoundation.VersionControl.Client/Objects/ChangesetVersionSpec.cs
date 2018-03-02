@@ -36,12 +36,12 @@ namespace Microsoft.TeamFoundation.VersionControl.Client.Objects
     {
         public ChangesetVersionSpec(string changesetId)
         {
-            this.ChangesetId = Convert.ToInt32(changesetId);
+            ChangesetId = Convert.ToInt32(changesetId);
         }
 
         public ChangesetVersionSpec(int changesetId)
         {
-            this.ChangesetId = changesetId;
+            ChangesetId = changesetId;
         }
 
         internal override XElement ToXml(XName element)

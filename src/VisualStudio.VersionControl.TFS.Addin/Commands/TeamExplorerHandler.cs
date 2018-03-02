@@ -9,7 +9,6 @@ namespace MonoDevelop.VersionControl.TFS.Commands
     {
         protected override void Run ()
         {
-        
             Pad pad = null;
 
             var pads = IdeApp.Workbench.Pads; 

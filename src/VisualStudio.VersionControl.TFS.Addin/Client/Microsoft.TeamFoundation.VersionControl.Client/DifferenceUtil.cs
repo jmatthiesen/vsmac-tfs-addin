@@ -51,6 +51,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             Length = fileContents.Length;
 
             string path = PrefixedHeaderPath(prefix, name);
+          
             if (Length == 0)
             {
                 this.name = "/dev/null";
@@ -69,7 +70,7 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             Lines = x.Split('\n');
         }
 
-        private string PrefixedHeaderPath(char c, string path)
+        string PrefixedHeaderPath(char c, string path)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -107,13 +108,10 @@ namespace Microsoft.TeamFoundation.VersionControl.Client
             {
                 ctx2End = Math.Min(item.StartB + item.insertedB + nextDist, maxB);
                 int proposedStart = Math.Max(item.StartB + item.insertedB, ctx2End - nextDist);
-                //Console.WriteLine("proposedStart {0}, nextDist {1}", proposedStart, nextDist);
                 ctx2Start = Math.Min(proposedStart, ctx2End);
             }
 
             ctxLineCnt = (ctx1End - ctx1Start) + (ctx2End - ctx2Start);
-            //Console.WriteLine(String.Format("ctx1Start={0} ctx1End={1} ctx2Start={2} ctx2End={3} ctxLineCnt={4}\nmaxB={5} prevDist={6} nextDist={7}", 
-            //																ctx1Start, ctx1End, ctx2Start, ctx2End, ctxLineCnt, maxB, prevDist, nextDist));
         }
 
         public int LinesA { get { return ctxLineCnt + item.deletedA; } }

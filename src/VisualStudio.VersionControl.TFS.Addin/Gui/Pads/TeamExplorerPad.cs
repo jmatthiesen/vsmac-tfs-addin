@@ -160,7 +160,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
             {
                 node.MoveToParent();
                 var project = (ProjectInfo)node.GetValue(_item);
-                SourceControlExplorerView.Show(project.Collection);
+                SourceControlExplorerView.Show(project);
             }
 
             if (nodeType == TeamExplorerNodeType.WorkItems)
