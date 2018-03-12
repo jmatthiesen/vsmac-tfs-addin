@@ -15,6 +15,8 @@ namespace MonoDevelop.VersionControl.TFS.Commands
             {
                 if (chooseVersionControlDialog.Run() == Xwt.Command.Ok)
                 {
+                    chooseVersionControlDialog.Close();
+
                     using (var dialog = new ConnectToServerDialog())
                     {
                         dialog.Run(Xwt.MessageDialog.RootWindow);

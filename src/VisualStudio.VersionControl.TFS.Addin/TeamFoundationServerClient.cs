@@ -35,7 +35,7 @@ namespace MonoDevelop.VersionControl.TFS
                 _authService.SaveCredentials(serverInfo.Uri.OriginalString, authentication.Password);
 
                 var server = TeamFoundationServerFactory.Create(
-                    ServerType.VisualStudio,
+                    ServerType.VSTS,
                     serverInfo,
                     authentication,
                     false);

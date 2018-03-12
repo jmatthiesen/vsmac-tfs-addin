@@ -3,6 +3,6 @@
     public enum ServerType
     {
         TFS = 0,
-        VisualStudio = 1
+        VSTS = 1
     }
 }

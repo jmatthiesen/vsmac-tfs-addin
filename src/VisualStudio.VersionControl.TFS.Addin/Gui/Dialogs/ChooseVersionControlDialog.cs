@@ -1,4 +1,6 @@
-﻿using MonoDevelop.Core;
+﻿using System;
+using Microsoft.TeamFoundation.Client;
+using MonoDevelop.Core;
 using MonoDevelop.Ide.Fonts;
 using Xwt;
 
@@ -15,13 +17,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             BuildGui();   
         }
 
+        public ServerType ServerType { get { return _vstsRadioButton.Active ? ServerType.VSTS : ServerType.TFS; } }
+
         void Init()
         {
             _vstsRadioButton = new RadioButton();
+            _vstsRadioButton.ActiveChanged += ChangeVSTSServerType;
             _vstsRadioButton.Active = true;
-
+ 
             _tfsRadioButton = new RadioButton();
-            _tfsRadioButton.Active = false;
+            _tfsRadioButton.ActiveChanged += ChangeTFSServerType; 
+            _tfsRadioButton.Active = false;     
         }
 
         void BuildGui()
@@ -29,38 +35,31 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Title = GettextCatalog.GetString("Version Control");
 
             var content = new VBox();
-            content.HeightRequest = 200;
-            content.WidthRequest = 600;
+            content.WidthRequest = 500;
 
-            Label titleLabel = new Label(GettextCatalog.GetString("Where is your project hosted?"));
-            titleLabel.Font = FontService.SansFont.CopyModified(4).ToXwtFont();
-            titleLabel.Margin = new WidgetSpacing(0, 12, 0, 12);
-          
+            Label titleLabel = new Label(GettextCatalog.GetString("Where is your project hosted?"));          
             content.PackStart(titleLabel);
      
             HBox vstsBox = new HBox();
             vstsBox.PackStart(_vstsRadioButton);
+
             Label vstsTitleLabel = new Label(GettextCatalog.GetString("Visual Studio Team Services"));
-            vstsTitleLabel.Font = FontService.SansFont.CopyModified(2).ToXwtFont();
             vstsBox.PackStart(vstsTitleLabel);
 
             content.PackStart(vstsBox);
 
             Label vstsDescriptionLabel = new Label(GettextCatalog.GetString("A cloud service for code development collaboration by Microsoft"));
-            vstsDescriptionLabel.Font = FontService.SansFont.CopyModified(1).ToXwtFont();
             vstsDescriptionLabel.Wrap = WrapMode.Word;
             content.PackStart(vstsDescriptionLabel);
 
             HBox tfsBox = new HBox();
             tfsBox.PackStart(_tfsRadioButton);
             Label tfsTitleLabel = new Label(GettextCatalog.GetString("Team Foundation Version Control"));
-            tfsTitleLabel.Font = FontService.SansFont.CopyModified(2).ToXwtFont();
             tfsBox.PackStart(tfsTitleLabel);
 
             content.PackStart(tfsBox);
 
             Label tfsDescriptionLabel = new Label(GettextCatalog.GetString("Centralized Version Control system by Microsoft storing any type of artifac within its repository"));
-            tfsDescriptionLabel.Font = FontService.SansFont.CopyModified(1).ToXwtFont();
             tfsDescriptionLabel.Wrap = WrapMode.Word;
             content.PackStart(tfsDescriptionLabel);
 
@@ -87,6 +86,22 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             Content = content;
             Resizable = false;
+        }
+
+        void ChangeVSTSServerType(object sender, EventArgs args)
+        {
+            if(_vstsRadioButton.Active)
+            {
+                _tfsRadioButton.Active = false;
+            }
+        }
+
+        void ChangeTFSServerType(object sender, EventArgs args)
+        {
+            if (_tfsRadioButton.Active)
+            {
+                _vstsRadioButton.Active = false;
+            }
         }
     }
 }
