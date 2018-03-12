@@ -28,11 +28,14 @@ namespace MonoDevelop.VersionControl.TFS
 
         public static SettingsService Settings { get { return _settings ?? (_settings = new SettingsService()); } }
 
-        public BaseTeamFoundationServer SaveCredentials(BaseServerInfo serverInfo, ServerAuthentication authentication)
+        public BaseTeamFoundationServer SaveCredentials(BaseServerInfo serverInfo, ServerAuthentication authentication, bool saveCredentials = true)
         {
             try
             {
-                _authService.SaveCredentials(serverInfo.Uri.OriginalString, authentication.Password);
+                if (saveCredentials)
+                {
+                    _authService.SaveCredentials(serverInfo.Uri.OriginalString, authentication.Password);
+                }
 
                 var server = TeamFoundationServerFactory.Create(
                     ServerType.VSTS,
