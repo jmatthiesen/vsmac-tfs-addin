@@ -51,7 +51,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
                 if (string.IsNullOrEmpty(_tfsNameEntry.Text))
                     return null;
                 
-                var auth = new ServerAuthentication(ServerType.VisualStudio)
+                var auth = new ServerAuthentication(ServerType.VSTS)
                 {
                     AuthUser = _tfsNameEntry.Text,
                     Password = _tfsPasswordEntry.Password,

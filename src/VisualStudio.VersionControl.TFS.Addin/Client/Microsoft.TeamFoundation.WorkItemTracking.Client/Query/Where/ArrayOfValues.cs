@@ -35,9 +35,12 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query.Where
         public ArrayOfValues(string word)
         {
             Values = new List<Node>();
+
             if (string.IsNullOrEmpty(word))
                 return;
+            
             var arrayOfWords = word.Split(new []{ ',' }, StringSplitOptions.RemoveEmptyEntries);
+
             foreach (var w in arrayOfWords)
             {
                 var trimmedWord = w.Trim();

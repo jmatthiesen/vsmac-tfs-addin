@@ -14,21 +14,25 @@ namespace Microsoft.TeamFoundation.Client
             else
             {
                 var vsServerInfo = (VisualStudioServerInfo)serverInfo;
-                return new VisualStudioOnlineTFS(vsServerInfo.Uri, vsServerInfo.Name, vsServerInfo.TFSUserName, auth.AuthUser, auth.Password, isPasswordSavedInXml);
+                return new VisualStudioTeamServices(vsServerInfo.Uri, vsServerInfo.Name, vsServerInfo.TFSUserName, auth.AuthUser, auth.Password, isPasswordSavedInXml);
             }
         }
 
         public static BaseTeamFoundationServer Create(XElement element, string password, bool isPasswordSavedInXml)
         {
             var type = element.Attribute("Type");
+<<<<<<< HEAD
 
+=======
+           
+>>>>>>> feature/choose-versioncontrol
             if (type == null || (ServerType)Convert.ToInt32(type.Value) == ServerType.TFS)
             {
                 return TeamFoundationServer.FromLocalXml(element, password, isPasswordSavedInXml);
             }
             else
             {
-                return VisualStudioOnlineTFS.FromLocalXml(element, password, isPasswordSavedInXml);
+                return VisualStudioTeamServices.FromLocalXml(element, password, isPasswordSavedInXml);
             }
         }
     }

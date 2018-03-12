@@ -5,20 +5,20 @@ using System.Xml.Linq;
 
 namespace Microsoft.TeamFoundation.Client
 {
-    public class VisualStudioOnlineTFS : BaseTeamFoundationServer, IAuthServer
+    public class VisualStudioTeamServices : BaseTeamFoundationServer, IAuthServer
     {
 
-        public VisualStudioOnlineTFS(Uri url, string name, string userName, string authUserName, string password, bool isPasswordSavedInXml)
+        public VisualStudioTeamServices(Uri url, string name, string userName, string authUserName, string password, bool isPasswordSavedInXml)
             : base(url, name, userName, password, isPasswordSavedInXml)
         {
             AuthUserName = authUserName;
         }
 
-        public static VisualStudioOnlineTFS FromLocalXml(XElement element, string password, bool isPasswordSavedInXml)
+        public static VisualStudioTeamServices FromLocalXml(XElement element, string password, bool isPasswordSavedInXml)
         {
             try
             {
-                var server = new VisualStudioOnlineTFS(new Uri(element.Attribute("Url").Value),
+                var server = new VisualStudioTeamServices(new Uri(element.Attribute("Url").Value),
                                                        element.Attribute("Name").Value,
                                                        element.Attribute("UserName").Value,
                                                        element.Attribute("AuthUserName").Value,
@@ -37,7 +37,7 @@ namespace Microsoft.TeamFoundation.Client
         public override XElement ToLocalXml()
         {
             var serverElement = new XElement("Server",
-                                        new XAttribute("Type", (int)ServerType.VisualStudio),
+                                        new XAttribute("Type", (int)ServerType.VSTS),
                                         new XAttribute("Name", Name),
                                         new XAttribute("Url", Uri),
                                         new XAttribute("UserName", UserName),

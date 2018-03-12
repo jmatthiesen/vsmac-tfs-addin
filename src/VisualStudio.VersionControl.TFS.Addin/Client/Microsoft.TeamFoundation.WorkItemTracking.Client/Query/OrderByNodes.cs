@@ -42,7 +42,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
         public OrderByNode(string name, Direction direction)
         {
             ColumnName = name.Trim().Trim('[', ']');
-            this.Direction = direction;
+            Direction = direction;
         }
 
         public string ColumnName { get; set; }
@@ -64,7 +64,7 @@ namespace Microsoft.TeamFoundation.WorkItemTracking.Client.Query
             settings.Encoding = Encoding.UTF8;
             settings.Indent = true;
             settings.OmitXmlDeclaration = true;
-            //settings.NewLineChars = Environment.NewLine;
+        
             using (XmlWriter writer = XmlWriter.Create(builder, settings))
             {
                 writer.WriteStartElement("sort");
