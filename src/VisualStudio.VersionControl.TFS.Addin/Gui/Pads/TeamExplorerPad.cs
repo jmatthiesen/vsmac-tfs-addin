@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.TeamFoundation.Client;
-using Microsoft.TeamFoundation.WorkItemTracking.Client;
+using Autofac;
 using MonoDevelop.Components;
 using MonoDevelop.Components.Docking;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.VersionControl.TFS.Gui.Dialogs;
 using MonoDevelop.VersionControl.TFS.Gui.Views;
+using MonoDevelop.VersionControl.TFS.Models;
+using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Pads
@@ -32,6 +33,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
         DataField<string> _name;
         DataField<TeamExplorerNodeType> _type;
         DataField<object> _item;
+
+        TeamFoundationServerVersionControlService _service;
 
         public override Control Control { get { return new XwtControl(_content); } }
 
@@ -69,6 +72,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
             _content.PackStart(_treeView, true, true);
 
             _treeView.RowActivated += OnRowClicked;
+     
+            _service = DependencyInjection.Container.Resolve<TeamFoundationServerVersionControlService>();
         }
 
         void AddButtons(IPadWindow window)
@@ -87,7 +92,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
         {
             _treeStore.Clear();
 
-            var servers = TeamFoundationServerClient.Settings.GetServers();
+            var servers = _service.Servers;
 
             foreach (var server in servers)
             {
@@ -109,7 +114,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
                             .SetValue(_type, TeamExplorerNodeType.Project)
                             .SetValue(_item, projectInfo);
 
-                        var workItemProject = workItemManager.GetByGuid(projectInfo.Guid);
+                        var workItemProject = workItemManager.GetByGuid(projectInfo.Id);
                     
                         if (workItemProject != null)
                         {

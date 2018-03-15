@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.TeamFoundation.VersionControl.Client;
-using Microsoft.TeamFoundation.VersionControl.Client.Enums;
-using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using MonoDevelop.Core;
+using MonoDevelop.VersionControl.TFS.Models;
+using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
     public class GetSpecVersionDialog : Dialog
     {
-        Workspace _workspace;
+        IWorkspace _workspace;
 
         ListView _listView;
         DataField<ExtendedItem> _itemField;
@@ -21,13 +20,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         ComboBox _versionBox;
         SpinButton _changeSetNumber;
 
-        public GetSpecVersionDialog(Workspace workspace)
+        internal GetSpecVersionDialog(IWorkspace workspace)
         {
             Init(workspace);
             BuildGui();    
         }
 
-        void Init(Workspace workspace)
+        void Init(IWorkspace workspace)
         {
             _workspace = workspace;
 
@@ -91,7 +90,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false;
         }
 
-        public void AddData(List<ExtendedItem> items)
+        internal void AddData(List<ExtendedItem> items)
         {
             _listStore.Clear();
 
@@ -100,9 +99,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 var row = _listStore.AddRow();
                 _listStore.SetValue(row, _itemField, item);
                 _listStore.SetValue(row, _isSelectedField, true);
-                VersionControlPath path = item.TargetServerItem;
-                _listStore.SetValue(row, _nameField, path.ItemName);
-                _listStore.SetValue(row, _pathField, path.ParentPath);
+                //VersionControlPath path = item.TargetServerItem;
+                //_listStore.SetValue(row, _nameField, path.ItemName);
+                //_listStore.SetValue(row, _pathField, path.ParentPath);
             }
         }
 
@@ -130,6 +129,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             Respond(Command.Ok);
 
+            /*
             var option =  GetOptions.GetAll;
 
             using (var progress = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull))
@@ -144,6 +144,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 TeamFoundationServerClient.Instance.Get(_workspace, requests, option, progress);
                 progress.ReportSuccess("Finish Downloading.");
             }
+            */
         }
     }
 }

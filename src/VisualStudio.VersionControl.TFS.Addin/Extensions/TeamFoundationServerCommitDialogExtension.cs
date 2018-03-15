@@ -5,7 +5,7 @@
         public override bool Initialize(ChangeSet changeSet)
         {
             var repo = changeSet.Repository as TeamFoundationServerRepository;
-           
+
             if (repo != null)
             {
                 return true;

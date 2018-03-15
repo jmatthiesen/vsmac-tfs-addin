@@ -1,6 +1,5 @@
-﻿using Xwt;
-using MonoDevelop.Core;
-using Microsoft.TeamFoundation.VersionControl.Client.Enums;
+﻿using MonoDevelop.Core;
+using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
@@ -27,13 +26,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 
         public void ApplyChanges()
         {
-            TeamFoundationServerClient.Settings.CheckOutLockLevel = (CheckOutLockLevel)_lockLevelBox.SelectedItem;
+            //TeamFoundationServerClient.Settings.CheckOutLockLevel = (CheckOutLockLevel)_lockLevelBox.SelectedItem;
         }
 
         ComboBox CreateLockLevelComboBox()
         {
             ComboBox lockLevelBox = new ComboBox();
 
+            /*
             lockLevelBox.Items.Add(CheckOutLockLevel.Unchanged, "Keep any existing lock.");
             lockLevelBox.Items.Add(CheckOutLockLevel.CheckOut, "Prevent other users from checking out and checking in");
             lockLevelBox.Items.Add(CheckOutLockLevel.CheckIn, "Prevent other users from checking in but allow checking out");
@@ -42,7 +42,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
                 lockLevelBox.SelectedItem = CheckOutLockLevel.CheckOut;
             else
                 lockLevelBox.SelectedItem = TeamFoundationServerClient.Settings.CheckOutLockLevel;
-            
+            */
 
             return lockLevelBox;
         }

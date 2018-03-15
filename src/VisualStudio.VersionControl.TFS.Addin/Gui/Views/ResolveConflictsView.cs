@@ -1,20 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using Microsoft.TeamFoundation.VersionControl.Client;
-using Microsoft.TeamFoundation.VersionControl.Client.Enums;
-using Microsoft.TeamFoundation.VersionControl.Client.Objects;
+using Autofac;
 using MonoDevelop.Components;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
+using MonoDevelop.VersionControl.TFS.Models;
+using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Views
 {
     public class ResolveConflictsView : ViewContent
     {
-        TeamFoundationServerRepository _repository;
-        List<FilePath> _paths;
+        List<LocalPath> _paths;
+        IWorkspace _workspace;
+        TeamFoundationServerVersionControlService _versionControlService;
 
         VBox _view;
         Button _acceptLocal;
@@ -39,14 +40,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         public override Control Control => new XwtControl(_view);
 
-        public static void Open(TeamFoundationServerRepository repository, List<FilePath> paths)
+        internal static void Open(IWorkspace workspace, List<LocalPath> paths)
         {
             foreach (var view in IdeApp.Workbench.Documents)
             {
                 var sourceDoc = view.GetContent<ResolveConflictsView>();
                 if (sourceDoc != null)
                 {
-                    sourceDoc.GetData(repository, paths);
+                    sourceDoc.GetData(workspace, paths);
                     sourceDoc.LoadConflicts();
                     view.Window.SelectWindow();
                     return;
@@ -54,7 +55,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             }
 
             ResolveConflictsView resolveConflictsView = new ResolveConflictsView();
-            resolveConflictsView.GetData(repository, paths);
+            resolveConflictsView.GetData(workspace, paths);
             resolveConflictsView.LoadConflicts();
             IdeApp.Workbench.OpenDocument(resolveConflictsView, true);
         }
@@ -75,7 +76,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _versionTheirField = new DataField<int>();
             _versionYourField = new DataField<int>();
             _listStore = new ListStore(_typeField, _nameField, _itemField, _versionBaseField, _versionTheirField, _versionYourField);
-            _paths = new List<FilePath>();
+            _paths = new List<LocalPath>();
+         
+            _versionControlService = DependencyInjection.Container.Resolve<TeamFoundationServerVersionControlService>();
         }
 
         void BuildGui()
@@ -110,9 +113,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _view.PackStart(_listView, true, true);
         }
 
-        void GetData(TeamFoundationServerRepository repository, List<FilePath> paths)
+        void GetData(IWorkspace workspace, List<LocalPath> paths)
         {
-            _repository = repository;
+            _workspace = workspace;
             _paths.Clear();
             _paths.AddRange(paths);
         }
@@ -120,11 +123,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         async void RowClicked()
         {
             var conflict = _listStore.GetValue(_listView.SelectedRow, _itemField);
-            var doc = await IdeApp.Workbench.OpenDocument(conflict.TargetLocalItem, null, true);
+            var doc = await IdeApp.Workbench.OpenDocument(new FilePath(conflict.TargetLocalItem), null, true);
 
             if (doc != null)
             {
-                doc.Window.SwitchView(doc.Window.FindView<VersionControl.Views.IDiffView>());
+                doc.Window.SwitchView(doc.Window.FindView<MonoDevelop.VersionControl.Views.IDiffView>());
             }
         }
 
@@ -136,7 +139,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         void AcceptLocalClicked()
         {
             var conflict = _listStore.GetValue(_listView.SelectedRow, _itemField);
-            _repository.Resolve(conflict, ResolutionType.AcceptYours);
+            _workspace.Resolve(conflict, ResolutionType.AcceptYours);
             LoadConflicts();
         }
 
@@ -148,32 +151,30 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         void AcceptServerClicked()
         {
             var conflict = _listStore.GetValue(_listView.SelectedRow, _itemField);
-            _repository.Resolve(conflict, ResolutionType.AcceptTheirs);
+            _workspace.Resolve(conflict, ResolutionType.AcceptTheirs);
             LoadConflicts();
         }
 
         async void ViewLocalClicked()
         {
             var conflict = _listStore.GetValue(_listView.SelectedRow, _itemField);
-            var downloadService = _repository.VersionControlService.Collection.GetService<VersionControlDownloadService>();
-            var fileName = downloadService.DownloadToTemp(conflict.BaseDowloadUrl);
+            var fileName = _workspace.DownloadToTemp(conflict.BaseDowloadUrl);
            
-            var doc = await IdeApp.Workbench.OpenDocument(fileName, null, true);
+            var doc = await IdeApp.Workbench.OpenDocument(new FilePath(fileName), null, true);
             doc.Window.ViewContent.ContentName = Path.GetFileName(conflict.TargetLocalItem) + " - v" + conflict.BaseVersion;
            
-            doc.Closed += (o, e) => FileHelper.FileDelete(fileName);
+            doc.Closed += (o, e) => fileName.Delete();
         }
 
         async void ViewRemoteClicked()
         {
             var conflict = _listStore.GetValue(_listView.SelectedRow, _itemField);
-            var downloadService = _repository.VersionControlService.Collection.GetService<VersionControlDownloadService>();
-            var fileName = downloadService.DownloadToTemp(conflict.TheirDowloadUrl);
+            var fileName = _workspace.DownloadToTemp(conflict.TheirDowloadUrl);
            
-            var doc = await IdeApp.Workbench.OpenDocument(fileName, null, true);
+            var doc = await IdeApp.Workbench.OpenDocument(new FilePath(fileName), null, true);
             doc.Window.ViewContent.ContentName = Path.GetFileName(conflict.TargetLocalItem) + " - v" + conflict.TheirVersion;
            
-            doc.Closed += (o, e) => FileHelper.FileDelete(fileName);
+            doc.Closed += (o, e) => fileName.Delete();
         }
 
         void LoadConflicts()
@@ -181,7 +182,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             if (_paths.Count == 0)
                 return;
             
-            var conflicts = _repository.GetConflicts(_paths);
+            var conflicts = _workspace.GetConflicts(_paths);
 
             _listStore.Clear();
             foreach (var conflict in conflicts)
@@ -190,7 +191,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 _listStore.SetValue(row, _itemField, conflict);
                 _listStore.SetValue(row, _typeField, conflict.ConflictType.ToString());
               
-                var path = ((FilePath)conflict.TargetLocalItem).ToRelative(_paths[0]);
+                var path = conflict.TargetLocalItem.ToRelativeOf(_paths[0]);
               
                 _listStore.SetValue(row, _nameField, path);
                 _listStore.SetValue(row, _versionBaseField, conflict.BaseVersion);

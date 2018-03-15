@@ -1,240 +1,281 @@
-﻿using System;
+// TFSRepository.cs
+//
+// Authors:
+//       Ventsislav Mladenov
+//       Javier Suárez Ruiz
+// 
+// The MIT License (MIT)
+// 
+// Copyright (c) 2013-2018 Ventsislav Mladenov, Javier Suárez Ruiz
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.TeamFoundation.VersionControl.Client;
-using Microsoft.TeamFoundation.VersionControl.Client.Enums;
-using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.VersionControl.TFS.Gui.Dialogs;
 using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Models;
+using MonoDevelop.VersionControl.TFS.MonoDevelopWrappers;
+using MonoDevelop.VersionControl.TFS.Services;
+using MonoDevelop.VersionControl.TFS.VersionControl.Enums;
 
 namespace MonoDevelop.VersionControl.TFS
 {
     public class TeamFoundationServerRepository : Repository
     {
-        List<Workspace> _workspaces;
-        RepositoryCache _cache;
+        readonly IWorkspace workspace;
+        readonly RepositoryCache cache;
+        readonly VersionInfoResolver _versionInfoResolver;
+        readonly TeamFoundationServerVersionControlService _versionControlService;
+        readonly FileKeeperService _fileKeeperService;
 
-        internal TeamFoundationServerRepository(RepositoryService versionControlService, string rootPath)
+        public TeamFoundationServerRepository(string rootPath, IWorkspace workspace,
+                                              TeamFoundationServerVersionControlService versionControlService, FileKeeperService fileKeeperService)
         {
-            VersionControlService = versionControlService;
-            RootPath = rootPath;  
-
-            _workspaces = new List<Workspace>();
-            _cache = new RepositoryCache(this);
+            if (workspace == null)
+                return;
+            
+            RootPath = rootPath;
+            this.workspace = workspace;
+            _versionControlService = versionControlService;
+            _fileKeeperService = fileKeeperService;
+            _versionInfoResolver = new VersionInfoResolver(this);
         }
 
-        internal RepositoryService VersionControlService { get; set; }
+        public INotificationService NotificationService { get; set; }
 
-        public override string GetBaseText(FilePath localFile)
-        {
-            var workspace = GetWorkspaceByLocalPath(localFile);
-            var serverPath = workspace.GetServerPathForLocalPath(localFile);
-         
-            if (string.IsNullOrEmpty(serverPath))
-                return string.Empty;
-
-            var item = workspace.GetItem(serverPath, ItemType.File, true);
-
-            return workspace.GetItemContent(item);
+        bool IsFileInWorkspace(LocalPath path)
+        {      
+            return workspace.Data.IsLocalPathMapped(path);
         }
 
-        public override bool RequestFileWritePermission(params FilePath[] paths)
+        #region implemented members of Repository
+
+        #region Not Implemented
+
+        protected override Repository OnPublish(string serverPath, FilePath localPath, FilePath[] files, string message, ProgressMonitor monitor)
         {
-            using (var progress = VersionControl.VersionControlService.GetProgressMonitor("Edit"))
-            {
-                foreach (var path in paths)
-                {
-                    if (!File.Exists(path) || !File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))
-                        continue;
-                  
-                    progress.Log.WriteLine("Start editing item: " + path);
-                   
-                    try
-                    {
-                        var workspace = GetWorkspaceByLocalPath(path);
-                        var failures = workspace.PendEdit(new List<FilePath> { path }, RecursionType.None, TeamFoundationServerClient.Settings.CheckOutLockLevel);
-                       
-                        if (failures.Any(f => f.SeverityType == SeverityType.Error))
-                        {
-                            foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
-                            {
-                                progress.ReportError(failure.Code, new Exception(failure.Message));
-                            }
-                        }
-                        else
-                        {
-                            _cache.RefreshItem(path);
-                            progress.ReportSuccess("Finish editing item.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        progress.ReportError(ex.Message, ex);
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        public void Resolve(Conflict conflict, ResolutionType resolutionType)
-        {
-            conflict.Workspace.Resolve(conflict, resolutionType);
-        }
-
-        protected override void OnAdd(FilePath[] localPaths, bool recurse, ProgressMonitor monitor)
-        {
-            foreach (var ws in GroupFilesPerWorkspace(localPaths))
-            {
-                TeamFoundationServerClient.Instance.PendAdd(ws.Key, ws.ToList(), recurse);
-            }
-
-            _cache.RefreshItems(localPaths);
-            FileService.NotifyFilesChanged(localPaths);
+            throw new NotSupportedException("Publish is not supported");
         }
 
         protected override void OnCheckout(FilePath targetLocalPath, Revision rev, bool recurse, ProgressMonitor monitor)
         {
-            var workspaces = TeamFoundationServerClient.Instance.GetWorkspaces(VersionControlService.Collection);
+            throw new NotSupportedException("CheckOut is not supported");
+        }
+
+        protected override void OnRevertRevision(FilePath localPath, Revision revision, ProgressMonitor monitor)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        public override string GetBaseText(FilePath localFile)
+        {
+            var item = workspace.GetItem(ItemSpec.FromLocalPath(new LocalPath(localFile)), ItemType.File, true);
            
-            if (workspaces.Count == 0)
-            {
-                Workspace newWorkspace = new Workspace(VersionControlService,
-                                                       Environment.MachineName + ".WS", VersionControlService.Collection.Server.UserName, "Auto created",
-                                                       new List<WorkingFolder> { new WorkingFolder(VersionControlPath.RootFolder, targetLocalPath) }, Environment.MachineName);
-               
-                var workspace = TeamFoundationServerClient.Instance.CreateWorkspace(VersionControlService, newWorkspace);
-              
-                TeamFoundationServerClient.Instance.Get(workspace, new GetRequest(VersionControlPath.RootFolder, RecursionType.Full, VersionSpec.Latest), GetOptions.None);
-            }
-            else
-            {
-                _workspaces.AddRange(workspaces);
-                var workspace = GetWorkspaceByLocalPath(targetLocalPath);
-              
-                if (workspace == null)
-                    return;
-                
-                TeamFoundationServerClient.Instance.Get(workspace, new GetRequest(workspace.GetServerPathForLocalPath(targetLocalPath), RecursionType.Full, VersionSpec.Latest), GetOptions.None);
-            }
-        }
-
-        protected override void OnCommit(ChangeSet changeSet, ProgressMonitor monitor)
-        {
-            var groupByWorkspace = from it in changeSet.Items
-                                   let workspace = GetWorkspaceByLocalPath(it.LocalPath)
-                                   group it by workspace into wg
-                                   select wg;
-
-            foreach (var workspace in groupByWorkspace)
-            {
-                var workspace1 = workspace;
-                var changes = workspace.Key.PendingChanges.Where(pc => workspace1.Any(wi => string.Equals(pc.LocalItem, wi.LocalPath))).ToList();
-
-                var result = TeamFoundationServerClient.Instance.CheckIn(workspace.Key, changes, changeSet.GlobalComment);
-
-                if (result.Failures != null && result.Failures.Any(x => x.SeverityType == SeverityType.Error))
-                {
-                    MessageService.ShowError("Commit failed!", string.Join(Environment.NewLine, result.Failures.Select(f => f.Message)));
-                    break;
-                }
-            }
-
-            foreach (var file in changeSet.Items.Where(i => !i.IsDirectory))
-            {
-                FileService.NotifyFileChanged(file.LocalPath);
-            }
-
-            _cache.RefreshItems(changeSet.Items.Select(i => i.LocalPath));
-        }
-
-        protected override void OnDeleteDirectories(FilePath[] localPaths, bool force, ProgressMonitor monitor, bool keepLocal)
-        {
-            foreach (var ws in GroupFilesPerWorkspace(localPaths))
-            {
-                List<Failure> failures;
-                ws.Key.PendDelete(ws.ToList(), RecursionType.Full, keepLocal, out failures);
-                if (failures.Any(f => f.SeverityType == SeverityType.Error))
-                {
-                    foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
-                    {
-                        monitor.ReportError(failure.Code, new Exception(failure.Message));
-                    }
-                }
-            }
-
-            _cache.RefreshItems(localPaths);
-            FileService.NotifyFilesChanged(localPaths);
-        }
-
-        protected override void OnDeleteFiles(FilePath[] localPaths, bool force, ProgressMonitor monitor, bool keepLocal)
-        {
-            foreach (var ws in GroupFilesPerWorkspace(localPaths))
-            {
-                List<Failure> failures;
-                ws.Key.PendDelete(ws.ToList(), RecursionType.None, keepLocal, out failures);
-                if (failures.Any(f => f.SeverityType == SeverityType.Error))
-                {
-                    foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
-                    {
-                        monitor.ReportError(failure.Code, new Exception(failure.Message));
-                    }
-                }
-            }
-
-            _cache.RefreshItems(localPaths);
-            FileService.NotifyFilesChanged(localPaths);
-        }
-
-        protected override VersionInfo[] OnGetDirectoryVersionInfo(FilePath localDirectory, bool getRemoteStatus, bool recursive)
-        {
-            var solutions = IdeApp.Workspace.GetAllSolutions().Where(s => s.BaseDirectory.IsChildPathOf(localDirectory) || s.BaseDirectory == localDirectory);
-            List<FilePath> paths = new List<FilePath>();
-            paths.Add(localDirectory);
-           
-            foreach (var solution in solutions)
-            {
-                var sfiles = solution.GetItemFiles(true);
-                paths.AddRange(sfiles.Where(f => f != localDirectory));
-            }
-
-            RecursionType recursionType = recursive ? RecursionType.Full : RecursionType.OneLevel;
-            return GetItemsVersionInfo(paths, getRemoteStatus, recursionType);
+            return workspace.GetItemContent(item);
         }
 
         protected override Revision[] OnGetHistory(FilePath localFile, Revision since)
         {
-            var workspace = GetWorkspaceByLocalPath(localFile);
-            var serverPath = workspace.GetServerPathForLocalPath(localFile);
+            var serverPath = workspace.Data.GetServerPathForLocalPath(new LocalPath(localFile));
             ItemSpec spec = new ItemSpec(serverPath, RecursionType.None);
             ChangesetVersionSpec versionFrom = null;
-           
+          
             if (since != null)
-                versionFrom = new ChangesetVersionSpec(((TeamFoundationServerRevision)since).Version);
-            
-            return VersionControlService.QueryHistory(spec, VersionSpec.Latest, versionFrom, null).Select(x => new TeamFoundationServerRevision(this, serverPath, x)).ToArray();
+                versionFrom = new ChangesetVersionSpec(((TFSRevision)since).Version);
+        
+            return workspace.QueryHistory(spec, VersionSpec.Latest, versionFrom, null, short.MaxValue).Select(x => new TFSRevision(this, serverPath, x)).ToArray();
+        }
+
+        protected override IEnumerable<VersionInfo> OnGetVersionInfo(IEnumerable<FilePath> paths, bool getRemoteStatus)
+        {
+            var localPaths = paths.Select(p => new LocalPath(p));
+          
+            return _versionInfoResolver.GetFileStatus(localPaths).Values.ToArray();
+        }
+
+        protected override VersionInfo[] OnGetDirectoryVersionInfo(FilePath localDirectory, bool getRemoteStatus, bool recursive)
+        {
+            return _versionInfoResolver.GetDirectoryStatus(new LocalPath(localDirectory)).Values.ToArray();
+        }
+
+        protected override void OnUpdate(FilePath[] localPaths, bool recurse, ProgressMonitor monitor)
+        {
+            var paths = localPaths.Select(x => new LocalPath(x)).ToArray();
+            var getRequests = paths.Select(p => new LocalPath(p))
+                                   .Where(IsFileInWorkspace)
+                                   .Select(file => new GetRequest(file, recurse ? RecursionType.Full : RecursionType.None, VersionSpec.Latest))
+                                   .ToList();
+            workspace.Get(getRequests, GetOptions.None);
+            _versionInfoResolver.InvalidateCache(paths);
+            NotificationService.NotifyFilesChanged(paths);
+        }
+
+        protected override void OnCommit(ChangeSet changeSet, ProgressMonitor monitor)
+        {
+            var commitItems = (from it in changeSet.Items
+                let path = new LocalPath(it.LocalPath)
+                let needUpload = path.IsFile && (it.Status.HasFlag(VersionStatus.ScheduledAdd) || it.Status.HasFlag(VersionStatus.Modified))
+                select new CommitItem
+                {
+                    LocalPath = path,
+                    NeedUpload = needUpload
+                }).ToArray();
+
+            Dictionary<int, WorkItemCheckinAction> workItems = null;
+            if (changeSet.ExtendedProperties.Contains("TFS.WorkItems"))
+                workItems = (Dictionary<int, WorkItemCheckinAction>)changeSet.ExtendedProperties["TFS.WorkItems"];
+            var result = workspace.CheckIn(commitItems, changeSet.GlobalComment, workItems);
+           
+            if (result.Failures != null && result.Failures.Any(x => x.SeverityType == SeverityType.Error))
+            {
+                MessageService.ShowError("Commit failed!", string.Join(Environment.NewLine, result.Failures.Select(f => f.Message)));
+                //ResolveConflictsView.Open(workspace, changeSet.Items.Select(w => new LocalPath(w.LocalPath)).ToList());
+            }
+
+            foreach (var file in changeSet.Items.Where(i => !i.IsDirectory))
+            {
+                VersionControlService.NotifyFileStatusChanged(new FileUpdateEventArgs());
+                NotificationService.NotifyFileChanged(file.LocalPath);
+            }
+
+            _versionInfoResolver.InvalidateCache(commitItems.Select(i => i.LocalPath));
+        }
+
+        protected override void OnRevert(FilePath[] localPaths, bool recurse, ProgressMonitor monitor)
+        {
+            var specs = localPaths.Select(x => new ItemSpec(x, recurse ? RecursionType.Full : RecursionType.None));
+            var operations = workspace.Undo(specs);
+            _versionInfoResolver.InvalidateCache(operations);
+
+            NotificationService.NotifyFilesChanged(operations);
+            NotificationService.NotifyFilesRemoved(localPaths.Select(p => new LocalPath(p)).Where(p => !p.Exists));
+        }
+
+        protected override void OnRevertToRevision(FilePath localPath, Revision revision, ProgressMonitor monitor)
+        {
+            var spec = new ItemSpec(localPath, localPath.IsDirectory ? RecursionType.Full : RecursionType.None);
+            var rev = (TFSRevision)revision;
+            var request = new GetRequest(spec, new ChangesetVersionSpec(rev.Version));
+            workspace.Get(request, GetOptions.None);
+            _versionInfoResolver.InvalidateCache(localPath);
+            NotificationService.NotifyFileChanged(localPath);
+        }
+
+        protected override void OnAdd(FilePath[] localPaths, bool recurse, ProgressMonitor monitor)
+        {
+            var paths = localPaths.Select(x => new LocalPath(x)).Where(IsFileInWorkspace).ToArray();
+            ICollection<Failure> failures;
+            workspace.PendAdd(paths, recurse, out failures);
+
+            var failuresDialog = new FailuresDialog(failures);
+            failuresDialog.Show();
+
+            _versionInfoResolver.InvalidateCache(paths, recurse);
+            NotificationService.NotifyFilesChanged(paths);
+        }
+
+        protected override void OnDeleteFiles(FilePath[] localPaths, bool force, ProgressMonitor monitor, bool keepLocal)
+        {
+            var paths = localPaths.Select(p => new LocalPath(p)).ToArray();
+            DeletePaths(paths, false, monitor, keepLocal);
+        }
+
+        protected override void OnDeleteDirectories(FilePath[] localPaths, bool force, ProgressMonitor monitor, bool keepLocal)
+        {
+            var paths = localPaths.Select(p => new LocalPath(p)).ToArray();
+            DeletePaths(paths, true, monitor, keepLocal);
+        }
+
+        void DeletePaths(LocalPath[] localPaths, bool recursive, ProgressMonitor monitor, bool keepLocal)
+        {
+            using (var keeper = _fileKeeperService.StartSession())
+            {
+                if (keepLocal) keeper.Save(localPaths, recursive);
+
+                var statuses = _versionInfoResolver.GetFileStatus(localPaths);
+                //Remove files which are versioned and not added.
+                var forRemove = statuses.Where(s => s.Value.IsVersioned &&
+                                                    !s.Value.HasLocalChange(VersionStatus.ScheduledAdd)).Select(s => s.Key);
+
+                ICollection<Failure> failures;
+                workspace.PendDelete(forRemove, recursive ? RecursionType.Full : RecursionType.None, keepLocal, out failures);
+                if (failures.Any(f => f.SeverityType == SeverityType.Error))
+                {
+                    foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
+                    {
+                        monitor.ReportError(failure.Code, new Exception(failure.Message));
+                    }
+                }
+
+                //Revert added files.
+                var addedFiles = statuses.Where(s => s.Value.HasLocalChange(VersionStatus.ScheduledAdd)).Select(s => new FilePath(s.Key)).ToArray();
+                Revert(addedFiles, recursive, monitor);
+
+                _versionInfoResolver.InvalidateCache(localPaths, recursive);
+                NotificationService.NotifyFilesRemoved(localPaths);
+            }
+        }
+
+        protected override string OnGetTextAtRevision(FilePath repositoryPath, Revision revision)
+        {
+            var tfsRevision = (TFSRevision)revision;
+           
+            if (tfsRevision.Version == 0)
+                return string.Empty;
+
+            var serverPath = workspace.Data.GetServerPathForLocalPath(new LocalPath(repositoryPath));
+          
+            if (string.IsNullOrEmpty(serverPath))
+                return string.Empty;
+
+            var item = new ItemSpec(serverPath, RecursionType.None);
+            var items = workspace.GetItems(item.ToEnumerable(), new ChangesetVersionSpec(tfsRevision.Version), DeletedState.Any, ItemType.Any, true);
+          
+            if (items.Count == 0)
+                return string.Empty;
+         
+            return workspace.GetItemContent(items[0]);
         }
 
         protected override RevisionPath[] OnGetRevisionChanges(Revision revision)
         {
-            var tfsRevision = (TeamFoundationServerRevision)revision;
+            var tfsRevision = (TFSRevision)revision;
 
-            var changeSet = VersionControlService.QueryChangeset(tfsRevision.Version, true);
+            var changeSet = workspace.QueryChangeset(tfsRevision.Version, true);
             List<RevisionPath> revisionPaths = new List<RevisionPath>();
+          
             var changesByItemGroup = from ch in changeSet.Changes
-                                     group ch by ch.Item into grCh
-                                     select grCh;
+                                              group ch by ch.Item into grCh
+                                              select grCh;
             
             foreach (var changesByItem in changesByItemGroup)
             {
                 RevisionAction action;
-
                 var changes = changesByItem.Select(ch => ch.ChangeType).ToList();
+             
                 if (changes.Any(ch => ch.HasFlag(ChangeType.Add)))
                     action = RevisionAction.Add;
                 else if (changes.Any(ch => ch.HasFlag(ChangeType.Delete)))
@@ -245,9 +286,8 @@ namespace MonoDevelop.VersionControl.TFS
                     action = RevisionAction.Modify;
                 else
                     action = RevisionAction.Other;
-                
-                var workspace = GetWorkspaceByServerPath(changesByItem.Key.ServerItem);
-                string path = workspace.GetLocalPathForServerPath(changesByItem.Key.ServerItem);
+             
+                string path = workspace.Data.GetLocalPathForServerPath(changesByItem.Key.ServerPath);
                 path = string.IsNullOrEmpty(path) ? changesByItem.Key.ServerItem : path;
                 revisionPaths.Add(new RevisionPath(path, action, action.ToString()));
             }
@@ -255,279 +295,184 @@ namespace MonoDevelop.VersionControl.TFS
             return revisionPaths.ToArray();
         }
 
-        protected override string OnGetTextAtRevision(FilePath repositoryPath, Revision revision)
-        {
-            var tfsRevision = (TeamFoundationServerRevision)revision;
-
-            if (tfsRevision.Version == 0)
-                return string.Empty;
-            
-            var workspace = GetWorkspaceByLocalPath(repositoryPath);
-            var serverPath = workspace.GetServerPathForLocalPath(repositoryPath);
-            var items = VersionControlService.QueryItems(new ItemSpec(serverPath, RecursionType.None),
-                            new ChangesetVersionSpec(tfsRevision.Version), DeletedState.Any, ItemType.Any, true);
-
-            if (items.Count == 0)
-                return string.Empty;
-            
-            return workspace.GetItemContent(items[0]);
-        }
-
-        protected override IEnumerable<VersionInfo> OnGetVersionInfo(IEnumerable<FilePath> paths, bool getRemoteStatus)
-        {
-            return GetItemsVersionInfo(paths.ToList(), getRemoteStatus, RecursionType.None);
-        }
-
         protected override void OnIgnore(FilePath[] localPath)
         {
-            throw new NotImplementedException();
-        }
-
-        protected override Repository OnPublish(string serverPath, FilePath localPath, FilePath[] files, string message, ProgressMonitor monitor)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void OnRevert(FilePath[] localPaths, bool recurse, ProgressMonitor monitor)
-        {
-            foreach (var ws in GroupFilesPerWorkspace(localPaths))
-            {
-                var specs = ws.Select(x => new ItemSpec(x, recurse ? RecursionType.Full : RecursionType.None)).ToList();
-                var operations = ws.Key.Undo(specs, monitor);
-                _cache.RefreshItems(operations);
-                FileService.NotifyFilesChanged(operations);
-            }
-
-            FileService.NotifyFilesRemoved(localPaths.Where(x => !FileHelper.HasFile(x)));
-        }
-
-        protected override void OnRevertRevision(FilePath localPath, Revision revision, ProgressMonitor monitor)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void OnRevertToRevision(FilePath localPath, Revision revision, ProgressMonitor monitor)
-        {
-            var spec = new ItemSpec(localPath, localPath.IsDirectory ? RecursionType.Full : RecursionType.None);
-            var rev = (TeamFoundationServerRevision)revision;
-            var request = new GetRequest(spec, new ChangesetVersionSpec(rev.Version));
-            var workspace = GetWorkspaceByLocalPath(localPath);
-           
-            if (workspace != null)
-            {
-                TeamFoundationServerClient.Instance.Get(workspace, request, GetOptions.None, monitor);
-                _cache.RefreshItem(localPath);
-            }
+            //TODO: Add Ignore Option
         }
 
         protected override void OnUnignore(FilePath[] localPath)
         {
-            throw new NotImplementedException();
+            //TODO: Add UnIgnore Option
         }
 
-        protected override void OnUpdate(FilePath[] localPaths, bool recurse, ProgressMonitor monitor)
+        public override DiffInfo GenerateDiff(FilePath baseLocalPath, VersionInfo versionInfo)
         {
-            foreach (var workspace in GroupFilesPerWorkspace(localPaths))
+            if (versionInfo.LocalPath.IsDirectory)
+                return null;
+            
+            string text;
+            if (versionInfo.Status.HasFlag(VersionStatus.ScheduledAdd) || versionInfo.Status.HasFlag(VersionStatus.ScheduledDelete))
             {
-                var getRequests = workspace.Select(file => new GetRequest(file, recurse ? RecursionType.Full : RecursionType.None, VersionSpec.Latest)).ToList();
-                TeamFoundationServerClient.Instance.Get(workspace.Key, getRequests, GetOptions.None, monitor);
-            }
-
-            _cache.RefreshItems(localPaths);
-        }
-
-        internal Workspace GetWorkspaceByLocalPath(FilePath path)
-        {
-            return _workspaces.SingleOrDefault(x => x.IsLocalPathMapped(path));
-        }
-
-        internal void CheckoutFile(FilePath path)
-        {
-            using (var progress = VersionControl.VersionControlService.GetProgressMonitor("CheckOut"))
-            {
-                progress.Log.WriteLine("Start check out item: " + path);
-                var workspace = GetWorkspaceByLocalPath(path);
-
-                TeamFoundationServerClient.Instance.Get(workspace, new GetRequest(path, RecursionType.None, VersionSpec.Latest), GetOptions.GetAll);
-                var failures = workspace.PendEdit(new List<FilePath> { path }, RecursionType.None, TeamFoundationServerClient.Settings.CheckOutLockLevel);
-
-                if (failures.Any())
+                if (versionInfo.Status.HasFlag(VersionStatus.ScheduledAdd))
                 {
-                    var failuresDialog = new FailuresDialog(failures);
-                    failuresDialog.Show();
+                    var lines = File.ReadAllLines(versionInfo.LocalPath);
+                    text = string.Join(Environment.NewLine, lines.Select(l => "+" + l));
+                    return new DiffInfo(baseLocalPath, versionInfo.LocalPath, text);
                 }
 
-                _cache.RefreshItem(path);
-                FileService.NotifyFileChanged(path);
+                if (versionInfo.Status.HasFlag(VersionStatus.ScheduledDelete))
+                {
+                    var item = workspace.GetItem(ItemSpec.FromServerPath(new RepositoryPath(versionInfo.RepositoryPath, false)), ItemType.File, true);
+                    var lines = workspace.GetItemContent(item).Split(new [] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    text = string.Join(Environment.NewLine, lines.Select(l => "-" + l));
+                    return new DiffInfo(baseLocalPath, versionInfo.LocalPath, text);
+                }
+
+                return null;
+            }
+
+            return null;
+        }
+
+        protected override void OnMoveFile(FilePath localSrcPath, FilePath localDestPath, bool force, ProgressMonitor monitor)
+        {
+            base.OnMoveFile(localSrcPath, localDestPath, force, monitor);
+            Move(new LocalPath(localSrcPath), new LocalPath(localDestPath));
+        }
+
+        protected override void OnMoveDirectory(FilePath localSrcPath, FilePath localDestPath, bool force, ProgressMonitor monitor)
+        {
+            base.OnMoveDirectory(localSrcPath, localDestPath, force, monitor);
+            Move(new LocalPath(localSrcPath), new LocalPath(localDestPath));
+        }
+
+        void Move(LocalPath from, LocalPath to)
+        {
+            ICollection<Failure> failures;
+            workspace.PendRename(from, to, out failures);
+
+            var failuresDialog = new FailuresDialog(failures);
+            failuresDialog.Show();
+
+            _versionInfoResolver.InvalidateCache(to);
+
+            NotificationService.NotifyFileRemoved(from);
+            NotificationService.NotifyFileChanged(to);
+        }
+
+        protected override void OnLock(ProgressMonitor monitor, params FilePath[] localPaths)
+        {
+            var paths = localPaths.Select(x => new LocalPath(x)).ToArray();
+            LockItems(paths, LockLevel.CheckOut);
+        }
+
+        protected override void OnUnlock(ProgressMonitor monitor, params FilePath[] localPaths)
+        {
+            var paths = localPaths.Select(x => new LocalPath(x)).ToArray();
+            LockItems(paths, LockLevel.None);
+        }
+
+  
+        void LockItems(LocalPath[] localPaths, LockLevel lockLevel)
+        {
+            workspace.LockItems(localPaths, lockLevel);
+            _versionInfoResolver.InvalidateCache(localPaths);
+            NotificationService.NotifyFilesChanged(localPaths);
+        }
+
+        protected override VersionControlOperation GetSupportedOperations(VersionInfo vinfo)
+        {
+            if (!IsFileInWorkspace(new LocalPath(vinfo.LocalPath)))
+            {
+                return VersionControlOperation.None;
+            }
+            var supportedOperations = base.GetSupportedOperations(vinfo);
+           
+            if (vinfo.HasLocalChanges) //Disable update for modified files.
+                supportedOperations &= ~VersionControlOperation.Update;
+            supportedOperations &= ~VersionControlOperation.Annotate; //Annotated is not supported yet.
+          
+            if (vinfo.Status.HasFlag(VersionStatus.ScheduledAdd))
+                supportedOperations &= ~VersionControlOperation.Log;
+
+            if (vinfo.Status.HasFlag(VersionStatus.Locked))
+            {
+                supportedOperations &= ~VersionControlOperation.Lock;
+                supportedOperations &= ~VersionControlOperation.Remove;
+            }
+
+            return supportedOperations;
+        }
+
+        public override bool RequestFileWritePermission(params FilePath[] paths)
+        {
+            using (var progress = VersionControlService.GetProgressMonitor("Edit"))
+            {
+                foreach (var path in paths.Select(p => new LocalPath(p)))
+                {
+                    if (!path.Exists || !path.IsReadOnly)
+                        continue;
+                    
+                    progress.Log.WriteLine("Start editing item: " + path);
+                  
+                    try
+                    {
+                        ICollection<Failure> failures;
+                        workspace.PendEdit(path.ToEnumerable(), RecursionType.None, _versionControlService.CheckOutLockLevel, out failures);
+                        if (failures.Any(f => f.SeverityType == SeverityType.Error))
+                        {
+                            foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
+                            {
+                                progress.ReportError(failure.Code, new Exception(failure.Message));
+                            }
+                        }
+                        else
+                        {
+                            _versionInfoResolver.InvalidateCache(path);
+                            NotificationService.NotifyFileChanged(path);
+                            progress.ReportSuccess("Finish editing item.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        progress.ReportError(ex.Message, ex);
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        public override bool AllowLocking { get { return true; } }
+
+        public override bool AllowModifyUnlockedFiles { get { return true; } }
+
+        public override bool SupportsRemoteStatus { get { return false; } }
+
+        #endregion
+
+        internal void CheckoutFile(LocalPath path)
+        {
+            using (var progress = VersionControlService.GetProgressMonitor("CheckOut"))
+            {
+                progress.Log.WriteLine("Start check out item: " + path);
+                ICollection<Failure> failures;
+                workspace.CheckOut(path.ToEnumerable(), out failures);
+        
+                var failuresDialog = new FailuresDialog(failures);
+                failuresDialog.Show();
+
+                _versionInfoResolver.InvalidateCache(path);
+                NotificationService.NotifyFileChanged(path);
                 progress.ReportSuccess("Finish check out.");
             }
         }
 
-        internal void AttachWorkspace(Workspace workspace)
-        {
-            if (workspace == null)
-                throw new ArgumentNullException("Workspace not found");
-
-            if (_workspaces.Contains(workspace))
-                return;
-
-            workspace.RefreshPendingChanges();
-            _workspaces.Add(workspace);
-        }
-
         internal void Refresh()
         {
-            _cache.ClearCache();
-
-            foreach (var workspace in _workspaces)
-            {
-                workspace.RefreshPendingChanges();
-            }
+            _versionInfoResolver.InvalidateCache();
         }
 
-        internal List<Conflict> GetConflicts(List<FilePath> paths)
-        {
-            List<Conflict> conflicts = new List<Conflict>();
-           
-            foreach (var workspacePaths in GroupFilesPerWorkspace(paths))
-            {
-                conflicts.AddRange(workspacePaths.Key.GetConflicts(workspacePaths));
-            }
-
-            return conflicts;
-        }
-
-        List<IGrouping<Workspace, FilePath>> GroupFilesPerWorkspace(IEnumerable<FilePath> filePaths)
-        {
-            var filesPerWorkspace = from f in filePaths
-                                    let workspace = GetWorkspaceByLocalPath(f)
-                                    group f by workspace into wg
-                                    select wg;
-            
-            return filesPerWorkspace.ToList();
-        }
-
-        VersionInfo[] GetItemsVersionInfo(List<FilePath> paths, bool getRemoteStatus, RecursionType recursive)
-        {
-            List<VersionInfo> infos = new List<VersionInfo>();
-            var extendedItems = _cache.GetItems(paths, recursive);
-           
-            foreach (var item in extendedItems.Where(i => i.IsInWorkspace || (!i.IsInWorkspace && i.ChangeType.HasFlag(ChangeType.Delete))).Distinct())
-            {
-                infos.AddRange(GetItemVersionInfo(item, getRemoteStatus));
-            }
-
-            foreach (var path in paths)
-            {
-                var path1 = path;
-                if (infos.All(i => path1.CanonicalPath != i.LocalPath.CanonicalPath))
-                {
-                    infos.Add(VersionInfo.CreateUnversioned(path1, FileHelper.HasFolder(path1)));
-                }
-            }
-
-            return infos.ToArray();
-        }
-
-        IEnumerable<VersionInfo> GetItemVersionInfo(ExtendedItem item, bool getRemoteStatus)
-        {
-            var localStatus = GetLocalVersionStatus(item);
-            var localRevision = GetLocalRevision(item);
-            var remoteStatus = getRemoteStatus ? GetServerVersionStatus(item) : VersionStatus.Versioned;
-            var remoteRevision = getRemoteStatus ? GetServerRevision(item) : (TeamFoundationServerRevision)null;
-            var path = item.LocalItem;
-           
-            if (string.IsNullOrEmpty(path) && item.ChangeType.HasFlag(ChangeType.Delete))
-            {
-                var workspace = GetWorkspaceByServerPath(item.ServerPath);
-                path = workspace.GetLocalPathForServerPath(item.ServerPath);
-            }
-
-            yield return new VersionInfo(path, item.ServerPath, item.ItemType == ItemType.Folder,
-                localStatus, localRevision, remoteStatus, remoteRevision);
-        }
-
-        VersionStatus GetLocalVersionStatus(ExtendedItem item)
-        {
-            if (item == null)
-                return VersionStatus.Unversioned;
-           
-            var workspace = GetWorkspaceByServerPath(item.ServerPath);
-          
-            if (workspace == null)
-                return VersionStatus.Unversioned;
-           
-            var status = VersionStatus.Versioned;
-
-            if (item.IsLocked) 
-            {
-                if (item.HasOtherPendingChange)
-                    status |= VersionStatus.Locked;
-                else
-                    status |= VersionStatus.LockOwned; 
-            }
-
-            var changes = workspace.PendingChanges.Where(ch => string.Equals(ch.ServerItem, item.ServerPath, StringComparison.OrdinalIgnoreCase)).ToList();
-
-            if (changes.Any(change => change.IsAdd || change.Version == 0))
-            {
-                status |= VersionStatus.ScheduledAdd;
-                return status;
-            }
-
-            if (changes.Any(change => change.IsDelete))
-            {
-                status |= VersionStatus.ScheduledDelete;
-                return status;
-            }
-
-            if (changes.Any(change => change.IsRename))
-            {
-                status = status | VersionStatus.ScheduledAdd;
-                return status;
-            }
-
-            if (changes.Any(change => change.IsEdit || change.IsEncoding))
-            {
-                status = status | VersionStatus.Modified;
-                return status;
-            }
-
-            return status;
-        }
-
-        Revision GetLocalRevision(ExtendedItem item)
-        {
-            return new TeamFoundationServerRevision(this, item.VersionLocal, item.SourceServerItem);
-        }
-
-        Revision GetServerRevision(ExtendedItem item)
-        {
-            return new TeamFoundationServerRevision(this, item.VersionLatest, item.SourceServerItem);
-        }
-
-        VersionStatus GetServerVersionStatus(ExtendedItem item)
-        {
-            if (item == null)
-                return VersionStatus.Unversioned;
-            
-            var status = VersionStatus.Versioned;
-          
-            if (item.IsLocked)
-                status = status | VersionStatus.Locked;
-            
-            if (item.DeletionId > 0)
-                return status | VersionStatus.Missing;
-            
-            if (item.VersionLatest > item.VersionLocal)
-                return status | VersionStatus.Modified;
-
-            return status;
-        }
-
-        Workspace GetWorkspaceByServerPath(string path)
-        {
-            return _workspaces.SingleOrDefault(x => x.IsServerPathMapped(path));
-        }
+        internal IWorkspace Workspace { get { return workspace; }}
     }
 }

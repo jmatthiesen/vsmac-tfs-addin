@@ -1,8 +1,6 @@
 ﻿using System;
-using Microsoft.TeamFoundation.Client;
-using Microsoft.TeamFoundation.VersionControl.Client;
 using MonoDevelop.Core;
-using MonoDevelop.Ide;
+using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -16,7 +14,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<string> _computer;
         DataField<string> _owner;
 
-        public WorkspacesDialog(ProjectCollection projectCollection)
+        internal WorkspacesDialog(ProjectCollection projectCollection)
         {
             _projectCollection = projectCollection;
 
@@ -73,6 +71,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void GetWorkspaces()
         {
+            /*
             var workspaces = TeamFoundationServerClient.Instance.GetWorkspaces(_projectCollection);
             _listStore.Clear();
 
@@ -83,6 +82,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 _listStore.SetValue(row, _computer, workspace.Computer);
                 _listStore.SetValue(row, _owner, workspace.OwnerName);
             }
+            */
         }
 
         void AddWorkspaceClick(object sender, EventArgs e)
@@ -98,6 +98,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void RemoveWorkspaceClick(object sender, EventArgs e)
         {
+            /*
             if (_listView.SelectedRow > -1 &&
                 MessageService.Confirm(GettextCatalog.GetString("Are you sure you want to delete selected workspace?"), AlertButton.Yes))
             {
@@ -107,7 +108,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 versionControl.DeleteWorkspace(name, owner);
 
                 GetWorkspaces();
-            }                
+            }       
+            */
         }
     }
 }

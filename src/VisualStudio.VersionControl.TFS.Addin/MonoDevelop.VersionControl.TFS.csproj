@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MonoDevelop.Addins" Version="0.4.1" />
+    <PackageReference Include="Autofac" Version="4.6.2" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Web.Services" />
@@ -43,24 +44,44 @@
     <Folder Include="Gui\Pads\" />
     <Folder Include="Services\" />
     <Folder Include="Helpers\" />
-    <Folder Include="Client\" />
-    <Folder Include="Client\Microsoft.TeamFoundation.Client\" />
-    <Folder Include="Client\Microsoft.TeamFoundation.VersionControl.Client\" />
-    <Folder Include="Client\Microsoft.TeamFoundation.WorkItemTracking.Client\" />
     <Folder Include="Gui\Views\" />
     <Folder Include="Models\" />
     <Folder Include="Icons\" />
     <Folder Include="Gui\Panels\" />
     <Folder Include="Extensions\" />
+    <Folder Include="Services\ProjectCollectionService\" />
+    <Folder Include="Services\SoapInvoker\" />
+    <Folder Include="Services\LocationService\" />
+    <Folder Include="Services\FileKeeperService\" />
+    <Folder Include="Services\LoggingService\" />
+    <Folder Include="Services\NotificationService\" />
+    <Folder Include="Services\ProgressService\" />
+    <Folder Include="Services\DownloadService\" />
+    <Folder Include="Services\CommonStructureService\" />
+    <Folder Include="Services\RepositoryService\" />
+    <Folder Include="Services\UploadService\" />
+    <Folder Include="Services\WorkspaceService\" />
+    <Folder Include="Services\ServerStatusService\" />
+    <Folder Include="Exceptions\" />
+    <Folder Include="Services\ConfigurationService\" />
+    <Folder Include="Services\ClientService\" />
+    <Folder Include="Services\ProgressDisplayService\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Models\ServerAuthentication.cs" />
     <Compile Remove="Icons.cs" />
+    <Compile Remove="Helpers\TeamFoundationServerFileHelper.cs" />
+    <Compile Remove="Gui\Widgets\AddVisualStudioTeamServicesWidget.cs" />
+    <Compile Remove="Models\TeamFoundationServerRevision.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Icons\file-16.png" />
     <None Remove="Icons\folder-16.png" />
     <None Remove="Icons\project-16.png" />
+    <None Remove="Client\.DS_Store" />
+    <None Remove="VersionControl\.DS_Store" />
+    <None Remove="VersionControl\Enums\.DS_Store" />
+    <None Remove="VersionControl\Models\.DS_Store" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icons\project-16.png" />

@@ -1,7 +1,7 @@
 ﻿using System;
-using Microsoft.TeamFoundation.Client;
-using Microsoft.TeamFoundation.VersionControl.Client;
 using MonoDevelop.Core;
+using MonoDevelop.VersionControl.TFS.Models;
+using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -17,7 +17,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         TextEntry _computerEntry;
         ProjectCollection _projectCollection;
 
-        public AddWorkspaceDialog(ProjectCollection projectCollection)
+        internal AddWorkspaceDialog(ProjectCollection projectCollection)
         {
             Init(projectCollection);
             BuildGui();
@@ -128,7 +128,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
 
             var versionControl = _projectCollection.GetService<RepositoryService>();
-            versionControl.CreateWorkspace(new Workspace(versionControl, workspaceData));  
+            //versionControl.CreateWorkspace(new Workspace(versionControl, workspaceData));  
         }
 
         void FillDefaultData()

@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using Microsoft.TeamFoundation.Client;
+using Autofac;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
+using MonoDevelop.VersionControl.TFS.Models;
+using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -16,7 +17,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         readonly DataField<string> _nameField = new DataField<string>();
         readonly DataField<string> _urlField = new DataField<string>();
-        readonly DataField<BaseTeamFoundationServer> _serverField = new DataField<BaseTeamFoundationServer>();
+        readonly DataField<TeamFoundationServer> _serverField = new DataField<TeamFoundationServer>();
+
+        TeamFoundationServerVersionControlService _service;
 
         public ConnectToServerDialog()
         {
@@ -27,6 +30,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void Init()
         {
+            _service = DependencyInjection.Container.Resolve<TeamFoundationServerVersionControlService>();
             _serverList = new ListView();
             _notebook = new Notebook();
             _serverStore = new ListStore(_nameField, _urlField, _serverField);
@@ -84,27 +88,48 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void OnAddServer(object sender, EventArgs e)
         {
-            using (var dialog = new AddServerDialog())
+            using (var addServerDialog = new AddServerDialog())
             {
-                if (dialog.Run(this) == Command.Ok && dialog.ServerInfo != null)
+                if (addServerDialog.Run(this) == Command.Ok)
                 {
-                    if (TeamFoundationServerClient.Settings.HasServer(dialog.ServerInfo.Name))
+                    var addServerResult = addServerDialog.Result;
+
+                    if (_service.HasServer(addServerResult.Url))
                     {
                         MessageService.ShowError("Server already exists!");
                         return;
                     }
 
-                    var server = TeamFoundationServerClient.Instance.SaveCredentials(dialog.ServerInfo, dialog.ServerAuthentication);
-
-                    using (var projectsDialog = new ChooseProjectsDialog(server))
+                    using (var credentialsDialog = new CredentialsDialog(addServerResult.Url))
                     {
-                        if (projectsDialog.Run(this) == Command.Ok && projectsDialog.SelectedProjects.Any())
+                        if (credentialsDialog.Run(this) == Command.Ok)
                         {
-                            var selectedProjects = projectsDialog.SelectedProjects;
-                            server.ProjectCollections = new List<ProjectCollection>(selectedProjects.Select(x => x.Collection).Distinct());
-                            server.ProjectCollections.ForEach(pc => pc.Projects = new List<ProjectInfo>(selectedProjects.Where(pi => pi.Collection == pc)));
-                            TeamFoundationServerClient.Settings.AddServer(server);
-                            UpdateServers();
+                            var serverAuthorization = credentialsDialog.Result;
+                            var userPasswordAuthorization = serverAuthorization as UserPasswordAuthorization;
+                           
+                            if (userPasswordAuthorization != null && userPasswordAuthorization.ClearSavePassword)
+                            {
+                                MessageService.ShowWarning("No keyring service found!\nPassword will be saved as plain text.");
+                            }
+
+                            var server = TeamFoundationServer.FromAddServerDialog(addServerResult, serverAuthorization);
+                         
+                            using (var projectsDialog = new ChooseProjectsDialog(server))
+                            {
+                                if (projectsDialog.Run(this) == Command.Ok && projectsDialog.SelectedProjectColletions.Any())
+                                {
+                                    // Server has all project collections and projects, filter only sected.
+                                    server.ProjectCollections.RemoveAll(pc => projectsDialog.SelectedProjectColletions.All(spc => spc != pc));
+                                    foreach (var projectCollection in server.ProjectCollections)
+                                    {
+                                        var selectedProjectCollection = projectsDialog.SelectedProjectColletions.Single(spc => spc == projectCollection);
+                                        projectCollection.Projects.RemoveAll(p => selectedProjectCollection.Projects.All(sp => sp != p));
+                                    }
+
+                                    _service.AddServer(server);
+                                    UpdateServers();
+                                }
+                            }
                         }
                     }
                 }
@@ -115,8 +140,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             if (MessageService.Confirm("Are you sure you want to delete this server!", AlertButton.Delete))
             {
-                var serverName = _serverStore.GetValue(_serverList.SelectedRow, _nameField);
-                TeamFoundationServerClient.Settings.RemoveServer(serverName);
+                var serverUrl = _serverStore.GetValue(_serverList.SelectedRow, _urlField);
+                _service.RemoveServer(new Uri(serverUrl));
                 UpdateServers();
             }
         }
@@ -125,9 +150,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             _serverStore.Clear();
 
-            foreach (var server in TeamFoundationServerClient.Settings.GetServers())
+            foreach (var server in _service.Servers)
             {
                 var row = _serverStore.AddRow();
+
                 _serverStore.SetValue(row, _nameField, server.Name);
                 _serverStore.SetValue(row, _urlField, server.Uri.ToString());
                 _serverStore.SetValue(row, _serverField, server);

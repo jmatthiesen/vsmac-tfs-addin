@@ -1,6 +1,6 @@
-﻿using Microsoft.TeamFoundation.Client;
-using MonoDevelop.Core;
+﻿using MonoDevelop.Core;
 using MonoDevelop.VersionControl.TFS.Gui.Widgets;
+using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -8,7 +8,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
     public class AddServerDialog : Dialog
     {
         Notebook _notebook;
-        AddVisualStudioTeamServicesWidget _vstsWidget;
+        AddServerWidget _addServerWidget;
 
         public AddServerDialog()
         {
@@ -19,20 +19,24 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         void Init()
         {
             _notebook = new Notebook();
-            _vstsWidget = new AddVisualStudioTeamServicesWidget();
+            _addServerWidget = new AddServerWidget();
         }
 
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Add Team Foundation Server");
             Buttons.Add(Command.Ok, Command.Cancel);
-            _notebook.Add(_vstsWidget, GettextCatalog.GetString("Visual Studio Team Services"));
+            _notebook.Add(_addServerWidget, GettextCatalog.GetString("Visual Studio Team Services"));
             Content = _notebook;
             Resizable = false;
         }
 
-        public BaseServerInfo ServerInfo { get { return _vstsWidget.ServerInfo; } }
-
-        public ServerAuthentication ServerAuthentication { get { return _vstsWidget.Authentication; } }
+        public AddServerResult Result
+        {
+            get
+            {
+                return _addServerWidget.Result;
+            }
+        }
     }
 }

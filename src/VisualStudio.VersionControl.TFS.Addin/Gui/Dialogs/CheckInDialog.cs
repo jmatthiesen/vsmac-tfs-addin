@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using Microsoft.TeamFoundation.VersionControl.Client;
-using Microsoft.TeamFoundation.VersionControl.Client.Enums;
-using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using MonoDevelop.Core;
+using MonoDevelop.VersionControl.TFS.Models;
+using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -19,7 +18,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         ListStore _fileStore;
         TextEntry _commentEntry;
 
-        public CheckInDialog(List<ExtendedItem> items, Workspace workspace)
+        internal CheckInDialog(List<ExtendedItem> items, IWorkspace workspace)
         {
             Init();
             BuildGui();
@@ -91,7 +90,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false; 
         }
 
-        void GetData(List<ExtendedItem> items, Workspace workspace)
+        void GetData(List<ExtendedItem> items, IWorkspace workspace)
         {
             _fileStore.Clear();
             List<ItemSpec> itemSpecs = new List<ItemSpec>();
@@ -107,7 +106,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             {
                 var row = _fileStore.AddRow();
                 _fileStore.SetValue(row, _isCheckedField, true);
-                var path = (VersionControlPath)pendingChange.ServerItem;
+                var path = pendingChange.ServerItem;
                 _fileStore.SetValue(row, _nameField, path.ItemName);
                 _fileStore.SetValue(row, _changesField, pendingChange.ChangeType.ToString());
                 _fileStore.SetValue(row, _folderField, path.ParentPath);

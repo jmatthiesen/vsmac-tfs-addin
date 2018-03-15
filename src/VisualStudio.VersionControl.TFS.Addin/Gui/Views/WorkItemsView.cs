@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.TeamFoundation.Client;
-using Microsoft.TeamFoundation.WorkItemTracking.Client;
-using Microsoft.TeamFoundation.WorkItemTracking.Client.Metadata;
-using Microsoft.TeamFoundation.WorkItemTracking.Client.Objects;
 using MonoDevelop.Components;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.ProgressMonitoring;
+using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 using static MonoDevelop.VersionControl.TFS.Gui.Pads.TeamExplorerPad;
 
@@ -24,13 +21,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         DataField<WorkItem> _workItemField;
         TreeStore _listStore;
 
+        ProjectCollection _projectCollection;
+
         #region Constructor
 
-        public WorkItemsView(ProjectInfo project)
+        internal WorkItemsView(ProjectInfo project)
         {
             ContentName = GettextCatalog.GetString("Work Items: " + project.Name);
 
-            Init();
+            Init(project);
             BuildGui();
             AttachEvents();
 
@@ -48,14 +47,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         public override Control Control => _view;
 
-        public static void Show(ProjectInfo project)
+        internal static void Show(ProjectInfo project)
         {
             var sourceControlExplorerView = new WorkItemsView(project);
             IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
         }
 
-        void Init()
+        void Init(ProjectInfo project)
         {
+            _projectCollection = project.Collection;
+
             _view = new Gtk.VBox();
 
             _treeView = new Gtk.TreeView();
@@ -105,7 +106,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _treeStore.SetValue(node, 2, project);
 
             var workItemManager = new WorkItemManager(project.Collection);
-            var workItemProject = workItemManager.GetByGuid(project.Guid);
+            var workItemProject = workItemManager.GetByGuid(project.Id);
 
             if (workItemProject != null)
             {
@@ -156,14 +157,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _treeView.ExpandAll();
         }
 
-        void LoadQueries(StoredQuery query)
+        void LoadQueries(StoredQuery query, ProjectCollection collection)
         {
             _listView.Columns.Clear();
 
             using (var progress = new MessageDialogProgressMonitor(true, false, false))
             {
                 var fields = CachedMetaData.Instance.Fields;
-                WorkItemStore store = new WorkItemStore(query);
+                WorkItemStore store = new WorkItemStore(query, collection);
                 var data = store.LoadByPage(progress);
              
                 if (data.Count > 0)
@@ -228,13 +229,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
             if(item != null)
             {
-                LoadQueries(item);
+                LoadQueries(item, _projectCollection);
             }
         }
 
         void OnTreeViewItemClicked(object o, Gtk.RowActivatedArgs args)
         {
             var isExpanded = _treeView.GetRowExpanded(args.Path);
+        
             if (isExpanded)
                 _treeView.CollapseRow(args.Path);
             else

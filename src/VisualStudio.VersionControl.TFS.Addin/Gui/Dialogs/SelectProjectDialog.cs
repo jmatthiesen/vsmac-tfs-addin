@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using Microsoft.TeamFoundation.Client;
-using Microsoft.TeamFoundation.VersionControl.Client;
-using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using MonoDevelop.Core;
 using MonoDevelop.VersionControl.TFS.Models;
+using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -16,7 +14,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<string> _name = new DataField<string>();
         DataField<string> _path = new DataField<string>();
 
-        public SelectProjectDialog(ProjectCollection projectCollection)
+        internal SelectProjectDialog(ProjectCollection projectCollection)
         {
             Init(projectCollection);
             BuildGui();
@@ -92,13 +90,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         void GetData()
         {
             _treeStore.Clear();
-            var versionControl = _projectCollection.GetService<RepositoryService>();
-            var items = versionControl.QueryItems(new ItemSpec(VersionControlPath.RootFolder, RecursionType.Full), VersionSpec.Latest, DeletedState.NonDeleted, Microsoft.TeamFoundation.VersionControl.Client.Enums.ItemType.Folder, false);
+
+            var repositoryService = _projectCollection.GetService<RepositoryService>();
+            var items = repositoryService.QueryFolders();
             var root = ItemSetToHierarchItemConverter.Convert(items);
             var node = _treeStore.AddNode().SetValue(_name, root.Name).SetValue(_path, root.ServerPath);
-      
             AddChilds(node, root.Children);
-
             var topNode = _treeStore.GetFirstNode();
             _treeView.ExpandRow(topNode.CurrentPosition, false);
         }

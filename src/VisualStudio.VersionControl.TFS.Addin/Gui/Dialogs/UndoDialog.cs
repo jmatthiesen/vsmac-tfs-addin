@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using Microsoft.TeamFoundation.VersionControl.Client;
-using Microsoft.TeamFoundation.VersionControl.Client.Enums;
-using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using MonoDevelop.Core;
+using MonoDevelop.VersionControl.TFS.Models;
+using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -17,14 +16,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<PendingChange> _changeField = new DataField<PendingChange>();
         ListStore _filesStore;
 
-        public UndoDialog(List<ExtendedItem> items, Workspace workspace)
+        internal UndoDialog(List<ExtendedItem> items, IWorkspace workspace)
         {
             Init();
             BuildGui();
             GetData(items, workspace);
         }
 
-        public List<PendingChange> SelectedItems
+        internal List<PendingChange> SelectedItems
         {
             get
             {
@@ -78,9 +77,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false;
         }
 
-        void GetData(List<ExtendedItem> items, Workspace workspace)
+        void GetData(List<ExtendedItem> items, IWorkspace workspace)
         {
             _filesStore.Clear();
+            /*
             List<ItemSpec> itemSpecs = new List<ItemSpec>();
            
             foreach (var item in items)
@@ -101,6 +101,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 _filesStore.SetValue(row, _folderField, path.ParentPath);
                 _filesStore.SetValue(row, _changeField, pendingChange);
             }
+            */
         }
     }
 }

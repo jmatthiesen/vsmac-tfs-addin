@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Microsoft.TeamFoundation.VersionControl.Client;
-using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using MonoDevelop.Core;
+using MonoDevelop.VersionControl.TFS.Models;
+using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -9,7 +9,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
     public class CheckOutDialog : Dialog
     {
         List<ExtendedItem> _items;
-        Workspace _workspace;
+        IWorkspace _workspace;
         
         ListView _filesView;
         DataField<bool> _isCheckedField;
@@ -18,14 +18,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<ExtendedItem> _itemField;
         ListStore _fileStore;
 
-        public CheckOutDialog(List<ExtendedItem> items, Workspace workspace)
+        internal CheckOutDialog(List<ExtendedItem> items, IWorkspace workspace)
         {
             Init(items, workspace);
             BuildGui();
             GetData();
         }
 
-        public List<ExtendedItem> SelectedItems
+        internal List<ExtendedItem> SelectedItems
         {
             get
             {
@@ -43,7 +43,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
-        void Init(List<ExtendedItem> items, Workspace workspace)
+        void Init(List<ExtendedItem> items, IWorkspace workspace)
         {
             _items = items;
             _workspace = workspace;

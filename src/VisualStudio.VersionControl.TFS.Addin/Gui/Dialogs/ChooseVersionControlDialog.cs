@@ -1,7 +1,5 @@
 ﻿using System;
-using Microsoft.TeamFoundation.Client;
 using MonoDevelop.Core;
-using MonoDevelop.Ide.Fonts;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -16,9 +14,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Init();
             BuildGui();   
         }
-
-        public ServerType ServerType { get { return _vstsRadioButton.Active ? ServerType.VSTS : ServerType.TFS; } }
-
+          
         void Init()
         {
             _vstsRadioButton = new RadioButton();

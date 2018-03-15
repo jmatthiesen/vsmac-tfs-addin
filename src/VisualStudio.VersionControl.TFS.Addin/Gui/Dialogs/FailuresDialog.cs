@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using MonoDevelop.Core;
+using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -10,7 +10,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         Gtk.TreeView _failuresView;
         Gtk.ListStore _failuresStore;
 
-        public FailuresDialog(List<Failure> failures)
+        public FailuresDialog(IEnumerable<Failure> failures)
         {
             Init();
             BuildGui();
@@ -45,7 +45,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             ShowAll();
         }
 
-        void GetData(List<Failure> failures)
+        void GetData(IEnumerable<Failure> failures)
         {
             _failuresStore.Clear();
 

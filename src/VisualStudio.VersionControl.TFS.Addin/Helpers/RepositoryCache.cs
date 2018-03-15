@@ -1,22 +1,23 @@
-﻿//
-// RepositoryCache.cs
-//
-// Author:
-//       Ventsislav Mladenov <vmladenov.mladenov@gmail.com>
-//       Javier Suárez Ruiz  <javiersuarezruiz@hotmail.com>
-//
-// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
-//
+﻿// RepositoryCache.cs
+// 
+// Authors:
+//       Ventsislav Mladenov
+//       Javier Suárez Ruiz
+// 
+// The MIT License (MIT)
+// 
+// Copyright (c) 2013-2018 Ventsislav Mladenov, Javier Suárez Ruiz
+// 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-//
+// 
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-//
+// 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,24 +28,32 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.TeamFoundation.VersionControl.Client;
-using Microsoft.TeamFoundation.VersionControl.Client.Enums;
-using Microsoft.TeamFoundation.VersionControl.Client.Objects;
-using MonoDevelop.Core;
+using MonoDevelop.VersionControl.TFS.Models;
+using MonoDevelop.VersionControl.TFS.Services;
 
 namespace MonoDevelop.VersionControl.TFS.Helpers
 {
-    public class RepositoryCache
+    internal class RepositoryCache
     {
-        readonly TeamFoundationServerRepository _repo;
-        readonly List<ExtendedItem> _cachedItems;
-        static readonly object _locker = new object();
+        readonly TeamFoundationServerRepository repo;
+        readonly List<ExtendedItem> cachedItems;
+        private static readonly object locker = new object();
 
         public RepositoryCache(TeamFoundationServerRepository repo)
         {
-            _repo = repo;
-            _cachedItems = new List<ExtendedItem>();
+            this.repo = repo;
+            this.cachedItems = new List<ExtendedItem>();
+//            FileService.FileChanged += OnFileChanged;
         }
+
+//        void OnFileChanged (object sender, FileEventArgs e)
+//        {
+//            foreach (var item in e)
+//            {
+//                RefreshItem(item.FileName);
+//            }
+//        }
+
 
         public void AddToCache(IEnumerable<ExtendedItem> items)
         {
@@ -58,66 +67,38 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
         {
             if (item == null)
                 return;
-            
-            if (_cachedItems.Contains(item))
-                _cachedItems.Remove(item);
-            
-            _cachedItems.Add(item);
+            if (cachedItems.Contains(item))
+                cachedItems.Remove(item);
+            cachedItems.Add(item);
         }
 
         public void ClearCache()
         {
-            _cachedItems.Clear();
+            cachedItems.Clear();
         }
 
-        public bool HasItem(VersionControlPath serverPath)
+        private bool HasItem(RepositoryPath serverPath)
         {
-            return _cachedItems.Any(c => c.ServerPath == serverPath);
+            return cachedItems.Any(c => c.ServerPath == serverPath);
         }
 
-        public ExtendedItem GetItem(VersionControlPath serverPath)
+        private ExtendedItem GetItem(RepositoryPath serverPath)
         {
-            return _cachedItems.Single(c => c.ServerPath == serverPath);
+            return cachedItems.Single(c => c.ServerPath == serverPath);
         }
 
-        public ExtendedItem GetItem(FilePath localPath)
+        public List<ExtendedItem> GetItems(List<LocalPath> paths, RecursionType recursionType)
         {
-            lock (_locker)
-            {
-                var workspace = _repo.GetWorkspaceByLocalPath(localPath);
-
-                if (workspace == null)
-                    return null;
-                
-                var serverPath = workspace.GetServerPathForLocalPath(localPath);
-                var item = _cachedItems.SingleOrDefault(ex => ex.ServerPath == serverPath);
-              
-                if (item == null)
-                {
-                    var repoItem = workspace.GetExtendedItem(serverPath, ItemType.Any);
-                    AddToCache(repoItem);
-                    return repoItem;
-                }
-                else
-                    return item;
-            }
-        }
-
-        public List<ExtendedItem> GetItems(List<FilePath> paths, RecursionType recursionType)
-        {
-            lock(_locker)
+            lock(locker)
             {
                 List<ExtendedItem> items = new List<ExtendedItem>();
-                var workspaceFilesMapping = new Dictionary<Workspace, List<ItemSpec>>();
-              
+                var workspaceFilesMapping = new Dictionary<IWorkspace, List<ItemSpec>>();
                 foreach (var path in paths) 
                 {
-                    var workspace = _repo.GetWorkspaceByLocalPath(path);
-                 
+                    var workspace = repo.Workspace;
                     if (workspace == null)
                         continue;
-                    
-                    var serverPath = workspace.GetServerPathForLocalPath(path);
+                    var serverPath = workspace.Data.GetServerPathForLocalPath(path);
                     if (HasItem(serverPath) && recursionType == RecursionType.None)
                     {
                         items.Add(GetItem(serverPath));
@@ -140,7 +121,7 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
             }
         }
 
-        public void RefreshItems(IEnumerable<FilePath> localPaths)
+        public void RefreshItems(IEnumerable<LocalPath> localPaths)
         {
             foreach (var path in localPaths)
             {
@@ -148,19 +129,17 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
             }
         }
 
-        public void RefreshItem(FilePath localPath)
+        public void RefreshItem(LocalPath localPath)
         {
-            lock(_locker)
+            lock(locker)
             {
-                var workspace = _repo.GetWorkspaceByLocalPath(localPath);
-             
+                var workspace = repo.Workspace;
                 if (workspace == null)
                     return;
-                
-                var serverPath = workspace.GetServerPathForLocalPath(localPath);
-                var repoItem = workspace.GetExtendedItem(serverPath, ItemType.Any);
+                var repoItem = workspace.GetExtendedItem(ItemSpec.FromLocalPath(localPath), ItemType.Any);
                 AddToCache(repoItem);
             }
         }
     }
 }
+

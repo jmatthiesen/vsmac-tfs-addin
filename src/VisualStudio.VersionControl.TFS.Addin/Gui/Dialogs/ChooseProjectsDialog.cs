@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.TeamFoundation.Client;
 using MonoDevelop.Core;
+using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -19,12 +18,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<string> _projectName;
         DataField<ProjectInfo> _projectItem;
 
-        public List<ProjectInfo> SelectedProjects { get; set; }
+        internal List<ProjectCollection> SelectedProjectColletions { get; set; }
 
-        public ChooseProjectsDialog(BaseTeamFoundationServer server)
+        internal ChooseProjectsDialog(TeamFoundationServer server)
         {
             Init();
-            BuildGui();     
+            BuildGui(server);     
             LoadProjects(server);
         }
 
@@ -43,7 +42,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _projectsStore = new TreeStore(_isProjectSelected, _projectName, _projectItem);
         }
 
-        void BuildGui()
+        void BuildGui(TeamFoundationServer server)
         {
             Title = "Select Projects";
             Resizable = false;
@@ -69,14 +68,30 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 var isSelected = !node.GetValue(_isProjectSelected); //Xwt gives previous value
                 var project = node.GetValue(_projectItem);
 
-                if (isSelected && !SelectedProjects.Any(p => string.Equals(p.Uri, project.Uri)))
+                if (isSelected) //Should add the project
                 {
-                    SelectedProjects.Add(project);
+                    var collection = SelectedProjectColletions.SingleOrDefault(col => col == project.Collection);
+                    if (collection == null)
+                    {
+                        collection = project.Collection.Copy();
+                        collection.Projects.Add(project);
+                        SelectedProjectColletions.Add(collection);
+                    }
+                    else
+                    {
+                        //Should not exists because now is selected
+                        collection.Projects.Add(project);
+                    }
                 }
-
-                if (!isSelected && SelectedProjects.Any(p => string.Equals(p.Uri, project.Uri)))
+                else
                 {
-                    SelectedProjects.RemoveAll(p => string.Equals(p.Uri, project.Uri));
+                    //Should exists because the project has been checked
+                    var collection = SelectedProjectColletions.Single(pc => pc == project.Collection);
+                    collection.Projects.Remove(project);
+                    if (!collection.Projects.Any())
+                    {
+                        SelectedProjectColletions.Remove(collection);
+                    }
                 }
             };
 
@@ -100,17 +115,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             vBox.PackStart(buttonBox);
 
             Content = vBox;
+
+            if (!server.ProjectCollections.Any())
+                SelectedProjectColletions = new List<ProjectCollection>();
+            else
+                SelectedProjectColletions = new List<ProjectCollection>(server.ProjectCollections);
         }
 
-        void LoadProjects(BaseTeamFoundationServer server)
+        void LoadProjects(TeamFoundationServer server)
         {
-            TeamFoundationServerClient.Instance.LoadProjects(server);
+            server.LoadStructure();
 
-            if (server.ProjectCollections == null)
-                SelectedProjects = new List<ProjectInfo>();
-            else
-                SelectedProjects = new List<ProjectInfo>(server.ProjectCollections.SelectMany(pc => pc.Projects));  
-            
             foreach (var col in server.ProjectCollections)
             {
                 var row = _collectionStore.AddRow();
@@ -123,15 +138,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 if (_collectionsList.SelectedRow > -1)
                 {
                     var collection = _collectionStore.GetValue(_collectionsList.SelectedRow, _collectionItem);
+                    var selectedColletion = SelectedProjectColletions.SingleOrDefault(pc => pc == collection);
+
                     _projectsStore.Clear();
 
                     foreach (var project in collection.Projects)
                     {
                         var node = _projectsStore.AddNode();
                         var project1 = project;
-                        var isSelected = SelectedProjects.Any(x => string.Equals(x.Uri, project1.Uri, StringComparison.OrdinalIgnoreCase));
+                        var isSelected = selectedColletion != null && selectedColletion.Projects.Any(p => p == project1);
                         node.SetValue(_isProjectSelected, isSelected);
-                        node.SetValue(_projectName, project.Name);    
+                        node.SetValue(_projectName, project.Name);
                         node.SetValue(_projectItem, project);
                     }
                 }

@@ -24,6 +24,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
+using System.Runtime.InteropServices;
 using Mono.Addins;
 using Mono.Addins.Description;
 
@@ -42,3 +44,5 @@ using Mono.Addins.Description;
 [assembly: AddinDependency("Core", MonoDevelop.BuildInfo.Version)]
 [assembly: AddinDependency("Ide", MonoDevelop.BuildInfo.Version)]
 [assembly: AddinDependency("VersionControl", MonoDevelop.BuildInfo.Version)]
+[assembly: CLSCompliant(false)]
+[assembly: ComVisible(false)]

@@ -1,6 +1,6 @@
 ﻿using System.IO;
-using Microsoft.TeamFoundation.VersionControl.Client.Objects;
 using MonoDevelop.Core;
+using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -10,7 +10,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         ExtendedItem _item;
         TextEntry _nameEntry;
 
-        public RenameDialog(ExtendedItem item)
+        internal RenameDialog(ExtendedItem item)
         {
             Init(item);
             BuildGui();
@@ -20,7 +20,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             get
             {
-                var dir = Path.GetDirectoryName(_item.LocalItem);
+                var dir = Path.GetDirectoryName(_item.LocalPath);
 
                 return Path.Combine(dir, _nameEntry.Text);
             }

@@ -1,7 +1,8 @@
-﻿using System.Linq;
+﻿using Autofac;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
+using MonoDevelop.VersionControl.TFS.Services;
 
 namespace MonoDevelop.VersionControl.TFS.Commands
 {
@@ -44,7 +45,9 @@ namespace MonoDevelop.VersionControl.TFS.Commands
                 return;
             }
 
-            var serversCount = TeamFoundationServerClient.Settings.GetServers().Count();
+            var service = DependencyInjection.Container.Resolve<TeamFoundationServerVersionControlService>();
+
+            var serversCount = service.Servers.Count;
 
             info.Visible = serversCount > 0;
         }   
