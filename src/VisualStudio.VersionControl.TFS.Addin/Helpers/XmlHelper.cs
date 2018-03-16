@@ -42,54 +42,67 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
                 element.Attribute(attributeName) == null ||
                 string.IsNullOrEmpty(element.Attribute(attributeName).Value))
                 return string.Empty;
+            
             return element.Attribute(attributeName).Value;
         }
 
         public static bool GetBooleanAttribute(this XElement element, string attributeName)
         {
             var value = element.GetAttributeValue(attributeName);
+          
             if (string.IsNullOrWhiteSpace(value))
                 return false;
+            
             return string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
         }
 
         public static int GetIntAttribute(this XElement element, string attributeName)
         {
             var value = element.GetAttributeValue(attributeName);
+         
             if (string.IsNullOrWhiteSpace(value))
                 return 0;
+            
             return Convert.ToInt32(value);
         }
 
         public static Guid GetGuidAttribute(this XElement element, string attributeName)
         {
             var value = element.GetAttributeValue(attributeName);
+           
             if (string.IsNullOrWhiteSpace(value))
                 return Guid.Empty;
+            
             return Guid.Parse(value);
         }
 
         public static DateTime GetDateAttribute(this XElement element, string attributeName)
         {
             var value = element.GetAttributeValue(attributeName);
+          
             if (string.IsNullOrWhiteSpace(value))
                 return DateTime.MinValue;
+           
             return DateTime.Parse(value);
         }
 
         public static byte[] GetByteArrayAttribute(this XElement element, string attributeName)
         {
             var value = element.GetAttributeValue(attributeName);
+          
             if (string.IsNullOrWhiteSpace(value))
                 return new byte[0];
+           
             return Convert.FromBase64String(value);
         }
 
         public static Uri GetUriAttribute(this XElement element, string attributeName)
         {
             var value = element.GetAttributeValue(attributeName);
+           
             if (string.IsNullOrWhiteSpace(value))
                 return null;
+           
             return new Uri(value);
         }
 
@@ -166,7 +179,6 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
         }
 
         #endregion
-
     }
 }
 

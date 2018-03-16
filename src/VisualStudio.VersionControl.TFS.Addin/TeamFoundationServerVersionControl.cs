@@ -1,4 +1,4 @@
-// TFSClient.cs
+﻿// TFSClient.cs
 // 
 // Authors:
 //       Ventsislav Mladenov
@@ -57,8 +57,8 @@ namespace MonoDevelop.VersionControl.TFS
             }
             else
             {
-                DependencyInjection.Register(new ServiceBuilder());
-                _versionControlService = DependencyInjection.Container.Resolve<TeamFoundationServerVersionControlService>();
+                DependencyContainer.Register(new ServiceBuilder());
+                _versionControlService = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
             }
         }
 
@@ -66,7 +66,7 @@ namespace MonoDevelop.VersionControl.TFS
 
         protected override Repository OnCreateRepositoryInstance()
         {
-            return DependencyInjection.GetTFSRepository(null, null, null);
+            return DependencyContainer.GetTFSRepository(null, null, null);
         }
 
         public override IRepositoryEditor CreateRepositoryEditor(Repository repo)
@@ -176,7 +176,7 @@ namespace MonoDevelop.VersionControl.TFS
               
                 if (workspaceData != null)
                 {
-                    return DependencyInjection.GetTFSRepository(path, workspaceData, projectCollection);
+                    return DependencyContainer.GetTFSRepository(path, workspaceData, projectCollection);
                 }
             }
 

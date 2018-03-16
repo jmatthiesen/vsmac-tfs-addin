@@ -37,7 +37,7 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
     {
         readonly TeamFoundationServerRepository repo;
         readonly List<ExtendedItem> cachedItems;
-        private static readonly object locker = new object();
+        static readonly object locker = new object();
 
         public RepositoryCache(TeamFoundationServerRepository repo)
         {
@@ -77,12 +77,12 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
             cachedItems.Clear();
         }
 
-        private bool HasItem(RepositoryPath serverPath)
+        bool HasItem(RepositoryPath serverPath)
         {
             return cachedItems.Any(c => c.ServerPath == serverPath);
         }
 
-        private ExtendedItem GetItem(RepositoryPath serverPath)
+        ExtendedItem GetItem(RepositoryPath serverPath)
         {
             return cachedItems.Single(c => c.ServerPath == serverPath);
         }
@@ -96,14 +96,18 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
                 foreach (var path in paths) 
                 {
                     var workspace = repo.Workspace;
+                   
                     if (workspace == null)
                         continue;
+                    
                     var serverPath = workspace.Data.GetServerPathForLocalPath(path);
+                 
                     if (HasItem(serverPath) && recursionType == RecursionType.None)
                     {
                         items.Add(GetItem(serverPath));
                         continue;
                     }
+
                     if (workspaceFilesMapping.ContainsKey(workspace))
                         workspaceFilesMapping[workspace].Add(new ItemSpec(serverPath, recursionType));
                     else
@@ -134,12 +138,13 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
             lock(locker)
             {
                 var workspace = repo.Workspace;
+
                 if (workspace == null)
                     return;
+                
                 var repoItem = workspace.GetExtendedItem(ItemSpec.FromLocalPath(localPath), ItemType.Any);
                 AddToCache(repoItem);
             }
         }
     }
 }
-

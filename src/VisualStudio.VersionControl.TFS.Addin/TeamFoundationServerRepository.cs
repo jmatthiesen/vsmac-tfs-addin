@@ -33,6 +33,7 @@ using System.Linq;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.VersionControl.TFS.Gui.Dialogs;
+using MonoDevelop.VersionControl.TFS.Gui.Views;
 using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Models;
 using MonoDevelop.VersionControl.TFS.MonoDevelopWrappers;
@@ -43,7 +44,6 @@ namespace MonoDevelop.VersionControl.TFS
     public class TeamFoundationServerRepository : Repository
     {
         readonly IWorkspace workspace;
-        readonly RepositoryCache cache;
         readonly VersionInfoResolver _versionInfoResolver;
         readonly TeamFoundationServerVersionControlService _versionControlService;
         readonly FileKeeperService _fileKeeperService;
@@ -151,7 +151,8 @@ namespace MonoDevelop.VersionControl.TFS
             if (result.Failures != null && result.Failures.Any(x => x.SeverityType == SeverityType.Error))
             {
                 MessageService.ShowError("Commit failed!", string.Join(Environment.NewLine, result.Failures.Select(f => f.Message)));
-                //ResolveConflictsView.Open(workspace, changeSet.Items.Select(w => new LocalPath(w.LocalPath)).ToList());
+
+                ResolveConflictsView.Open(workspace, changeSet.Items.Select(w => new LocalPath(w.LocalPath)).ToList());
             }
 
             foreach (var file in changeSet.Items.Where(i => !i.IsDirectory))
@@ -215,6 +216,7 @@ namespace MonoDevelop.VersionControl.TFS
                 if (keepLocal) keeper.Save(localPaths, recursive);
 
                 var statuses = _versionInfoResolver.GetFileStatus(localPaths);
+               
                 //Remove files which are versioned and not added.
                 var forRemove = statuses.Where(s => s.Value.IsVersioned &&
                                                     !s.Value.HasLocalChange(VersionStatus.ScheduledAdd)).Select(s => s.Key);
@@ -385,6 +387,7 @@ namespace MonoDevelop.VersionControl.TFS
             {
                 return VersionControlOperation.None;
             }
+
             var supportedOperations = base.GetSupportedOperations(vinfo);
            
             if (vinfo.HasLocalChanges) //Disable update for modified files.

@@ -80,7 +80,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         void GetData(List<ExtendedItem> items, IWorkspace workspace)
         {
             _filesStore.Clear();
-            /*
+
             List<ItemSpec> itemSpecs = new List<ItemSpec>();
            
             foreach (var item in items)
@@ -94,14 +94,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             {
                 var row = _filesStore.AddRow();
                 _filesStore.SetValue(row, _isCheckedField, true);
-                var path = (VersionControlPath)pendingChange.ServerItem;
+                var path = pendingChange.ServerItem;
 
                 _filesStore.SetValue(row, _nameField, path.ItemName);
                 _filesStore.SetValue(row, _changesField, pendingChange.ChangeType.ToString());
                 _filesStore.SetValue(row, _folderField, path.ParentPath);
                 _filesStore.SetValue(row, _changeField, pendingChange);
             }
-            */
         }
     }
 }

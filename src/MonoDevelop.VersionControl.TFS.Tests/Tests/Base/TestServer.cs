@@ -12,8 +12,8 @@ namespace MonoDevelop.VersionControl.TFS.Tests
 
         public TestServer()
         {
-            DependencyInjection.Register(new TestServiceBuilder());
-            var versionControlService = DependencyInjection.Container.Resolve<TeamFoundationServerVersionControlService>();
+            DependencyContainer.Register(new TestServiceBuilder());
+            var versionControlService = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
 
             if (!versionControlService.Servers.Any())
             {

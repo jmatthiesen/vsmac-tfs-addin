@@ -125,7 +125,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _listView = new Gtk.TreeView();
             _listStore = new Gtk.ListStore(typeof(ExtendedItem), typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
     
-            _versionControlService = DependencyInjection.Container.Resolve<TeamFoundationServerVersionControlService>();
+            _versionControlService = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
         }
 
         void BuildGui()
@@ -211,12 +211,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         void FireFilesChanged(List<ExtendedItem> items)
         {
-            //FileService.NotifyFilesChanged(items.Select(i => (FilePath)_currentWorkspace.GetLocalPathForServerPath(i.ServerPath)), true);
+            FileService.NotifyFilesChanged(items.Select(i => new FilePath(_currentWorkspace.Data.GetLocalPathForServerPath(i.ServerPath))), true);
         }
 
         void FireFilesRemoved(List<ExtendedItem> items)
         {
-            //FileService.NotifyFilesRemoved(items.Select(i => (FilePath)_currentWorkspace.GetLocalPathForServerPath(i.ServerPath)));
+            FileService.NotifyFilesRemoved(items.Select(i => new FilePath(_currentWorkspace.Data.GetLocalPathForServerPath(i.ServerPath))));
         }
 
         void Refresh(List<ExtendedItem> items)
@@ -231,13 +231,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             {
                 progress.BeginTask("Check Out", itemsToCheckOut.Count);
 
-                /*
                 foreach (var item in itemsToCheckOut)
                 {
-                    var path = item.IsInWorkspace ? item.LocalItem : _currentWorkspace.GetLocalPathForServerPath(item.ServerPath);
-                    _currentWorkspace.Get(new GetRequest(item.ServerPath, RecursionType.Full, VersionSpec.Latest), GetOptions.None, progress);
+                    var path = item.IsInWorkspace ? item.LocalPath : _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
+                    _currentWorkspace.Get(new GetRequest(item.ServerPath, RecursionType.Full, VersionSpec.Latest), GetOptions.None);
                     progress.Log.WriteLine("Check out item: " + item.ServerPath);
-                    var failures = _currentWorkspace.PendEdit(new List<FilePath> { path }, RecursionType.Full, CheckOutLockLevel.CheckOut);
+
+                    ICollection<Failure> failures;
+                    _currentWorkspace.PendEdit(path.ToEnumerable(), RecursionType.Full, LockLevel.CheckOut, out failures);
 
                     if (failures != null && failures.Any())
                     {
@@ -257,7 +258,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                         }
                     }
                 }
-                */
 
                 progress.EndTask();
                 progress.ReportSuccess("Finish Check Out.");
@@ -278,7 +278,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
                 if (folderSelect.Run())
                 {
-                    //TeamFoundationServerClient.Instance.Map(_currentWorkspace, item.ServerPath, folderSelect.Folder);
+                    _currentWorkspace.Map(item.ServerPath, folderSelect.Folder);
                 }
 
                 Refresh(items);
@@ -560,7 +560,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             if (_workspaceComboBox.GetActiveIter(out workspaceIter))
             {
                 var workspaceData = (WorkspaceData)_workspaceStore.GetValue(workspaceIter, 0);
-                _currentWorkspace = DependencyInjection.GetWorkspace(workspaceData, _projectCollection);
+                _currentWorkspace = DependencyContainer.GetWorkspace(workspaceData, _projectCollection);
                 _versionControlService.SetActiveWorkspace(_projectCollection, workspaceData.Name);
 
                 TreeIter treeIter;
@@ -573,7 +573,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             }
             else
             {
-                //TeamFoundationServerClient.Settings.SetActiveWorkspace(_projectCollection, string.Empty);
+                _versionControlService.SetActiveWorkspace(_projectCollection, string.Empty);
             }
         }
 
@@ -713,32 +713,25 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             getLatestVersionItem.Activated += (sender, e) =>
             {
                 List<GetRequest> requests = new List<GetRequest>();
-
+               
                 foreach (var item in items)
                 {
                     RecursionType recursion = item.ItemType == ItemType.File ? RecursionType.None : RecursionType.Full;
                     requests.Add(new GetRequest(item.ServerPath, recursion, VersionSpec.Latest));
                 }
 
-                var monitor = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull);
-
-                try
+                using (var progress = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull))
                 {
-                    //var option = GetOptions.None;
+                    var option = GetOptions.None;
+                    progress.Log.WriteLine("Start downloading items. GetOption: " + option);
+                  
+                    foreach (var request in requests)
+                    {
+                        progress.Log.WriteLine(request);
+                    }
 
-                    monitor.Log.WriteLine("Start downloading items.");
-
-                    //TeamFoundationServerClient.Instance.Get(_currentWorkspace, requests, option, monitor);
-
-                    monitor.ReportSuccess("Finish Downloading.");
-                }
-                catch (Exception ex)
-                {
-                    monitor.ReportError(GettextCatalog.GetString("Download failed."), ex);
-                }
-                finally
-                {
-                    monitor.Dispose();
+                    _currentWorkspace.Get(requests, option);
+                    progress.ReportSuccess("Finish Downloading.");
                 }
 
                 Refresh(items);
@@ -821,13 +814,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                             {
                                 progress.BeginTask("Check In", 1);
 
-                                /*
-                                var result = TeamFoundationServerClient.Instance.CheckIn(_currentWorkspace, dialog.SelectedChanges, dialog.Comment);
+                                var result = _currentWorkspace.CheckIn(dialog.SelectedChanges, dialog.Comment, null);
+                       
                                 foreach (var failure in result.Failures.Where(f => f.SeverityType == SeverityType.Error))
                                 {
                                     progress.ReportError(failure.Code, new Exception(failure.Message));
                                 }
-                                */
 
                                 progress.EndTask();
                                 progress.ReportSuccess("Finish Check In");
@@ -922,7 +914,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
             //Undo
             var undoItems = items.Where(i => !i.ChangeType.HasFlag(ChangeType.None) || i.ItemType == ItemType.Folder).ToList();
-
+         
             if (undoItems.Any())
             {
                 Gtk.MenuItem undoItem = new Gtk.MenuItem(GettextCatalog.GetString("Undo Changes"));

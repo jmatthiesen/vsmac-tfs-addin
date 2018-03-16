@@ -45,7 +45,7 @@ namespace MonoDevelop.VersionControl.TFS.Commands
                 return;
             }
 
-            var service = DependencyInjection.Container.Resolve<TeamFoundationServerVersionControlService>();
+            var service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
 
             var serversCount = service.Servers.Count;
 

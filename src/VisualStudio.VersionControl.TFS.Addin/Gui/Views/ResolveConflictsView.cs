@@ -78,7 +78,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _listStore = new ListStore(_typeField, _nameField, _itemField, _versionBaseField, _versionTheirField, _versionYourField);
             _paths = new List<LocalPath>();
          
-            _versionControlService = DependencyInjection.Container.Resolve<TeamFoundationServerVersionControlService>();
+            _versionControlService = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
         }
 
         void BuildGui()

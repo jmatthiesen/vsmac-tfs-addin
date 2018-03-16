@@ -1,5 +1,6 @@
 ﻿using System;
 using MonoDevelop.Core;
+using MonoDevelop.Ide;
 using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 
@@ -71,18 +72,18 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void GetWorkspaces()
         {
-            /*
-            var workspaces = TeamFoundationServerClient.Instance.GetWorkspaces(_projectCollection);
+            var workspaces = _projectCollection.GetRemoteWorkspaces();
+
             _listStore.Clear();
 
             foreach (var workspace in workspaces)
             {
                 var row = _listStore.AddRow();
+
                 _listStore.SetValue(row, _name, workspace.Name);
                 _listStore.SetValue(row, _computer, workspace.Computer);
-                _listStore.SetValue(row, _owner, workspace.OwnerName);
+                _listStore.SetValue(row, _owner, workspace.Owner);
             }
-            */
         }
 
         void AddWorkspaceClick(object sender, EventArgs e)
@@ -98,18 +99,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void RemoveWorkspaceClick(object sender, EventArgs e)
         {
-            /*
             if (_listView.SelectedRow > -1 &&
                 MessageService.Confirm(GettextCatalog.GetString("Are you sure you want to delete selected workspace?"), AlertButton.Yes))
             {
-                var versionControl = _projectCollection.GetService<RepositoryService>();
                 var name = _listStore.GetValue(_listView.SelectedRow, _name);
                 var owner = _listStore.GetValue(_listView.SelectedRow, _owner);
-                versionControl.DeleteWorkspace(name, owner);
+                _projectCollection.DeleteWorkspace(name, owner);
 
                 GetWorkspaces();
             }       
-            */
         }
     }
 }

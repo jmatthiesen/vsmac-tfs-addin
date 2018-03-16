@@ -30,7 +30,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void Init()
         {
-            _service = DependencyInjection.Container.Resolve<TeamFoundationServerVersionControlService>();
+            _service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
             _serverList = new ListView();
             _notebook = new Notebook();
             _serverStore = new ListStore(_nameField, _urlField, _serverField);

@@ -1,12 +1,11 @@
-// UrlHelper.cs
+﻿// OauthAuthorizationConfig.cs
 // 
-// Authors:
-//       Ventsislav Mladenov
+// Author:
 //       Javier Suárez Ruiz
 // 
 // The MIT License (MIT)
 // 
-// Copyright (c) 2013-2018 Ventsislav Mladenov, Javier Suárez Ruiz
+// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,40 +25,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
+using Xwt;
 
-namespace MonoDevelop.VersionControl.TFS.Helpers
+namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
-    public static class UrlHelper
+    public class OauthAuthorizationConfig : IServerAuthorizationConfig
     {
-        private static readonly char urlSeparator = '/';
-
-        public static Uri AddPath(this Uri baseUri, string path)
+        public Widget Widget
         {
-            if (baseUri == null)
-                throw new ArgumentNullException("baseUri");
-          
-            if (path == null)
-                throw new ArgumentNullException("path");
-
-            var uriBuilder = new UriBuilder(baseUri);
-            uriBuilder.Path = CombinePaths(uriBuilder.Path, path);
-          
-            return uriBuilder.Uri;
-        }
-
-        public static string CombinePaths(string path1, string path2)
-        {
-            if (path1 == null)
-                path1 = string.Empty;
-          
-            if (path2 == null)
-                path2 = string.Empty;
-          
-            path1 = path1.TrimEnd(urlSeparator);
-            path2 = path2.TrimStart(urlSeparator);
-         
-            return path1 + urlSeparator + path2;
+            get { return new VBox(); }
         }
     }
 }

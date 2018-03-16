@@ -73,7 +73,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 
             _treeView.RowActivated += OnRowClicked;
      
-            _service = DependencyInjection.Container.Resolve<TeamFoundationServerVersionControlService>();
+            _service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
         }
 
         void AddButtons(IPadWindow window)

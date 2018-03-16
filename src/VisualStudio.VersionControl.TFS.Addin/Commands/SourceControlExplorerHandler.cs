@@ -10,7 +10,7 @@ namespace MonoDevelop.VersionControl.TFS.Commands
     {
         protected override void Run()
         {
-            var service = DependencyInjection.Container.Resolve<TeamFoundationServerVersionControlService>();
+            var service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
             var collection = service.Servers.SelectMany(x => x.ProjectCollections).First();
             var project = collection.Projects.FirstOrDefault();
          
@@ -22,7 +22,7 @@ namespace MonoDevelop.VersionControl.TFS.Commands
 
         protected override void Update(CommandInfo info)
         {
-            var service = DependencyInjection.Container.Resolve<TeamFoundationServerVersionControlService>();
+            var service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
 
             var collectionsCount = service.Servers.SelectMany(x => x.ProjectCollections).Count();
             

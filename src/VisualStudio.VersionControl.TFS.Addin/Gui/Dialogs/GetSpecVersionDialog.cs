@@ -99,9 +99,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 var row = _listStore.AddRow();
                 _listStore.SetValue(row, _itemField, item);
                 _listStore.SetValue(row, _isSelectedField, true);
-                //VersionControlPath path = item.TargetServerItem;
-                //_listStore.SetValue(row, _nameField, path.ItemName);
-                //_listStore.SetValue(row, _pathField, path.ParentPath);
+                RepositoryPath path = item.ServerPath;
+                _listStore.SetValue(row, _nameField, path.ItemName);
+                _listStore.SetValue(row, _pathField, path.ParentPath);
             }
         }
 
@@ -129,22 +129,20 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             Respond(Command.Ok);
 
-            /*
             var option =  GetOptions.GetAll;
 
             using (var progress = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull))
             {
                 progress.Log.WriteLine("Start downloading items. GetOption: " + option);
-              
+
                 foreach (var request in requests)
                 {
                     progress.Log.WriteLine(request);
                 }
 
-                TeamFoundationServerClient.Instance.Get(_workspace, requests, option, progress);
+                _workspace.Get(requests, option);
                 progress.ReportSuccess("Finish Downloading.");
             }
-            */
         }
     }
 }

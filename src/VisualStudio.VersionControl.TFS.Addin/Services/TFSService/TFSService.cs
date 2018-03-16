@@ -1,4 +1,4 @@
-// TFSService.cs
+﻿// TFSService.cs
 // 
 // Authors:
 //       Ventsislav Mladenov
@@ -65,7 +65,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         protected ISoapInvoker GetSoapInvoker()
         {
-            return DependencyInjection.GetSoapInvoker(this);
+            return DependencyContainer.GetSoapInvoker(this);
         }
     }
 }

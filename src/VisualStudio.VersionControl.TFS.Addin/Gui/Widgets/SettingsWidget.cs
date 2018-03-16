@@ -1,4 +1,7 @@
-﻿using MonoDevelop.Core;
+﻿using Autofac;
+using MonoDevelop.Core;
+using MonoDevelop.VersionControl.TFS.Models;
+using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
@@ -6,7 +9,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
     public class SettingsWidget : VBox
     {
         ComboBox _lockLevelBox;
-        
+
+        TeamFoundationServerVersionControlService _service;
+
         public SettingsWidget()
         {
             Init();
@@ -15,7 +20,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 
         void Init()
         {
-            _lockLevelBox = CreateLockLevelComboBox();
+            _service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
+
+            _lockLevelBox = CreateLockLevelComboBox();       
         }
 
         void BuildGui()
@@ -26,24 +33,22 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 
         public void ApplyChanges()
         {
-            //TeamFoundationServerClient.Settings.CheckOutLockLevel = (CheckOutLockLevel)_lockLevelBox.SelectedItem;
+            _service.CheckOutLockLevel = (LockLevel)_lockLevelBox.SelectedItem;
         }
 
         ComboBox CreateLockLevelComboBox()
         {
             ComboBox lockLevelBox = new ComboBox();
 
-            /*
-            lockLevelBox.Items.Add(CheckOutLockLevel.Unchanged, "Keep any existing lock.");
-            lockLevelBox.Items.Add(CheckOutLockLevel.CheckOut, "Prevent other users from checking out and checking in");
-            lockLevelBox.Items.Add(CheckOutLockLevel.CheckIn, "Prevent other users from checking in but allow checking out");
+            lockLevelBox.Items.Add(LockLevel.Unchanged, "Keep any existing lock.");
+            lockLevelBox.Items.Add(LockLevel.CheckOut, "Prevent other users from checking out and checking in");
+            lockLevelBox.Items.Add(LockLevel.Checkin, "Prevent other users from checking in but allow checking out");
 
-            if (TeamFoundationServerClient.Settings.CheckOutLockLevel == CheckOutLockLevel.Unchanged)
-                lockLevelBox.SelectedItem = CheckOutLockLevel.CheckOut;
+            if (_service.CheckOutLockLevel == LockLevel.Unchanged)
+                lockLevelBox.SelectedItem = LockLevel.CheckOut;
             else
-                lockLevelBox.SelectedItem = TeamFoundationServerClient.Settings.CheckOutLockLevel;
-            */
-
+                lockLevelBox.SelectedItem = _service.CheckOutLockLevel;
+            
             return lockLevelBox;
         }
     }

@@ -1,4 +1,4 @@
-﻿// DependencyInjection.cs
+﻿// DependencyContainer.cs
 // 
 // Authors:
 //       Ventsislav Mladenov
@@ -34,7 +34,7 @@ using MonoDevelop.VersionControl.TFS.MonoDevelopWrappers.Implementation;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
-    public static class DependencyInjection
+    public static class DependencyContainer
     {
         public static void Register(ContainerBuilder builder)
         {
@@ -85,7 +85,6 @@ namespace MonoDevelop.VersionControl.TFS.Services
             this.RegisterType<LoggingService>().As<ILoggingService>().SingleInstance();
             this.RegisterType<NotificationService>().As<INotificationService>();
             this.RegisterType<TeamFoundationServerRepository>().InstancePerLifetimeScope().OnActivated(a => a.Instance.NotificationService = a.Context.Resolve<INotificationService>() );
-            
         }
     }
 }
