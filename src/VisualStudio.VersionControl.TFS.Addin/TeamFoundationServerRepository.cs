@@ -37,7 +37,6 @@ using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Models;
 using MonoDevelop.VersionControl.TFS.MonoDevelopWrappers;
 using MonoDevelop.VersionControl.TFS.Services;
-using MonoDevelop.VersionControl.TFS.VersionControl.Enums;
 
 namespace MonoDevelop.VersionControl.TFS
 {

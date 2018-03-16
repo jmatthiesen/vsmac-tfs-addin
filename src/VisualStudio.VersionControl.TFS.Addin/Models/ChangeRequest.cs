@@ -26,10 +26,8 @@
 // THE SOFTWARE.
 
 using System.Xml.Linq;
-using MonoDevelop.VersionControl.TFS.Models;
-using MonoDevelop.VersionControl.TFS.VersionControl.Enums;
 
-namespace MonoDevelop.VersionControl.TFS.VersionControl.Models
+namespace MonoDevelop.VersionControl.TFS.Models
 {
     //<s:complexType name="ChangeRequest">
     //    <s:sequence>

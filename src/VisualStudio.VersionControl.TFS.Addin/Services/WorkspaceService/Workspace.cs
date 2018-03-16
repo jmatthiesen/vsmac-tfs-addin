@@ -33,9 +33,6 @@ using System.Linq;
 using System.Text;
 using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Models;
-using MonoDevelop.VersionControl.TFS.MonoDevelopWrappers;
-using MonoDevelop.VersionControl.TFS.VersionControl.Enums;
-using MonoDevelop.VersionControl.TFS.VersionControl.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {

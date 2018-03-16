@@ -31,7 +31,6 @@ using System.Collections.Generic;
 using System.Linq;
 using MonoDevelop.VersionControl.TFS.Models;
 using MonoDevelop.VersionControl.TFS.Services;
-using MonoDevelop.VersionControl.TFS.VersionControl.Enums;
 
 namespace MonoDevelop.VersionControl.TFS
 {

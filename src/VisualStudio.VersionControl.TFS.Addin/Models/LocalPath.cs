@@ -31,7 +31,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using MonoDevelop.VersionControl.TFS.VersionControl.Helpers;
+using MonoDevelop.VersionControl.TFS.Helpers;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {

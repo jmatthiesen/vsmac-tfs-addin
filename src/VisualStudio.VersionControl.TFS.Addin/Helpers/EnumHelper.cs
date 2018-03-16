@@ -28,9 +28,8 @@
 
 using System;
 using MonoDevelop.VersionControl.TFS.Models;
-using MonoDevelop.VersionControl.TFS.VersionControl.Enums;
 
-namespace MonoDevelop.VersionControl.TFS.VersionControl.Helpers
+namespace MonoDevelop.VersionControl.TFS.Helpers
 {
     public static class EnumHelper
     {

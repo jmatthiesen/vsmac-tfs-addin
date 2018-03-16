@@ -32,7 +32,6 @@ using System.Linq;
 using System.Xml.Linq;
 using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Services;
-using MonoDevelop.VersionControl.TFS.VersionControl.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {

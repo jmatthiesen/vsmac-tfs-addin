@@ -27,7 +27,6 @@
 // THE SOFTWARE.
 
 using System.Collections.Generic;
-using MonoDevelop.VersionControl.TFS.VersionControl.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {

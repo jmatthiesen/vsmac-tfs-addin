@@ -27,8 +27,6 @@
 // THE SOFTWARE.
 
 using System;
-using MonoDevelop.VersionControl.TFS.VersionControl.Enums;
-using MonoDevelop.VersionControl.TFS.VersionControl.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {

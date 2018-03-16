@@ -29,7 +29,6 @@
 using System;
 using System.Collections.Generic;
 using MonoDevelop.VersionControl.TFS.Models;
-using MonoDevelop.VersionControl.TFS.VersionControl.Enums;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {

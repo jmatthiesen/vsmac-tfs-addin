@@ -29,7 +29,6 @@
 using System;
 using System.Text;
 using System.Xml.Linq;
-using MonoDevelop.VersionControl.TFS.VersionControl.Enums;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {

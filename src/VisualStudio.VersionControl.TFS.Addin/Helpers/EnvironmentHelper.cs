@@ -28,7 +28,7 @@
 
 using System;
 
-namespace MonoDevelop.VersionControl.TFS.VersionControl.Helpers
+namespace MonoDevelop.VersionControl.TFS.Helpers
 {
     internal static class EnvironmentHelper
     {

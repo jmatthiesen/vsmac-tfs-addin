@@ -33,7 +33,6 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Models;
-using MonoDevelop.VersionControl.TFS.VersionControl.Enums;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
