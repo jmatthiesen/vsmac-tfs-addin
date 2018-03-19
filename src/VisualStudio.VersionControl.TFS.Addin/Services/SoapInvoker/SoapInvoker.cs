@@ -109,7 +109,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                 request.AllowWriteStreamBuffering = true;
                 request.Method = "POST";
                 request.ContentType = "text/xml; charset=utf-8";
-                request.Headers["SOAPAction"] = messagegNs.NamespaceName.TrimEnd('/') + '/' + this.methodName;
+                request.Headers["SOAPAction"] = messagegNs.NamespaceName.TrimEnd('/') + '/' + methodName;
 
                 document.Save(request.GetRequestStream());
 

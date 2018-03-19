@@ -280,10 +280,13 @@ namespace MonoDevelop.VersionControl.TFS.Services
             var msg = invoker.CreateEnvelope("QueryHistory");
             msg.AddElement(item.ToXml("itemSpec"));
             msg.AddElement(versionItem.ToXml("versionItem"));
+           
             if (versionFrom != null)
                 msg.AddElement(versionFrom.ToXml("versionFrom"));
+           
             if (versionTo != null)
                 msg.AddElement(versionTo.ToXml("versionTo"));
+       
             msg.AddElement("maxCount", maxCount);
             msg.AddElement("includeFiles", false);
             msg.AddElement("generateDownloadUrls", false);
@@ -311,7 +314,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         internal void UploadFile(WorkspaceData workspaceData, CommitItem commitItem)
         {
-            UploadService.UploadFileAsync(workspaceData.Name, workspaceData.Owner, commitItem).Wait();
+            UploadService.UploadFile(workspaceData.Name, workspaceData.Owner, commitItem);
         }
 
         #region Result Extractors
@@ -380,6 +383,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             msg.AddElement("items", items.Select(itemSpec => itemSpec.ToXml("ItemSpec")));
 
             var result = invoker.InvokeResult();
+
             return ConflictExtractor(result);
         }
 
