@@ -34,19 +34,20 @@ namespace MonoDevelop.VersionControl.TFS.Models
     class BaseTableExtractor
     {
         protected readonly XNamespace ns = "http://schemas.microsoft.com/TeamFoundation/2005/06/WorkItemTracking/ClientServices/03";
-        protected readonly XElement response;
-        protected readonly string tableName;
+     
+        protected readonly XElement _response;
+        protected readonly string _tableName;
 
         public BaseTableExtractor(XElement response, string tableName)
         {
-            this.tableName = tableName;
-            this.response = response;
+            _tableName = tableName;
+            _response = response;
         }
 
         protected XElement GetTable()
         {
-            var tables = response.Descendants(ns + "table");
-            return tables.FirstOrDefault(t => string.Equals(t.Attribute("name").Value, tableName, System.StringComparison.OrdinalIgnoreCase));
+            var tables = _response.Descendants(ns + "table");
+            return tables.FirstOrDefault(t => string.Equals(t.Attribute("name").Value, _tableName, System.StringComparison.OrdinalIgnoreCase));
         }
 
         protected XElement[] GetColumns(XElement table)

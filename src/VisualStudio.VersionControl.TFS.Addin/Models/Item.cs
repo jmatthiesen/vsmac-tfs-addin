@@ -41,6 +41,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             if (element == null)
                 return null;
+            
             Item item = new Item();
             item.ServerItem = element.GetAttributeValue("item");
             item.ItemType = EnumHelper.ParseItemType(element.GetAttributeValue("type"));
@@ -134,4 +135,3 @@ namespace MonoDevelop.VersionControl.TFS.Models
         public bool IsBranch { get; private set; }
     }
 }
-

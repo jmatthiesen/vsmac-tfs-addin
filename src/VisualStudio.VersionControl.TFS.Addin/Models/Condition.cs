@@ -38,10 +38,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         LessOrEquals,
         GreaterOrEquals,
         In,
-        //Only for Project Id
         Under,
         InGroup
-        //Not supported
-        //Contains
     }
 }

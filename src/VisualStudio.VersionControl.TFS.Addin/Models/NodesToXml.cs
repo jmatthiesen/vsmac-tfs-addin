@@ -51,13 +51,12 @@ namespace MonoDevelop.VersionControl.TFS.Models
             writer.WriteAttributeString("Operator", node.ToOperator());
             var constantNode = (ConstantNode)node.Right; //All Nodes to Right should be Constants.
             var strValue = Convert.ToString(constantNode.Value, CultureInfo.InvariantCulture);
-//                if (node.Condition == Condition.NotEquals && string.IsNullOrEmpty(strValue))
-//                    return null;
+
             writer.WriteElementString(constantNode.DataType.ToString(), strValue);
             writer.WriteEndElement();
         }
 
-        private void WriterStartGroup(OperatorNode operatorNode, XmlWriter writer)
+        void WriterStartGroup(OperatorNode operatorNode, XmlWriter writer)
         {
             writer.WriteStartElement("Group");
             writer.WriteAttributeString("GroupOperator", operatorNode.Operator.ToString());
@@ -70,7 +69,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             settings.Encoding = Encoding.UTF8;
             settings.Indent = true;
             settings.OmitXmlDeclaration = true;
-            //settings.NewLineChars = Environment.NewLine;
+
             using (XmlWriter writer = XmlWriter.Create(builder, settings))
             {
                 if (nodes.Count == 1 && nodes[0].NodeType == NodeType.Condition)

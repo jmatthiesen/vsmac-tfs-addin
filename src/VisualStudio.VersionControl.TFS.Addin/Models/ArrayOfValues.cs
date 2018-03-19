@@ -42,6 +42,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                 return;
           
             var arrayOfWords = word.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+          
             foreach (var w in arrayOfWords)
             {
                 var trimmedWord = w.Trim();

@@ -360,14 +360,17 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             var startChar = MoveToNextNonWhiteSpace(ref i);
             string result = string.Empty;
+          
             if (startChar == ParameterStart)
                 result = ReadParameter(ref i);
             else if (startChar == StringDelimeter)
                 result = ReadStringConstant(ref i);
             else
                 result = ReadNumberConstant(ref i);
+          
             if (whereClause[i] == CloseBracket) //If After Value is Close bracket with no space. 
                 i--;
+           
             return result;
         }
 
@@ -474,6 +477,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                     }
                 }
             }
+
             return list;
         }
 
@@ -482,6 +486,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             var openBracketsCount = nodes.Count(x => x.NodeType == NodeType.OpenBracket);
             var closeBracketsCount = nodes.Count(x => x.NodeType == NodeType.CloseBracket);
             var exception = new Exception("Could not parse where clause correctly");
+
             if (openBracketsCount != closeBracketsCount)
                 throw exception;
          
@@ -496,6 +501,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                         throw exception;
                     }
                 }
+
                 //Next node should be operator or end, skip close brackets
                 if (nodes[i].NodeType == NodeType.Constant || nodes[i].NodeType == NodeType.Parameter || nodes[i].NodeType == NodeType.ArrayOfValues)
                 {
@@ -517,6 +523,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                             break;
                         }
                     }
+
                     if (!found)
                         throw exception;
                 }

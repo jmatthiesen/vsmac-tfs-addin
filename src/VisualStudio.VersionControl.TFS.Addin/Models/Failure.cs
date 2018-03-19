@@ -132,8 +132,10 @@ namespace MonoDevelop.VersionControl.TFS.Models
             get
             {
                 FailureException exception;
+            
                 if (!Enum.TryParse<FailureException>(Code, true, out exception))
                     exception = FailureException.Other;
+                
                 return exception;
             }
         }

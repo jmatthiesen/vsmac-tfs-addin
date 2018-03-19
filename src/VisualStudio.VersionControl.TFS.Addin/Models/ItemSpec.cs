@@ -70,14 +70,18 @@ namespace MonoDevelop.VersionControl.TFS.Models
         internal XElement ToXml(string elementName)
         {
             XElement result = new XElement(elementName);
+          
             if (RecursionType != RecursionType.None)
                 result.Add(new XAttribute("recurse", RecursionType));
+           
             if (DeletionId != 0)
                 result.Add(new XAttribute("did", DeletionId));
+           
             if (RepositoryPath.IsServerItem(Item))
                 result.Add(new XAttribute("item", Item));
             else
                 result.Add(new XAttribute("item", (new LocalPath(Item)).ToRepositoryLocalPath()));
+           
             return result;
         }
 

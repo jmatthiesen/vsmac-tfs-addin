@@ -80,7 +80,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
             if (!string.IsNullOrEmpty(Target))
             {
-                // convert local path specs from platform paths to tfs paths as needed
+                // Convert local path specs from platform paths to tfs paths as needed
                 string fxdTarget = RepositoryPath.IsServerItem(Target) ? Target : (new LocalPath(Target)).ToRepositoryLocalPath();
                 result.Add(new XAttribute("target", fxdTarget));
             }

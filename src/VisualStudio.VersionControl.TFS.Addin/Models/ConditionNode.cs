@@ -118,19 +118,6 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         public string ToOperator()
         {
-
-            //            public static String EQUALS = "equals";
-            //            public static String NOT_EQUALS = "notEquals";
-            //            public static String GREATER = "greater";
-            //            public static String LESS = "less";
-            //            public static String EQUALS_GREATER = "equalsGreater";
-            //            public static String EQUALS_LESS = "equalsLess";
-            //            public static String CONTAINS = "contains";
-            //            public static String NOT_CONTAINS = "notContains";
-            //            public static String EVER = "ever";
-            //            public static String NOT_EVER = "notEver";
-            //            public static String UNDER = "under";
-            //            public static String NOT_UNDER = "notUnder";
             switch (Condition)
             {
                 case Condition.Equals:

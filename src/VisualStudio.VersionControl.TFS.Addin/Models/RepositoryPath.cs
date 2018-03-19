@@ -123,7 +123,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             if (this == other)
                 return true;
             
-            //Could not be a child of file.
+            // Could not be a child of file.
             if (!other.IsDirectory)
                 return false;
 

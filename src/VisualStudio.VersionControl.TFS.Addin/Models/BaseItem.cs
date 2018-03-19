@@ -96,4 +96,3 @@ namespace MonoDevelop.VersionControl.TFS.Models
         #endregion Equal
     }
 }
-

@@ -64,6 +64,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             var auth = new NtlmAuthorization();
             auth.ReadConfig(element, serverUri);
             auth.Domain = element.GetAttributeValue("Domain");
+
             return auth;
         }
 
@@ -84,6 +85,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             var authorization = new NtlmAuthorization();
             authorization.ReadConfig(config);
             authorization.Domain = config.Domain;
+
             return authorization;
         }
     }

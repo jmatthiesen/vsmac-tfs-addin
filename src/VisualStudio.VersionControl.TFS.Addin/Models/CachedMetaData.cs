@@ -34,13 +34,13 @@ namespace MonoDevelop.VersionControl.TFS.Models
 {
     internal sealed class CachedMetaData
     {
-        static CachedMetaData instance;
+        static CachedMetaData _instance;
 
         public static CachedMetaData Instance
         {
             get
             {
-                return instance ?? (instance = new CachedMetaData());
+                return _instance ?? (_instance = new CachedMetaData());
             }
         }
 

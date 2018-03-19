@@ -80,6 +80,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             projectInfo.Uri = new Uri(element.Attribute("Uri").Value);
             projectInfo.Id = Guid.Parse(projectInfo.Uri.OriginalString.Remove(0, 36));
             projectInfo.State = (ProjectState)Enum.Parse(typeof(ProjectState), element.Attribute("Status").Value);
+         
             return projectInfo;
         }
 

@@ -71,4 +71,3 @@ namespace MonoDevelop.VersionControl.TFS.Models
         public List<string> UndoneServerItems { get; set; }
     }
 }
-

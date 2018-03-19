@@ -88,28 +88,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                 .Select(Change.FromXml).ToArray();
             return changeset;
         }
-        //        internal void ToXml(XmlWriter writer, string element)
-        //        {
-        //            writer.WriteStartElement(element);
-        //            writer.WriteAttributeString("cmtr", Committer);
-        //            writer.WriteAttributeString("date", CreationDate.ToString());
-        //            writer.WriteAttributeString("cset", ChangesetId.ToString());
-        //            writer.WriteElementString("owner", Owner);
-        //
-        //            if (Changes != null)
-        //            {
-        //                writer.WriteStartElement("Changes");
-        //
-        //                foreach (Change change in Changes)
-        //                {
-        //                    change.ToXml(writer, "Change");
-        //                }
-        //
-        //                writer.WriteEndElement();
-        //            }
-        //
-        //            writer.WriteEndElement();
-        //        }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

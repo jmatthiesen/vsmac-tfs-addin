@@ -37,7 +37,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         public void RemoveFieldsAndValues()
         {
             var output = new List<Node>();
-            for (int i = 0; i < this.Count; i++)
+            for (int i = 0; i < Count; i++)
             {
                 var node = this[i];
                 if (node.NodeType != NodeType.Condition &&
@@ -94,8 +94,8 @@ namespace MonoDevelop.VersionControl.TFS.Models
                     output.Add(node);
             }
 
-            this.Clear();
-            this.AddRange(output);
+            Clear();
+            AddRange(output);
         }
 
         public void Optimize()
@@ -111,15 +111,19 @@ namespace MonoDevelop.VersionControl.TFS.Models
             for (int i = openBracketIndex; i < this.Count; i++)
             {
                 var node = this[i];
+
                 if (node.NodeType == NodeType.OpenBracket)
                     bracketCount++;
+              
                 if (node.NodeType == NodeType.CloseBracket)
                     bracketCount--;
+              
                 if (bracketCount == 0)
                 {
                     return i;
                 }
             }
+
             throw new Exception("Could not find Close Bracket");
         }
 
@@ -127,6 +131,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             if (this[openBracketIndex].NodeType != NodeType.OpenBracket)
                 throw new Exception("Not an open bracket");
+           
             var subList = new NodeList();
             var closeBracketIndex = FindMatchingCloseBracket(openBracketIndex);
             //Do not add open and closed brackets.
@@ -144,21 +149,25 @@ namespace MonoDevelop.VersionControl.TFS.Models
             //Remove unused brackets (([a] = 2)) == [a] = 2
             if (this[0].NodeType != NodeType.OpenBracket || this[this.Count - 1].NodeType != NodeType.CloseBracket)
                 return;
+          
             int brackCnt = 0;
-            for (int i = 1; i < this.Count - 1; i++)
+            for (int i = 1; i < Count - 1; i++)
             {
                 var node = this[i];
+               
                 if (node.NodeType == NodeType.OpenBracket)
                     brackCnt++;
+               
                 if (node.NodeType == NodeType.CloseBracket)
                     brackCnt--;
+               
                 if (brackCnt < 0) //Every open bracket should have close bracket , ([a] = 2) and ([b] = @p) 
                     return; 
             }
             if (brackCnt == 0)
             {
-                this.RemoveAt(this.Count - 1); //Remove last
-                this.RemoveAt(0); //Remove first.
+                RemoveAt(Count - 1); //Remove last
+                RemoveAt(0); //Remove first.
             }
             RemoveUnUsedBrackets();
         }
@@ -166,17 +175,18 @@ namespace MonoDevelop.VersionControl.TFS.Models
         public void ExtractOperatorForward()
         {
             var newNodes = ExtractOperatorForward(0, this.Count);
-            this.Clear();
-            this.AddRange(newNodes);
+            Clear();
+            AddRange(newNodes);
         }
 
-        private NodeList ExtractOperatorForward(int from, int to)
+        NodeList ExtractOperatorForward(int from, int to)
         {
             NodeList list = new NodeList();
             Operator? currentOperator = null;
             for (int i = from; i < to; i++)
             {
                 var node = this[i];
+              
                 if (node.NodeType == NodeType.OpenBracket)
                 {
                     var closeBracket = FindMatchingCloseBracket(i);
@@ -187,6 +197,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                     list.Add(new CloseBracketNode());
                     continue;
                 }
+
                 if (node.NodeType == NodeType.Operator)
                 {
                     var operatorNode = ((OperatorNode)node);
@@ -276,17 +287,13 @@ namespace MonoDevelop.VersionControl.TFS.Models
                         }
                         continue;
                     }
-//                    if (field.Id == -1) //Authorized As to PersonId
-//                    {
-//                        fieldNode.Field = fields[-6].ReferenceName;
-//                    }
                 }
             }
         }
 
         public void FillFieldTypes(FieldList fields)
         {
-            for (int i = 0; i < this.Count; i++)
+            for (int i = 0; i < Count; i++)
             {
                 if (this[i].NodeType == NodeType.Condition)
                 {

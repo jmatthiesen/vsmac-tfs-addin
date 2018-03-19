@@ -88,6 +88,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             var auth = new BasicAuthorization();
             auth.ReadConfig(serverAuthorizationConfig);
+
             return auth;
         }
     }

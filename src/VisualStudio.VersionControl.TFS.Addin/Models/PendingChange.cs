@@ -78,6 +78,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             change.ItemType = EnumHelper.ParseItemType(element.GetAttributeValue("type"));
             change.DownloadUrl = element.GetAttributeValue("durl");
             change.ChangeType = EnumHelper.ParseChangeType(element.GetAttributeValue("chg"));
+
             if (change.ChangeType == ChangeType.Edit)
                 change.ItemType = ItemType.File;
 
@@ -132,7 +133,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         public byte[] Hash { get; set; }
 
-        private byte[] uploadHashValue;
+        byte[] uploadHashValue;
 
         public byte[] UploadHashValue
         {
@@ -208,4 +209,3 @@ namespace MonoDevelop.VersionControl.TFS.Models
         }
     }
 }
-
