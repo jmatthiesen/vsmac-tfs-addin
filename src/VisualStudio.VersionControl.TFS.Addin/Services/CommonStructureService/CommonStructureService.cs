@@ -1,11 +1,12 @@
 // CommonStructureService.cs
 // 
-// Author:
+// Authors:
 //       Ventsislav Mladenov
+//       Javier Suárez Ruiz
 // 
 // The MIT License (MIT)
 // 
-// Copyright (c) 2013-2015 Ventsislav Mladenov
+// Copyright (c) 2013-2018 Ventsislav Mladenov, Javier Suárez Ruiz
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +58,8 @@ namespace MonoDevelop.VersionControl.TFS.Services
             invoker.CreateEnvelope("ListAllProjects");
             var resultEl = invoker.InvokeResult();
           
-            return new List<ProjectInfo>(resultEl.GetElements("ProjectInfo").Select(e => ProjectInfo.FromServerXml(e, collection)).OrderBy(p => p.Name));
+            return new List<ProjectInfo>(resultEl.GetElements("ProjectInfo")
+                                         .Select(e => ProjectInfo.FromServerXml(e, collection)).OrderBy(p => p.Name));
         }
     }
 }

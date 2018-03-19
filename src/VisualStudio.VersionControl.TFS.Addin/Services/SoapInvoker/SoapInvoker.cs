@@ -160,7 +160,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             }
             finally
             {
-                _loggingService.LogToDebug(logBuilder.ToString());
+                _loggingService.LogToInfo(logBuilder.ToString());
             }
         }
 

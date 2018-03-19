@@ -1,11 +1,12 @@
 // TFSNodeExtension.cs
 // 
-// Author:
+// Authors:
 //       Ventsislav Mladenov
+//       Javier Suárez Ruiz
 // 
 // The MIT License (MIT)
 // 
-// Copyright (c) 2013-2015 Ventsislav Mladenov
+// Copyright (c) 2013-2018 Ventsislav Mladenov, Javier Suárez Ruiz
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +33,7 @@ using MonoDevelop.Ide.Gui.Components;
 using MonoDevelop.Ide.Gui.Pads.ProjectPad;
 using MonoDevelop.Projects;
 using MonoDevelop.VersionControl.TFS.Commands;
+using MonoDevelop.VersionControl.TFS.Gui.Views;
 using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Extensions
@@ -72,6 +74,7 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
                 commandInfo.Visible = false;
                 return;
             }
+
             foreach (var item in GetItems(false))
             {
                 if (item.IsDirectory)
@@ -81,11 +84,13 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
                 }
     
                 var repo = item.Repository as TeamFoundationServerRepository;
+              
                 if (repo == null)
                 {
                     commandInfo.Visible = false;
                     return;
                 }
+
                 if (!item.VersionInfo.IsVersioned || item.VersionInfo.HasLocalChanges || item.VersionInfo.Status.HasFlag(VersionStatus.Locked))
                 {
                     commandInfo.Visible = false;
@@ -98,21 +103,26 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
         protected void OnResolveConflicts()
         {
             var items = base.GetItems(false);
+          
             if (items.Count == 0)
                 return;
+            
             var item = items[0];
             var repo = (TeamFoundationServerRepository)item.Repository;
-            //ResolveConflictsView.Open(repo.Workspace, GetWorkingPaths(item));
+
+            ResolveConflictsView.Open(repo.Workspace, GetWorkingPaths(item));
         }
 
         private List<LocalPath> GetWorkingPaths(VersionControlItem item)
         {
             var paths = new List<LocalPath>();
             var solution = item.WorkspaceObject as Solution;
+           
             if (solution != null)
             {
                 //Add Solution
                 paths.Add(new LocalPath(solution.BaseDirectory));
+
                 //Add linked files.
                 foreach (var path in solution.GetItemFiles(true))
                 {
@@ -127,6 +137,7 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
                 var project = (Project)item.WorkspaceObject;
                 paths.Add(new LocalPath(project.BaseDirectory));
             }
+
             return paths;
         }
 
@@ -138,19 +149,24 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
                 commandInfo.Visible = false;
                 return;
             }
+
             var items = base.GetItems(false);
+
             if (items.Count == 0)
             {
                 commandInfo.Visible = false;
                 return;
             }
+
             var item = items[0];
             var repo = item.Repository as TeamFoundationServerRepository;
+          
             if (repo == null || !item.VersionInfo.IsVersioned)
             {
                 commandInfo.Visible = false;
                 return;
             }
+
             commandInfo.Visible = true;
         }
 
@@ -169,7 +185,7 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
             }
 
             var serverPath = repo.Workspace.Data.GetServerPathForLocalPath(new LocalPath(path));
-            //SourceControlExplorerView.Open(repo.Workspace.ProjectCollection, serverPath, fileName);
+            SourceControlExplorerView.Show(repo.Workspace.ProjectCollection, serverPath, fileName);
         }
 
         [CommandUpdateHandler(TeamExplorerCommands.LocateInSourceExplorer)]
@@ -180,20 +196,24 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
                 commandInfo.Visible = false;
                 return;
             }
+
             var items = base.GetItems(false);
             if (items.Count != 1)
             {
                 commandInfo.Visible = false;
                 return;
             }
+
             foreach (var item in items)
             {
                 var repo = item.Repository as TeamFoundationServerRepository;
+              
                 if (repo == null)
                 {
                     commandInfo.Visible = false;
                     return;
                 }
+
                 if (!item.VersionInfo.IsVersioned)
                 {
                     commandInfo.Visible = false;

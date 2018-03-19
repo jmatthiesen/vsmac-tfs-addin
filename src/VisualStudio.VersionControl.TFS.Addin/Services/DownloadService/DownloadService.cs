@@ -1,11 +1,12 @@
 ﻿// DownloadService.cs
 // 
-// Author:
+// Authors:
 //       Ventsislav Mladenov
+//       Javier Suárez Ruiz
 // 
 // The MIT License (MIT)
 // 
-// Copyright (c) 2013-2015 Ventsislav Mladenov
+// Copyright (c) 2013-2018 Ventsislav Mladenov, Javier Suárez Ruiz
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -81,13 +82,13 @@ namespace MonoDevelop.VersionControl.TFS.Services
             {
                 var client = new WebClient();
                 this.Server.Authorization.Authorize(client);
-                var tempFileName = this.GetTempFileName(".gz");
-                var bulder = new UriBuilder(this.Url) { Query = artifactUri };
+                var tempFileName = GetTempFileName(".gz");
+                var bulder = new UriBuilder(Url) { Query = artifactUri };
                 client.DownloadFile(bulder.Uri, tempFileName);
 
                 if (string.Equals(client.ResponseHeaders[HttpResponseHeader.ContentType], "application/gzip", StringComparison.OrdinalIgnoreCase))
                 {
-                    string newTempFileName = this.GetTempFileName(".tmp");
+                    string newTempFileName = GetTempFileName(".tmp");
                   
                     using (var inStream = new GZipStream(File.OpenRead(tempFileName), CompressionMode.Decompress))
                     {
@@ -116,7 +117,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         public LocalPath DownloadToTempWithName(string downloadUri, string fileName)
         {
-            var path = this.DownloadToTemp(downloadUri);
+            var path = DownloadToTemp(downloadUri);
           
             if (path.Exists)
             {
@@ -130,7 +131,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         public LocalPath Download(LocalPath path, string artifactUri)
         {
-            var tempPath = this.DownloadToTemp(artifactUri);
+            var tempPath = DownloadToTemp(artifactUri);
           
             if (!tempPath.Exists || !tempPath.MoveTo(path, true))
                 return LocalPath.Empty();

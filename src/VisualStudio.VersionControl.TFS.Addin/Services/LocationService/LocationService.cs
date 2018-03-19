@@ -101,6 +101,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                     property.SetValue(service, subService, new object[0]);
                 }
             }
+
             return service;
         }
 

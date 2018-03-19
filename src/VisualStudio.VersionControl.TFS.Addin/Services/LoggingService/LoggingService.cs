@@ -1,11 +1,12 @@
 ﻿// LoggingService.cs
 // 
-// Author:
+// Authors:
 //       Ventsislav Mladenov
+//       Javier Suárez Ruiz
 // 
 // The MIT License (MIT)
 // 
-// Copyright (c) 2013-2015 Ventsislav Mladenov
+// Copyright (c) 2013-2018 Ventsislav Mladenov, Javier Suárez Ruiz
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,18 +41,6 @@ namespace MonoDevelop.VersionControl.TFS.Services
         public LoggingService(IConfigurationService configurationService)
         {
             _configuration = configurationService.Load();
-        }
-
-        public void LogToDebug(string message)
-        {
-            if (_configuration.IsDebugMode)
-            {
-                lock (locker)
-                {
-                    var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "TFS.VersionControl.Debug.log");
-                    File.AppendAllText(path, message, Encoding.UTF8);
-                }
-            }
         }
 
         public void LogToInfo(string message)

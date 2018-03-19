@@ -1,4 +1,4 @@
-// TFSRepository.cs
+// TeamFoundationServerRepository.cs
 //
 // Authors:
 //       Ventsislav Mladenov

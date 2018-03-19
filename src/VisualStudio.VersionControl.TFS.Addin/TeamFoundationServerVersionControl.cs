@@ -1,4 +1,4 @@
-﻿// TFSClient.cs
+﻿// TeamFoundationServerVersionControl.cs
 // 
 // Authors:
 //       Ventsislav Mladenov

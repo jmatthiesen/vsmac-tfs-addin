@@ -84,7 +84,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
            
             if (result.ChangeSet > 0 && workItems.Count > 0)
             {
-                WorkItemManager wm = new WorkItemManager(this.collection);
+                WorkItemManager wm = new WorkItemManager(collection);
                 wm.UpdateWorkItems(result.ChangeSet, workItems, comment);
             }
 
@@ -477,8 +477,10 @@ namespace MonoDevelop.VersionControl.TFS.Services
             if (processDirection == ProcessDirection.Normal && !string.IsNullOrEmpty(operation.ArtifactUri))
             {
                 LocalPath path = DownloadFile(operation);
+             
                 if (operation.ItemType == ItemType.File)
                     path.MakeReadOnly();
+                
                 return new UpdateLocalVersion(operation.ItemId, path, operation.VersionServer);
             }
             return null;
@@ -491,6 +493,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                 var update = ProcessGet(operation, ProcessDirection.Normal);
                 return update;
             }
+
             return InternalProcessDelete(operation, processType);
         }
 

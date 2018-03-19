@@ -28,13 +28,10 @@
 
 using System;
 using System.IO;
-using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using MonoDevelop.VersionControl.TFS.Models;
 

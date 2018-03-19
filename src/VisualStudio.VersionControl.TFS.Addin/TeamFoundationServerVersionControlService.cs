@@ -1,4 +1,4 @@
-// TFSVersionControlService.cs
+// TeamFoundationServerVersionControlService.cs
 // 
 // Authors:
 //       Ventsislav Mladenov
@@ -105,19 +105,6 @@ namespace MonoDevelop.VersionControl.TFS
             set
             {
                 _configuration.DefaultLockLevel = value;
-                Save();
-            }
-        }
-
-        public bool IsDebugMode
-        { 
-            get
-            {
-                return _configuration.IsDebugMode;
-            }
-            set
-            {
-                _configuration.IsDebugMode = value;
                 Save();
             }
         }

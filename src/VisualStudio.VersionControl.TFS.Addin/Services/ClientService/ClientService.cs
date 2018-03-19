@@ -151,8 +151,10 @@ namespace MonoDevelop.VersionControl.TFS.Services
             var response = invoker.InvokeResponse();
 
             var queryIds = response.Element(MessageNs + "resultIds").Element("QueryIds");
+        
             if (queryIds == null)
                 return new List<int>();
+            
             var list = new List<int>();
             foreach (var item in queryIds.Elements("id"))
             {
@@ -220,6 +222,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             var extractor = new TableDictionaryExtractor(response, "Items");
             var data = extractor.Extract();
             List<WorkItem> list = new List<WorkItem>();
+         
             foreach (var item in data)
             {
                 list.Add(new WorkItem { WorkItemInfo = item });
