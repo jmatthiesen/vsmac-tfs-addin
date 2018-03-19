@@ -361,6 +361,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                             new XElement(MessageNs + "Id", wi.Key),
                             new XElement(MessageNs + "CheckinAction", wi.Value))))));
             }
+
             var response = invoker.InvokeResponse();
             var resultElement = invoker.MethodResultExtractor(response);
 
@@ -400,4 +401,3 @@ namespace MonoDevelop.VersionControl.TFS.Services
         }
     }
 }
-

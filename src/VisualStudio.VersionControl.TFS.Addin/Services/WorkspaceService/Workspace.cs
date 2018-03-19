@@ -122,7 +122,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         public Item GetItem(ItemSpec item, ItemType itemType, bool includeDownloadUrl)
         {
-            var items = this.GetItems(item.ToEnumerable(), VersionSpec.Latest, DeletedState.Any, itemType, includeDownloadUrl);
+            var items = GetItems(item.ToEnumerable(), VersionSpec.Latest, DeletedState.Any, itemType, includeDownloadUrl);
             return items.SingleOrDefault();
         }
 
@@ -150,7 +150,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             Update();
         }
 
-        private void Update()
+        void Update()
         {
             collection.UpdateWorkspace(Data.Name, Data.Owner, workspaceData);
         }
@@ -176,7 +176,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             bool force = options.HasFlag(GetOptions.GetAll);
             bool noGet = options.HasFlag(GetOptions.Preview);
 
-            var getOperations = this.collection.Get(workspaceData, requests, force, noGet);   
+            var getOperations = collection.Get(workspaceData, requests, force, noGet);   
             ProcessGetOperations(getOperations, ProcessType.Get);
         }
 
@@ -219,7 +219,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             ProcessGetOperations(operations, ProcessType.Add);
         }
 
-        //Delete from Version Control, but don't delete file from file system - Monodevelop Logic.
+        // Delete from Version Control, but don't delete file from file system - Monodevelop Logic.
         public void PendDelete(IEnumerable<LocalPath> paths, RecursionType recursionType, bool keepLocal, out ICollection<Failure> failures)
         {
             var changes = paths.Select(p => new ChangeRequest(p, RequestType.Delete, Directory.Exists(p) ? ItemType.Folder : ItemType.File, recursionType, LockLevel.None, VersionSpec.Latest)).ToList();

@@ -513,7 +513,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             return _currentWorkspace.DownloadToTempWithName(item.ArtifactUri, item.ServerPath.ItemName);
         }
        
-        private void GetLatestVersion(List<ExtendedItem> items)
+        void GetLatestVersion(List<ExtendedItem> items)
         {
             List<GetRequest> requests = new List<GetRequest>();
           
@@ -814,7 +814,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                             {
                                 progress.BeginTask("Check In", 1);
 
-                                var result = _currentWorkspace.CheckIn(dialog.SelectedChanges, dialog.Comment, null);
+                                var result = _currentWorkspace.CheckIn(dialog.SelectedChanges, dialog.Comment, dialog.SelectedWorkItems);
                        
                                 foreach (var failure in result.Failures.Where(f => f.SeverityType == SeverityType.Error))
                                 {

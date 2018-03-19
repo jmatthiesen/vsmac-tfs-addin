@@ -42,7 +42,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
     [ServiceResolver(typeof(UploadServiceResolver))]
     internal sealed class UploadService : TFSService
     {
-        private UploadService(Uri baseUri, string servicePath)
+        UploadService(Uri baseUri, string servicePath)
             : base(baseUri, servicePath)
         {
 
@@ -51,7 +51,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
         const string NewLine = "\r\n";
         const string Boundary = "----------------------------8e5m2D6l5Q4h6";
         const int ChunkSize = 512 * 1024; //Chunk Size 512 K
-        private static readonly string uncompressedContentType = "application/octet-stream";
+        static readonly string uncompressedContentType = "application/octet-stream";
 
         #region implemented abstract members of TfsService
 
@@ -73,18 +73,20 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         #endregion
 
-        private void CopyStream(Stream source, Stream destination)
+        void CopyStream(Stream source, Stream destination)
         {
             byte[] buffer = new byte[ChunkSize];
             int cnt;
+
             while ((cnt = source.Read(buffer, 0, ChunkSize)) > 0)
             {
                 destination.Write(buffer, 0, cnt);
             }
+
             destination.Flush();
         }
 
-        private void CopyBytes(byte[] source, Stream destination)
+        void CopyBytes(byte[] source, Stream destination)
         {
             using (var memorySource = new MemoryStream(source))
             {
@@ -102,6 +104,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             {
                 byte[] buffer = new byte[ChunkSize];
                 int cnt;
+
                 while ((cnt = memory.Read(buffer, 0, ChunkSize)) > 0)
                 {
                     var range = GetRange(memory.Position - cnt, memory.Position, fileContent.Length);
@@ -110,7 +113,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             }
         }
 
-        private void AddContent(MultipartFormDataContent container, string value, string name, string fileName = "")
+        void AddContent(MultipartFormDataContent container, string value, string name, string fileName = "")
         {
             if (string.IsNullOrEmpty(fileName))
                 container.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(value)), name);
@@ -118,11 +121,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
                 container.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(value)), name, fileName);
         }
 
-        private async Task<HttpResponseMessage> UploadPart(string fileName, string workspaceName, string workspaceOwner, int fileSize, string fileHash, string range, string contentType, byte[] bytes, int copyBytes)
+        async Task<HttpResponseMessage> UploadPart(string fileName, string workspaceName, string workspaceOwner, int fileSize, string fileHash, string range, string contentType, byte[] bytes, int copyBytes)
         {
             var handler = new HttpClientHandler { PreAuthenticate = true };
-            var message = new HttpRequestMessage(HttpMethod.Post, this.Url);
-            this.Server.Authorization.Authorize(handler, message);
+            var message = new HttpRequestMessage(HttpMethod.Post, Url);
+            Server.Authorization.Authorize(handler, message);
 
             HttpClient client = new HttpClient(handler);
 
@@ -135,19 +138,24 @@ namespace MonoDevelop.VersionControl.TFS.Services
             AddContent(content, range, "range");
 
             var fileContent = new ByteArrayContent(bytes, 0, copyBytes);
+          
             fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
             {
                 Name = "content",
                 FileName = "item"
             };
+
             fileContent.Headers.ContentType = new MediaTypeHeaderValue(contentType);
             content.Add(fileContent);
 
             message.Content = content;
-            return await client.SendAsync(message);
+
+            var result =  await client.SendAsync(message);
+
+            return result;
         }
 
-        private byte[] Compress(byte[] input)
+        byte[] Compress(byte[] input)
         {
             using (var memoryStream = new MemoryStream())
             {
@@ -160,7 +168,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             }
         }
 
-        private string Hash(byte[] input)
+        string Hash(byte[] input)
         {
             using (var md5 = new MD5CryptoServiceProvider())
             {
@@ -168,7 +176,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             }
         }
 
-        private string GetRange(long start, long end, long length)
+        string GetRange(long start, long end, long length)
         {
             var builder = new StringBuilder(100);
             builder.Append("bytes=");

@@ -1,4 +1,31 @@
-﻿using System.Collections.Generic;
+﻿// ChooseWorkItemDialog.cs
+// 
+// Author:
+//       Javier Suárez Ruiz
+// 
+// The MIT License (MIT)
+// 
+// Copyright (c) 2018 Javier Suárez Ruiz
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+using System.Collections.Generic;
 using System.Linq;
 using Autofac;
 using MonoDevelop.Core;
@@ -16,8 +43,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<ProjectCollection> _collectionField;
         TreeStore _queryStore;
         TreeView _listView;
+        TreeStore _listStore;
         DataField<WorkItem> _workItemField;
+
         TeamFoundationServerVersionControlService _versionControlService;
+        WorkItem _workItem;
 
         public ChooseWorkItemDialog()
         {
@@ -26,12 +56,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             AttachEvents();
         }
 
-        public TreeView WorkItems
+        public WorkItem WorkItem
         {
-            get
-            {
-                return _listView;
-            }
+            get { return _workItem;  }
+            private set { _workItem = value; }
         }
 
         void Init()
@@ -40,11 +68,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _titleField = new DataField<string>();
             _queryField = new DataField<StoredQuery>();
             _collectionField = new DataField<ProjectCollection>(); 
-
             _queryStore = new TreeStore(_titleField, _queryField, _collectionField);
-
             _listView = new TreeView();
-            _listView.SelectionMode = SelectionMode.Multiple;
 
             _versionControlService = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();         
         }
@@ -92,6 +117,18 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 {
                     var collection = navigator.GetValue(_collectionField);
                     LoadQuery(query, collection);
+                }
+            };
+
+            _listView.SelectionChanged += (sender, e) =>
+            {
+                var position = _listView.SelectedRow;
+                var navigator = _listStore.GetNavigatorAt(position);
+                var workItem = navigator.GetValue(_workItemField);
+
+                if (workItem != null)
+                {
+                    WorkItem = workItem;
                 }
             };
         }
@@ -186,18 +223,18 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                     {
                         _workItemField = new DataField<WorkItem>();
                         dataFields.Insert(0, _workItemField);
-                        var listStore = new TreeStore(dataFields.ToArray());
+                        _listStore = new TreeStore(dataFields.ToArray());
 
                         foreach (var map in mapping)
                         {
                             _listView.Columns.Add(map.Key.Name, map.Value);
                         }
 
-                        _listView.DataSource = listStore;
+                        _listView.DataSource = _listStore;
 
                         foreach (var workItem in data)
                         {
-                            var row = listStore.AddNode();
+                            var row = _listStore.AddNode();
                             row.SetValue(_workItemField, workItem);
                            
                             foreach (var map in mapping)
