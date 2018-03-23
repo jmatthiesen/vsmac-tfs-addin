@@ -89,4 +89,8 @@
     <EmbeddedResource Include="Icons\folder-16.png" />
     <EmbeddedResource Include="Icons\file-16.png" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ADAL.PCL\ADAL.PCL.Mac\ADAL.PCL.Mac.csproj" />
+    <ProjectReference Include="..\ADAL.PCL\ADAL.PCL\ADAL.PCL.csproj" />
+  </ItemGroup>
 </Project>

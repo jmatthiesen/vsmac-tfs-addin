@@ -691,6 +691,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                         menu.Add(item);
                     }
                 }
+
+                if (items.All(i => i.ItemType == ItemType.Folder))
+                {
+                    var folderMenu = GetFolderMenu(items);
+
+                    menu.Add(new Gtk.SeparatorMenuItem());
+                    foreach (var item in folderMenu)
+                    {
+                        menu.Add(item);
+                    }
+                }
             }
             else
             {
@@ -983,6 +994,21 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             mapItem.Activated += (sender, e) => MapItem(items);
 
             return new List<Gtk.MenuItem> { mapItem };
+        }
+
+        List<Gtk.MenuItem> GetFolderMenu(List<ExtendedItem> items)
+        {
+            Gtk.MenuItem openFolder = new Gtk.MenuItem(GettextCatalog.GetString("Open mapped folder"));
+            openFolder.Activated += (sender, e) =>
+            {
+                foreach (var item in items)
+                {
+                    var path = _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
+                    DesktopService.OpenFolder(new FilePath(path));
+                }
+            };
+
+            return new List<Gtk.MenuItem> { openFolder };
         }
 
         #endregion

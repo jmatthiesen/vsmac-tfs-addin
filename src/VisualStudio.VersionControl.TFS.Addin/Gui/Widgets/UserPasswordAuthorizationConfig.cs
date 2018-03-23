@@ -36,46 +36,51 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
     class UserPasswordAuthorizationConfig : IServerAuthorizationConfig, IUserPasswordAuthorizationConfig
     {
-        readonly Uri _serverUri;
-        protected readonly VBox Container = new VBox();
-        readonly TextEntry domainEntry = new TextEntry();
-        readonly TextEntry userNameEntry = new TextEntry();
-        readonly PasswordEntry passwordEntry = new PasswordEntry();
-        bool? clearSavePassword = null;
+        public VBox _container;
+        VBox _userPasswordContainer;
+
+        Uri _serverUri;
+        TextEntry _domainEntry;
+        TextEntry _userNameEntry;
+        PasswordEntry _passwordEntry;
+        bool? _clearSavePassword;
 
         public UserPasswordAuthorizationConfig(Uri serverUri)
         {
-            _serverUri = serverUri;
-            BuildUI();
-        }
-
-        private void BuildUI()
-        {
-            Container.PackStart(new Label(GettextCatalog.GetString("User Name") + ":"));
-            Container.PackStart(userNameEntry);
-            Container.PackStart(new Label(GettextCatalog.GetString("Password") + ":"));
-            Container.PackStart(passwordEntry);
+            Init(serverUri);
+            BuildGui();
         }
 
         public Widget Widget
         {
-            get { return Container; }
+            get 
+            {
+                return _container; 
+            }
+        }
+
+        public VBox UserPasswordContainer
+        {
+            get
+            {
+                return _userPasswordContainer;
+            }
         }
 
         public string UserName
         {
-            get { return userNameEntry.Text; }
+            get { return _userNameEntry.Text; }
         }
 
         public string Password
         {
             get
             {
-                CredentialsManager.StoreCredential(_serverUri, passwordEntry.Password);
+                CredentialsManager.StoreCredential(_serverUri, _passwordEntry.Password);
                 var password = CredentialsManager.GetPassword(_serverUri);
-                clearSavePassword = password != passwordEntry.Password;
-              
-                return passwordEntry.Password;
+                _clearSavePassword = password != _passwordEntry.Password;
+
+                return _passwordEntry.Password;
             }
         }
 
@@ -83,11 +88,31 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
         {
             get
             {
-                if (!clearSavePassword.HasValue)
+                if (!_clearSavePassword.HasValue)
                     throw new Exception("Get Password before getting this property");
-                
-                return clearSavePassword.Value;
+
+                return _clearSavePassword.Value;
             }
+        }
+
+        void Init(Uri serverUri)
+        {
+            _serverUri = serverUri; 
+
+            _container = new VBox();
+            _userPasswordContainer = new VBox();
+            _domainEntry = new TextEntry();
+            _userNameEntry = new TextEntry();
+            _passwordEntry = new PasswordEntry();
+        }
+
+        void BuildGui()
+        {
+            _userPasswordContainer.PackStart(new Label(GettextCatalog.GetString("User Name") + ":"));
+            _userPasswordContainer.PackStart(_userNameEntry);
+            _userPasswordContainer.PackStart(new Label(GettextCatalog.GetString("Password") + ":"));
+            _userPasswordContainer.PackStart(_passwordEntry);
+            _container.PackStart(_userPasswordContainer);
         }
     }
 }

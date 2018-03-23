@@ -37,7 +37,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
 {
     sealed class BasicAuthorization : UserPasswordAuthorization, IServerAuthorization
     {
-        private BasicAuthorization()
+        BasicAuthorization()
         {
 
         }
@@ -54,13 +54,14 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         public void Authorize(HttpClientHandler clientHandler, HttpRequestMessage message)
         {
-            message.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes(this.UserName + ":" + this.Password)));
+            message.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes(UserName + ":" + Password)));
         }
 
         public static BasicAuthorization FromConfigXml(XElement element, Uri serverUri)
         {
             var auth = new BasicAuthorization();
             auth.ReadConfig(element, serverUri);
+
             return auth;
         }
 
@@ -72,6 +73,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             {
                 element.Add(new XAttribute("Password", Password));
             }
+
             return element;
         }
 

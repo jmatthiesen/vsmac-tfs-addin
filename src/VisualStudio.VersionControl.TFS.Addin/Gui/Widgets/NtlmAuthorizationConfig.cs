@@ -35,23 +35,29 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
     sealed class NtlmAuthorizationConfig : UserPasswordAuthorizationConfig, INtlmAuthorizationConfig
     {
-        readonly TextEntry domainEntry = new TextEntry();
+        TextEntry _domainEntry;
 
         public NtlmAuthorizationConfig(Uri serverUri)
             : base(serverUri)
         {
-            BuildUI();
+            Init();
+            BuildGui();
         }
 
-        void BuildUI()
+        void Init()
         {
-            Container.PackStart(new Label(GettextCatalog.GetString("Domain") + ":"));
-            Container.PackStart(domainEntry);
+            _domainEntry = new TextEntry();
+        }
+
+        void BuildGui()
+        {
+            _container.PackStart(new Label(GettextCatalog.GetString("Domain") + ":"));
+            _container.PackStart(_domainEntry);
         }
 
         public string Domain
         {
-            get { return domainEntry.Text; }
+            get { return _domainEntry.Text; }
         }
     }
 }

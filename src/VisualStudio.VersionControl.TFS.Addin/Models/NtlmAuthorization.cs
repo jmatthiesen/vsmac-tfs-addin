@@ -36,7 +36,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
 {
     sealed class NtlmAuthorization : UserPasswordAuthorization, IServerAuthorization
     {
-        private NtlmAuthorization()
+        NtlmAuthorization()
         {
             
         }
@@ -55,7 +55,6 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             clientHandler.Credentials = new NetworkCredential(UserName, Password, Domain);
         }
-
 
         public string Domain { get; private set; }
 

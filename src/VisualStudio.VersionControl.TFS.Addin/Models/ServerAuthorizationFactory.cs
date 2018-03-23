@@ -38,8 +38,11 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             ServerAuthorizationType authorizationType;
             Enum.TryParse(element.Name.LocalName, out authorizationType);
+         
             switch (authorizationType)
             {
+                case ServerAuthorizationType.Oauth:
+                    return OAuthAuthorization.FromConfigXml(element, serverUri);
                 case ServerAuthorizationType.Ntlm:
                     return NtlmAuthorization.FromConfigXml(element, serverUri);
                 case ServerAuthorizationType.Basic:
@@ -53,6 +56,8 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             switch (authorizationType)
             {
+                case ServerAuthorizationType.Oauth:
+                    return new OauthAuthorizationConfig(serverUri);
                 case ServerAuthorizationType.Ntlm:
                     return new NtlmAuthorizationConfig(serverUri);
                 case ServerAuthorizationType.Basic:
@@ -66,6 +71,8 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             switch (authorizationType)
             {
+                case ServerAuthorizationType.Oauth:
+                    return OAuthAuthorization.FromConfigWidget((IOAuthAuthorizationConfig)serverAuthorizationConfig);
                 case ServerAuthorizationType.Ntlm:
                     return NtlmAuthorization.FromConfigWidget((INtlmAuthorizationConfig) serverAuthorizationConfig);
                 case ServerAuthorizationType.Basic:

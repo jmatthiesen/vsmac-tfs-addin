@@ -48,6 +48,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 
         public AddServerWidget()
         {
+            Init();
             BuildGui();
         }
 

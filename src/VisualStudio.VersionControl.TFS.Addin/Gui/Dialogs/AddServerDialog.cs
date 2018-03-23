@@ -34,7 +34,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
     public class AddServerDialog : Dialog
     {
-        Notebook _notebook;
         AddServerWidget _addServerWidget;
 
         public AddServerDialog()
@@ -45,7 +44,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void Init()
         {
-            _notebook = new Notebook();
             _addServerWidget = new AddServerWidget();
         }
 
@@ -53,8 +51,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             Title = GettextCatalog.GetString("Add Team Foundation Server");
             Buttons.Add(Command.Ok, Command.Cancel);
-            _notebook.Add(_addServerWidget, GettextCatalog.GetString("Visual Studio Team Services"));
-            Content = _notebook;
+            Content = _addServerWidget;
             Resizable = false;
         }
 

@@ -5,7 +5,7 @@
 // 
 // The MIT License (MIT)
 // 
-// Copyright (c) 2018 Ventsislav Mladenov, Javier Suárez Ruiz
+// Copyright (c) 2018 Javier Suárez Ruiz
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +25,75 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
+using System.Diagnostics;
+using System.Linq;
+using Microsoft.IdentityService.Clients.ActiveDirectory;
+using MonoDevelop.Core;
+using MonoDevelop.Ide;
+using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
-    public class OauthAuthorizationConfig : IServerAuthorizationConfig
+    sealed class OauthAuthorizationConfig : UserPasswordAuthorizationConfig, IOAuthAuthorizationConfig
     {
-        public Widget Widget
+        const string Authority = "https://login.microsoftonline.com/Common/oauth2/authorize";
+        const string ClientId = "872cd9fa-d31f-45e0-9eab-6e460a02d1f1";
+        const string RedirectUri = "urn:ietf:wg:oauth:2.0:oob";
+        const string Resource = "https://management.core.windows.net";
+
+        AuthenticationContext _context;
+
+        Button _webViewButton;
+
+        public OauthAuthorizationConfig(Uri serverUri)
+            : base(serverUri)
         {
-            get { return new VBox(); }
+            Init();
+            BuildGui();
+            AttachEvents();
+        }
+
+        public string Token { get; set; }
+
+        void Init()
+        {
+            UserPasswordContainer.Visible = false;
+
+            _webViewButton = new Button(GettextCatalog.GetString("Sign in"));
+        }
+
+        void BuildGui()
+        {
+            _container.PackStart(_webViewButton);
+        }
+
+        void AttachEvents()
+        {
+            _webViewButton.Clicked += GetToken;
+        }
+
+        async void GetToken(object sender, EventArgs args)
+        {
+            try
+            {
+                TokenCache.DefaultShared.Clear();
+
+                _context = new AuthenticationContext(Authority, true);
+
+                var rootWindow = MessageService.RootWindow;
+                var nsWindow = Components.Mac.GtkMacInterop.GetNSWindow(rootWindow);
+                var platformParameter = new PlatformParameters(nsWindow);
+
+                var result = await _context.AcquireTokenAsync(Resource, ClientId, new Uri(RedirectUri), platformParameter, UserIdentifier.AnyUser);
+
+                Token = string.Empty;
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
     }
 }

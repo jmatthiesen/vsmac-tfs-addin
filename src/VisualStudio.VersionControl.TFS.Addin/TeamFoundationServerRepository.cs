@@ -144,8 +144,10 @@ namespace MonoDevelop.VersionControl.TFS
                 }).ToArray();
 
             Dictionary<int, WorkItemCheckinAction> workItems = null;
+         
             if (changeSet.ExtendedProperties.Contains("TFS.WorkItems"))
                 workItems = (Dictionary<int, WorkItemCheckinAction>)changeSet.ExtendedProperties["TFS.WorkItems"];
+
             var result = workspace.CheckIn(commitItems, changeSet.GlobalComment, workItems);
            
             if (result.Failures != null && result.Failures.Any(x => x.SeverityType == SeverityType.Error))
