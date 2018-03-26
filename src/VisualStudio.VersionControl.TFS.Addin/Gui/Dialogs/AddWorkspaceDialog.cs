@@ -26,9 +26,10 @@
 // THE SOFTWARE.
 
 using System;
+using System.Diagnostics;
 using MonoDevelop.Core;
+using MonoDevelop.Ide;
 using MonoDevelop.VersionControl.TFS.Models;
-using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -142,20 +143,29 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void OnAddWorkspace(object sender, EventArgs e)
         {
-            WorkspaceData workspaceData = new WorkspaceData();
-            workspaceData.Name = _nameEntry.Text;
-            workspaceData.Owner = _ownerEntry.Text;
-            workspaceData.Computer = _computerEntry.Text;
-
-            for (int i = 0; i < _foldersStore.RowCount; i++)
+            try
             {
-                var tfsFolder = _foldersStore.GetValue(i, _tfsFolder);
-                var localFolder = _foldersStore.GetValue(i, _localFolder);
-                workspaceData.WorkingFolders.Add(new WorkingFolder(tfsFolder, localFolder));
+                WorkspaceData workspaceData = new WorkspaceData();
+                workspaceData.Name = _nameEntry.Text;
+                workspaceData.Owner = _ownerEntry.Text;
+                workspaceData.Computer = _computerEntry.Text;
+
+                for (int i = 0; i < _foldersStore.RowCount; i++)
+                {
+                    var tfsFolder = _foldersStore.GetValue(i, _tfsFolder);
+                    var localFolder = _foldersStore.GetValue(i, _localFolder);
+                    workspaceData.WorkingFolders.Add(new WorkingFolder(tfsFolder, localFolder));
+                }
+
+                _projectCollection.CreateWorkspace(workspaceData);
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                MessageService.ShowError(GettextCatalog.GetString("Cannot create the workspace. Please, try again."));
             }
 
-            var versionControl = _projectCollection.GetService<RepositoryService>();
-            //versionControl.CreateWorkspace(new Workspace(versionControl, workspaceData));  
+            Respond(Command.Ok);
         }
 
         void FillDefaultData()

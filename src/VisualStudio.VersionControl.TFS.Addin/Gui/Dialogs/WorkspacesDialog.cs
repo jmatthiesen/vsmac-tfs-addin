@@ -26,6 +26,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Diagnostics;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.VersionControl.TFS.Models;
@@ -99,17 +100,24 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void GetWorkspaces()
         {
-            var workspaces = _projectCollection.GetRemoteWorkspaces();
-
             _listStore.Clear();
 
-            foreach (var workspace in workspaces)
+            try
             {
-                var row = _listStore.AddRow();
+                var workspaces = _projectCollection.GetRemoteWorkspaces();
 
-                _listStore.SetValue(row, _name, workspace.Name);
-                _listStore.SetValue(row, _computer, workspace.Computer);
-                _listStore.SetValue(row, _owner, workspace.Owner);
+                foreach (var workspace in workspaces)
+                {
+                    var row = _listStore.AddRow();
+
+                    _listStore.SetValue(row, _name, workspace.Name);
+                    _listStore.SetValue(row, _computer, workspace.Computer);
+                    _listStore.SetValue(row, _owner, workspace.Owner);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
             }
         }
 

@@ -3,7 +3,6 @@ using NUnit.Framework;
 
 namespace MonoDevelop.VersionControl.TFS.Tests
 {
-    [TestFixture]
     public class ProjectCollectionTests
     {
         TestServer _server;
@@ -21,9 +20,9 @@ namespace MonoDevelop.VersionControl.TFS.Tests
                 .SelectMany(pc => pc.Projects)
                 .FirstOrDefault();
 
-            Assert.NotNull(project);
-            Assert.NotNull(project.Collection);
-            Assert.NotNull(project.Collection.Server);
+            Assert.IsNotNull(project);
+            Assert.IsNotNull(project.Collection);
+            Assert.IsNotNull(project.Collection.Server);
         }
     }
 }
