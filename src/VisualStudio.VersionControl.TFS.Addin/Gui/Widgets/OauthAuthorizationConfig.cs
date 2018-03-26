@@ -27,7 +27,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.IdentityService.Clients.ActiveDirectory;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
@@ -41,7 +40,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
         const string Authority = "https://login.microsoftonline.com/Common/oauth2/authorize";
         const string ClientId = "872cd9fa-d31f-45e0-9eab-6e460a02d1f1";
         const string RedirectUri = "urn:ietf:wg:oauth:2.0:oob";
-        const string Resource = "https://management.core.windows.net";
+        const string Resource = "499b84ac-1321-427f-aa17-267ca6975798"; 
 
         AuthenticationContext _context;
 
@@ -86,11 +85,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
                 var nsWindow = Components.Mac.GtkMacInterop.GetNSWindow(rootWindow);
                 var platformParameter = new PlatformParameters(nsWindow);
 
-                var result = await _context.AcquireTokenAsync(Resource, ClientId, new Uri(RedirectUri), platformParameter, UserIdentifier.AnyUser);
+                var authenticationResult = await _context.AcquireTokenAsync(Resource, ClientId, new Uri(RedirectUri), platformParameter, UserIdentifier.AnyUser);
 
-                Token = string.Empty;
+                Token = authenticationResult.AccessToken;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
             }

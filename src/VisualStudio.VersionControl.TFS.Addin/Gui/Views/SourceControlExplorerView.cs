@@ -287,34 +287,43 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         void GetWorkspaces()
         {
-            _workspaceComboBox.Changed -= OnChangeActiveWorkspaces;
-            _workspaceStore.Clear();
-            _workspaces.Clear();
-            _workspaces.AddRange(_projectCollection.GetLocalWorkspaces());
-            TreeIter activeWorkspaceRow = TreeIter.Zero;
-       
-            foreach (var workspace in _workspaces)
+            try
             {
-                var iter = _workspaceStore.AppendValues(workspace, workspace.Name);
-                if (string.Equals(workspace.Name, _projectCollection.ActiveWorkspaceName, StringComparison.Ordinal))
+                _workspaceComboBox.Changed -= OnChangeActiveWorkspaces;
+                _workspaceStore.Clear();
+                _workspaces.Clear();
+                _workspaces.AddRange(_projectCollection.GetLocalWorkspaces());
+                TreeIter activeWorkspaceRow = TreeIter.Zero;
+
+                foreach (var workspace in _workspaces)
                 {
-                    activeWorkspaceRow = iter;
+                    var iter = _workspaceStore.AppendValues(workspace, workspace.Name);
+                    if (string.Equals(workspace.Name, _projectCollection.ActiveWorkspaceName, StringComparison.Ordinal))
+                    {
+                        activeWorkspaceRow = iter;
+                    }
+                }
+                _workspaceComboBox.Changed += OnChangeActiveWorkspaces;
+
+                if (_workspaces.Count > 0)
+                {
+                    if (!activeWorkspaceRow.Equals(TreeIter.Zero))
+                        _workspaceComboBox.SetActiveIter(activeWorkspaceRow);
+                    else
+                        _workspaceComboBox.Active = 0;
+
+                    _noWorkspacesLabel.Visible = false;
+                    _workspaceLabel.Visible = true;
+                    _workspaceComboBox.Visible = true;
+                }
+                else
+                {
+                    _noWorkspacesLabel.Visible = true;
+                    _workspaceLabel.Visible = false;
+                    _workspaceComboBox.Visible = false;
                 }
             }
-            _workspaceComboBox.Changed += OnChangeActiveWorkspaces;
-
-            if (_workspaces.Count > 0)
-            {
-                if (!activeWorkspaceRow.Equals(TreeIter.Zero))
-                    _workspaceComboBox.SetActiveIter(activeWorkspaceRow);
-                else
-                    _workspaceComboBox.Active = 0;
-       
-                _noWorkspacesLabel.Visible = false;
-                _workspaceLabel.Visible = true;
-                _workspaceComboBox.Visible = true;
-            }
-            else
+            catch
             {
                 _noWorkspacesLabel.Visible = true;
                 _workspaceLabel.Visible = false;
@@ -326,6 +335,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         {
             _treeStore.Clear();
 
+            if (_currentWorkspace == null)
+                return;
+            
             var items = _currentWorkspace.GetItems(new[] { new ItemSpec(RepositoryPath.RootPath, RecursionType.Full) }, 
                                                    VersionSpec.Latest, DeletedState.NonDeleted, ItemType.Folder, false);
 
@@ -335,6 +347,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             var serverName = string.Equals(_projectCollection.Server.Name, _projectCollection.Server.Uri.OriginalString, StringComparison.OrdinalIgnoreCase)
                 ? _projectCollection.Server.Uri.Host
                 : _projectCollection.Server.Name;
+            
             var rootName = string.Format("{0}\\{1}", serverName, _projectCollection.Name);
             _treeStore.SetValues(node, root.Item, ImageHelper.GetRepositoryImage(), rootName);
             AddChilds(node, root.Children);
