@@ -43,6 +43,18 @@ namespace MonoDevelop.VersionControl.TFS.Services
             _configuration = configurationService.Load();
         }
 
+        public void LogToDebug(string message)
+        {
+            if (_configuration.DebugMode)
+            {
+                lock (locker)
+                {
+                    var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "MonoDevelop.VersionControl.TFS.Debug.log");
+                    File.AppendAllText(path, message, Encoding.UTF8);
+                }
+            }
+        }
+
         public void LogToInfo(string message)
         {
             Core.LoggingService.Log(LogLevel.Info, message);

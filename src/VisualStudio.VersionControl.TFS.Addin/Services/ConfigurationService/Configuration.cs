@@ -45,11 +45,14 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         public LockLevel DefaultLockLevel { get; set; }
 
+        public bool DebugMode { get; set; }
+
         public static Configuration Default()
         {
             return new Configuration
             {
-                DefaultLockLevel = LockLevel.Unchanged
+                DefaultLockLevel = LockLevel.Unchanged,
+                DebugMode = false
             };
         }
     }

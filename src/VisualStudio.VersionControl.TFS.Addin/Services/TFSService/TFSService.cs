@@ -38,9 +38,9 @@ namespace MonoDevelop.VersionControl.TFS.Services
     {
         protected TFSService(Uri baseUri, string servicePath)
         {
-            this.BaseUri = baseUri;
-            this.ServicePath = servicePath;
-            this.Url = BaseUri.AddPath(ServicePath);
+            BaseUri = baseUri;
+            ServicePath = servicePath;
+            Url = BaseUri.AddPath(ServicePath);
         }
 
         public Uri BaseUri { get; private set; }

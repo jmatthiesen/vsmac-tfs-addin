@@ -170,7 +170,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             lock (locker)
             {
-                if (_localWorkspaces != null)
+                if (_localWorkspaces != null && _localWorkspaces.Any())
                     return _localWorkspaces;
               
                 _localWorkspaces = repositoryService.Value.QueryWorkspaces(Server.UserName, Environment.MachineName);

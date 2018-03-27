@@ -27,6 +27,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         Gtk.VBox _view;
         Gtk.Button _manageButton;
+        Gtk.Button _refreshButton;
         Gtk.ComboBox _workspaceComboBox;
         Gtk.Label _workspaceLabel;
         Gtk.Label _noWorkspacesLabel;
@@ -109,6 +110,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _view = new Gtk.VBox();
             _localFolder = new Gtk.Label();
             _manageButton = new Gtk.Button(GettextCatalog.GetString("Manage"));
+            _refreshButton = new Gtk.Button(GettextCatalog.GetString("Refresh"));
 
             _workspaceComboBox = new Gtk.ComboBox();
             _workspaceStore = new Gtk.ListStore(typeof(Workspace), typeof(string));
@@ -143,6 +145,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             headerBox.PackStart(_workspaceComboBox, false, false, 0);
 
             headerBox.PackStart(_manageButton, false, false, 0);
+            headerBox.PackStart(_refreshButton, false, false, 0);
             _view.PackStart(headerBox, false, false, 0);
 
             Gtk.HPaned mainBox = new Gtk.HPaned();
@@ -203,6 +206,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         {
             _workspaceComboBox.Changed += OnChangeActiveWorkspaces;
             _manageButton.Clicked += OnManageWorkspaces;
+            _refreshButton.Clicked += OnRefresh;
             _treeView.Selection.Changed += OnFolderChanged;
             _treeView.RowActivated += OnTreeViewItemClicked;
             _listView.RowActivated += OnListItemClicked;
@@ -351,6 +355,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             var rootName = string.Format("{0}\\{1}", serverName, _projectCollection.Name);
             _treeStore.SetValues(node, root.Item, ImageHelper.GetRepositoryImage(), rootName);
             AddChilds(node, root.Children);
+
+            _treeView.Model = _treeStore;
+
             TreeIter firstNode;
            
             if (_treeStore.GetIterFirst(out firstNode))
@@ -358,8 +365,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 _treeView.ExpandRow(_treeStore.GetPath(firstNode), false);
                 _treeView.Selection.SelectIter(firstNode);
             }
-
-            _treeView.Model = _treeStore;
         }
 
         void AddChilds(TreeIter node, List<HierarchyItem> children)
@@ -674,6 +679,20 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             }
         }
 
+        void OnRefresh(object sender, EventArgs e)
+        {
+            TreeIter iter;
+            RepositoryPath selectedPath = null;
+
+            if (_treeView.Selection.GetSelected(out iter))
+                selectedPath = ((BaseItem)_treeStore.GetValue(iter, 0)).ServerPath;
+            
+            GetData();
+
+            if (selectedPath != null)
+                ExpandPath(selectedPath);
+        }
+
         #region Popup Menu
 
         Gtk.Menu GetPopupMenu()
@@ -705,7 +724,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                     }
                 }
 
-                if (items.All(i => i.ItemType == ItemType.Folder))
+                if (items.All(i => i.ItemType == ItemType.Folder && i.LocalPath.Exists))
                 {
                     var folderMenu = GetFolderMenu(items);
 

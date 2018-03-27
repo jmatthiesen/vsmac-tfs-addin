@@ -29,6 +29,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 {
     public interface ILoggingService
     {
+        void LogToDebug(string message);
         void LogToInfo(string message);
         void LogToError(string message);
     }

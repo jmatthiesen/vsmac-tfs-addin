@@ -109,6 +109,19 @@ namespace MonoDevelop.VersionControl.TFS
             }
         }
 
+        public bool DebugMode
+        {
+            get
+            {
+                return _configuration.DebugMode;
+            }
+            set
+            {
+                _configuration.DebugMode = value;
+                Save();
+            }
+        }
+
         public void RefreshWorkingRepositories()
         {
             foreach(var system in VersionControlService.GetVersionControlSystems())

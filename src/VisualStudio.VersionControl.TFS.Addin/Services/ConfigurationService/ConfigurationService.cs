@@ -38,7 +38,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 {
     public sealed class ConfigurationService : IConfigurationService
     {
-        const string ConfigName = "VersionControl.TFS.2.0.config";
+        const string ConfigName = "MonoDevelop.VersionControl.TFS.config";
         LocalPath _configurationPath;
 
         public void Init(string configurationPath)
@@ -54,7 +54,8 @@ namespace MonoDevelop.VersionControl.TFS.Services
             doc.Root.Add(new XElement("MergeTool", new XAttribute("Command", configuration.MergeToolInfo.CommandName), 
                                                    new XAttribute("Arguments", configuration.MergeToolInfo.Arguments)));
             doc.Root.Add(new XElement("DefaultLockLevel", (int)configuration.DefaultLockLevel));
-   
+            doc.Root.Add(new XElement("DebugMode", configuration.DebugMode));
+
             doc.Save(_configurationPath);
         }
 
@@ -83,6 +84,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
             if (lockLevelElement != null)
                 configuration.DefaultLockLevel = (LockLevel) Convert.ToInt32(lockLevelElement.Value);
 
+            var isDebugElement = document.Root.Element("DebugMode");
+
+            if (isDebugElement != null)
+                configuration.DebugMode = Convert.ToBoolean(isDebugElement.Value);
+            
             return configuration;
         }
     }

@@ -9,6 +9,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
     public class SettingsWidget : VBox
     {
         ComboBox _lockLevelBox;
+        CheckBox _debugModeBox;
 
         TeamFoundationServerVersionControlService _service;
 
@@ -22,18 +23,24 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
         {
             _service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
 
-            _lockLevelBox = CreateLockLevelComboBox();       
+            _lockLevelBox = CreateLockLevelComboBox();     
+            _debugModeBox = new CheckBox(GettextCatalog.GetString("Debug Mode"));
         }
 
         void BuildGui()
         {
             PackStart(new Label(GettextCatalog.GetString("Lock Level:")));
             PackStart(_lockLevelBox);
+
+            _debugModeBox.AllowMixed = false;
+            _debugModeBox.Active = _service.DebugMode;
+            PackStart(_debugModeBox);
         }
 
         public void ApplyChanges()
         {
             _service.CheckOutLockLevel = (LockLevel)_lockLevelBox.SelectedItem;
+            _service.DebugMode = _debugModeBox.Active;
         }
 
         ComboBox CreateLockLevelComboBox()
