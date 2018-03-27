@@ -1,4 +1,4 @@
-﻿// AddWorkspaceDialog.cs
+﻿// AddEditWorkspaceDialog.cs
 // 
 // Author:
 //       Javier Suárez Ruiz
@@ -34,7 +34,7 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
-    public class AddWorkspaceDialog : Dialog
+    public class AddEditWorkspaceDialog : Dialog
     {
         ListView _foldersView;
         DataField<string> _tfsFolder;
@@ -44,17 +44,28 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         TextEntry _ownerEntry;
         TextEntry _computerEntry;
         ProjectCollection _projectCollection;
+        WorkspaceData _workspaceData;
 
-        internal AddWorkspaceDialog(ProjectCollection projectCollection)
+        internal AddEditWorkspaceDialog(ProjectCollection projectCollection, WorkspaceData workspaceData)
         {
-            Init(projectCollection);
+            Init(projectCollection, workspaceData);
             BuildGui();
-            FillDefaultData();
+
+            if (_workspaceData != null)
+            {
+                FillData();
+                FillWorkingFolders();
+            }
+            else
+            {
+                FillDefaultData();
+            }
         }
 
-        void Init(ProjectCollection projectCollection)
+        void Init(ProjectCollection projectCollection, WorkspaceData workspaceData)
         {
             _projectCollection = projectCollection;
+            _workspaceData = workspaceData;
             _foldersView = new ListView();    
             _tfsFolder = new DataField<string>();
             _localFolder = new DataField<string>();
@@ -66,7 +77,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void BuildGui()
         {
-            Title = "Add Workspace" + " - " + _projectCollection.Server.Name + " - " + _projectCollection.Name;
+            if (_workspaceData != null)
+            {
+                Title = "Edit Workspace " + _workspaceData.Name + " - " + _projectCollection.Server.Name + " - " + _projectCollection.Name;
+            }
+            else
+            {
+                Title = "Add Workspace" + " - " + _projectCollection.Server.Name + " - " + _projectCollection.Name;
+            }
 
             VBox content = new VBox();
 
@@ -157,7 +175,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                     workspaceData.WorkingFolders.Add(new WorkingFolder(tfsFolder, localFolder));
                 }
 
-                _projectCollection.CreateWorkspace(workspaceData);
+                if (_workspaceData == null)
+                {
+                    _projectCollection.CreateWorkspace(workspaceData);
+                }
+                else
+                {
+                    _projectCollection.UpdateWorkspace(_workspaceData.Name, _workspaceData.Owner, workspaceData);
+                }
             }
             catch(Exception ex)
             {
@@ -172,6 +197,23 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             _nameEntry.Text = _computerEntry.Text = Environment.MachineName;
             _ownerEntry.Text = _projectCollection.Server.UserName;
+        }
+
+        void FillData()
+        {
+            _nameEntry.Text = _workspaceData.Name;
+            _ownerEntry.Text = _workspaceData.Owner;
+            _computerEntry.Text = _workspaceData.Computer;
+        }
+
+        void FillWorkingFolders()
+        {
+            foreach (var workingFolder in _workspaceData.WorkingFolders)
+            {
+                var row = _foldersStore.AddRow();
+                _foldersStore.SetValue(row, _tfsFolder, workingFolder.ServerItem);
+                _foldersStore.SetValue(row, _localFolder, workingFolder.LocalItem);
+            }
         }
     }
 }

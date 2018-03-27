@@ -106,6 +106,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                 UserName = addServerResult.UserName,
                 Authorization = authorization
             };
+
             return server;
         }
 

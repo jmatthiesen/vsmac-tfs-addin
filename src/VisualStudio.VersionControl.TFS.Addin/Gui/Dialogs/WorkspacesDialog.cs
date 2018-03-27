@@ -37,11 +37,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
     public class WorkspacesDialog : Dialog
     {
         ProjectCollection _projectCollection;
+        WorkspaceData _workspaceData;
         ListView _listView;
         ListStore _listStore;
         DataField<string> _name;
         DataField<string> _computer;
         DataField<string> _owner;
+        Button _editWorkspaceButton;
+        CheckBox _showRemoteCheck;
 
         internal WorkspacesDialog(ProjectCollection projectCollection)
         {
@@ -57,6 +60,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         void Init()
         {
             _listView = new ListView();
+            _listView.MinHeight = 150;
+            _listView.MinWidth = 600;
 
             _name = new DataField<string>();
             _computer = new DataField<string>();
@@ -69,6 +74,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _listView.Columns.Add(new ListViewColumn(GettextCatalog.GetString("Owner"), new TextCellView(_owner)));
 
             _listView.DataSource = _listStore;   
+
+            _showRemoteCheck = new CheckBox();
         }
 
         void BuildGui()
@@ -76,11 +83,23 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             VBox content = new VBox();
 
             content.PackStart(new Label(GettextCatalog.GetString("Workspaces:")));
+            _listView.SelectionChanged += (sender, args) => ValidateEditWorkspace();
             content.PackStart(_listView);
 
+            HBox remoteBox = new HBox();
+
+            _showRemoteCheck.Clicked += (sender, e) => GetWorkspaces();
+            remoteBox.PackStart(_showRemoteCheck);
+            remoteBox.PackStart(new Label(GettextCatalog.GetString("Show remote workspaces")));
+            content.PackStart(remoteBox);
+
             HBox buttonBox = new HBox();
+
             Button addWorkspaceButton = new Button(GettextCatalog.GetString("Add")) { MinWidth = GuiSettings.ButtonWidth };
             addWorkspaceButton.Clicked += AddWorkspaceClick;
+
+            _editWorkspaceButton = new Button(GettextCatalog.GetString("Edit")) { MinWidth = GuiSettings.ButtonWidth };
+            _editWorkspaceButton.Clicked += EditWorkspaceClick;
 
             Button removeWorkspaceButton = new Button(GettextCatalog.GetString("Remove")) { MinWidth = GuiSettings.ButtonWidth };
             removeWorkspaceButton.Clicked += RemoveWorkspaceClick;
@@ -89,6 +108,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             closeButton.Clicked += (sender, e) => Respond(Command.Close);
 
             buttonBox.PackStart(addWorkspaceButton);
+            buttonBox.PackStart(_editWorkspaceButton);
             buttonBox.PackStart(removeWorkspaceButton);
             buttonBox.PackEnd(closeButton);
 
@@ -104,7 +124,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             try
             {
-                var workspaces = _projectCollection.GetRemoteWorkspaces();
+                var remotes = _showRemoteCheck.State == CheckBoxState.On;
+                var workspaces = remotes ? _projectCollection.GetRemoteWorkspaces() : _projectCollection.GetLocalWorkspaces();
 
                 foreach (var workspace in workspaces)
                 {
@@ -114,6 +135,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                     _listStore.SetValue(row, _computer, workspace.Computer);
                     _listStore.SetValue(row, _owner, workspace.Owner);
                 }
+
+                ValidateEditWorkspace();
             }
             catch (Exception ex)
             {
@@ -123,7 +146,21 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void AddWorkspaceClick(object sender, EventArgs e)
         {
-            using (var dialog = new AddWorkspaceDialog(_projectCollection))
+            using (var dialog = new AddEditWorkspaceDialog(_projectCollection, null))
+            {
+                if (dialog.Run(this) == Command.Ok)
+                {
+                    GetWorkspaces();
+                }
+            }
+        }
+
+        void EditWorkspaceClick(object sender, EventArgs e)
+        {
+            string workspaceName = _listStore.GetValue(_listView.SelectedRow, _name);
+            _workspaceData = _projectCollection.GetWorkspace(workspaceName);
+
+            using (var dialog = new AddEditWorkspaceDialog(_projectCollection, _workspaceData))
             {
                 if (dialog.Run(this) == Command.Ok)
                 {
@@ -143,6 +180,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
                 GetWorkspaces();
             }       
+        }
+
+        void ValidateEditWorkspace()
+        {
+            _editWorkspaceButton.Sensitive = _listView.SelectedRow != -1;
         }
     }
 }
