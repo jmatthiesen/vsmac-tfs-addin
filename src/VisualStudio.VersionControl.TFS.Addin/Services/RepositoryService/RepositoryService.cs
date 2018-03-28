@@ -159,6 +159,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             msg.AddElement("generateDownloadUrls", includeDownloadInfo);
 
             var result = invoker.InvokeResult();
+
             return result.GetDescendants("Item").Select(Item.FromXml).ToList();
         }
 
@@ -213,6 +214,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             {
                 operations.Add(GetOperation.FromXml(operation));
             }
+
             return operations;
         }
 
@@ -391,12 +393,15 @@ namespace MonoDevelop.VersionControl.TFS.Services
         {
             var invoker = GetSoapInvoker();
             var msg = invoker.CreateEnvelope("Resolve");
+
             msg.Add(new XElement(MessageNs + "workspaceName", workspaceData.Name));
             msg.Add(new XElement(MessageNs + "ownerName", workspaceData.Owner));
             msg.Add(new XElement(MessageNs + "conflictId", conflict.ConflictId));
             msg.Add(new XElement(MessageNs + "resolution", resolutionType));
+
             var response = invoker.InvokeResponse();
             ResolveResult result = new ResolveResult();
+
             result.GetOperations = GetOperationExtractor(invoker.MethodResultExtractor(response));
             result.UndoOperations = GetOperationExtractor(response.Element(MessageNs + "undoOperations"));
             result.ResolvedConflicts = ConflictExtractor(response.Element(MessageNs + "resolvedConflicts"));

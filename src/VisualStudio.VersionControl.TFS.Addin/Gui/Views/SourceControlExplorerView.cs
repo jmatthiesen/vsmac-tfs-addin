@@ -1004,7 +1004,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         Gtk.MenuItem CreateAddFileMenuItem(BaseItem item, MenuType menuType)
         {
-            Gtk.MenuItem addItem = new Gtk.MenuItem(GettextCatalog.GetString("Add new item"));
+            Gtk.MenuItem addItem = new Gtk.MenuItem(GettextCatalog.GetString("Add New Item"));
            
             addItem.Activated += (sender, e) =>
             {
@@ -1074,7 +1074,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         Gtk.MenuItem CreateOpenFolderMenuItem(BaseItem item)
         {
-            Gtk.MenuItem openFolder = new Gtk.MenuItem(GettextCatalog.GetString("Open mapped folder"));
+            Gtk.MenuItem openFolder = new Gtk.MenuItem(GettextCatalog.GetString("Open Folder"));
           
             openFolder.Activated += (sender, e) =>
             {
