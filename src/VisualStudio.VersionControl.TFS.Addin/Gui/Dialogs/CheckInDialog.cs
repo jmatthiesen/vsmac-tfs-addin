@@ -49,7 +49,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         Label _workItemLabel;
         WorkItem _workItem;
 
-        internal CheckInDialog(List<ExtendedItem> items, IWorkspace workspace)
+        internal CheckInDialog(IEnumerable<BaseItem> items, IWorkspace workspace)
         {
             Init();
             BuildGui();
@@ -151,7 +151,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false; 
         }
 
-        void GetData(List<ExtendedItem> items, IWorkspace workspace)
+        void GetData(IEnumerable<BaseItem> items, IWorkspace workspace)
         {
             _fileStore.Clear();
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Autofac;
 using Gtk;
@@ -209,86 +210,44 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _refreshButton.Clicked += OnRefresh;
             _treeView.Selection.Changed += OnFolderChanged;
             _treeView.RowActivated += OnTreeViewItemClicked;
+            _treeView.ButtonPressEvent += OnTreeViewMouseClick;
             _listView.RowActivated += OnListItemClicked;
             _listView.ButtonPressEvent += OnListViewMouseClick;
         }
 
         void FireFilesChanged(List<ExtendedItem> items)
         {
+            _versionControlService.RefreshWorkingRepositories();
             FileService.NotifyFilesChanged(items.Select(i => new FilePath(_currentWorkspace.Data.GetLocalPathForServerPath(i.ServerPath))), true);
         }
 
         void FireFilesRemoved(List<ExtendedItem> items)
         {
+            _versionControlService.RefreshWorkingRepositories();
             FileService.NotifyFilesRemoved(items.Select(i => new FilePath(_currentWorkspace.Data.GetLocalPathForServerPath(i.ServerPath))));
         }
 
-        void Refresh(List<ExtendedItem> items)
+        void Refresh(BaseItem item, MenuType menuType)
         {
-            if (items.Any())
-                GetListView(items[0].ServerPath.ParentPath);
-        }
-
-        void CheckOut(List<ExtendedItem> itemsToCheckOut)
-        {
-            using (var progress = VersionControlService.GetProgressMonitor("Check Out", VersionControlOperationType.Pull))
+            if (item != null)
             {
-                progress.BeginTask("Check Out", itemsToCheckOut.Count);
-
-                foreach (var item in itemsToCheckOut)
+                switch (menuType)
                 {
-                    var path = item.IsInWorkspace ? item.LocalPath : _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
-                    _currentWorkspace.Get(new GetRequest(item.ServerPath, RecursionType.Full, VersionSpec.Latest), GetOptions.None);
-                    progress.Log.WriteLine("Check out item: " + item.ServerPath);
-
-                    ICollection<Failure> failures;
-                    _currentWorkspace.PendEdit(path.ToEnumerable(), RecursionType.Full, LockLevel.CheckOut, out failures);
-
-                    if (failures != null && failures.Any())
-                    {
-                        if (failures.Any(f => f.SeverityType == SeverityType.Error))
-                        {
-                            foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
-                            {
-                                progress.ReportError(failure.Code, new Exception(failure.Message));
-                            }
-
-                            break;
-                        }
-
-                        foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Warning))
-                        {
-                            progress.ReportWarning(failure.Message);
-                        }
-                    }
+                    case MenuType.List:
+                        GetListView(item.ServerPath.ParentPath);
+                        break;
+                    case MenuType.Tree:
+                        GetListView(item.ServerPath);
+                        break;
                 }
-
-                progress.EndTask();
-                progress.ReportSuccess("Finish Check Out.");
             }
         }
 
-        void MapItem(List<ExtendedItem> items)
+        void Refresh(IEnumerable<BaseItem> items)
         {
-            var item = items.FirstOrDefault(i => i.ItemType == ItemType.Folder);
-
-            if (_currentWorkspace == null || item == null)
-                return;
-
-            using (Xwt.SelectFolderDialog folderSelect = new Xwt.SelectFolderDialog("Browse For Folder"))
-            {
-                folderSelect.Multiselect = false;
-                folderSelect.CanCreateFolders = true;
-
-                if (folderSelect.Run())
-                {
-                    _currentWorkspace.Map(item.ServerPath, folderSelect.Folder);
-                }
-
-                Refresh(items);
-            }
+            Refresh(items.FirstOrDefault(), MenuType.List);
         }
-
+             
         void GetWorkspaces()
         {
             try
@@ -431,7 +390,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 }
                 else
                 {
-                    if (!item.IsInWorkspace)
+                    if (!item.IsInWorkspace)     
                     {
                         _listStore.SetValue(row, 5, "Not downloaded");
                     }
@@ -469,6 +428,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         void OnListItemClicked(object sender, RowActivatedArgs e)
         {
             TreeIter iter;
+
             if (!_listStore.GetIter(out iter, e.Path))
                 return;
 
@@ -531,43 +491,32 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             return _currentWorkspace.DownloadToTempWithName(item.ArtifactUri, item.ServerPath.ItemName);
         }
        
-        void GetLatestVersion(List<ExtendedItem> items)
-        {
-            List<GetRequest> requests = new List<GetRequest>();
-          
-            foreach (var item in items)
-            {
-                RecursionType recursion = item.ItemType == ItemType.File ? RecursionType.None : RecursionType.Full;
-                requests.Add(new GetRequest(item.ServerPath, recursion, VersionSpec.Latest));
-            }
-           
-            using (var progress = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull))
-            {
-                var option = GetOptions.None;
-                progress.Log.WriteLine("Start downloading items. GetOption: " + option);
-              
-                foreach (var request in requests)
-                {
-                    progress.Log.WriteLine(request);
-                }
-
-                _currentWorkspace.Get(requests, option);
-                progress.ReportSuccess("Finish Downloading.");
-            }
-
-            Refresh(items);
-        }
-
         [GLib.ConnectBefore]
         void OnListViewMouseClick(object o, ButtonPressEventArgs args)
         {
             if (args.Event.Button == 3 && _listView.Selection.GetSelectedRows().Any())
             {
-                var menu = GetPopupMenu();
+                var menu = BuildListViewPopupMenu();
 
                 if (menu.Children.Length > 0)
                     menu.Popup();
+                
+                args.RetVal = true;
+            }
+        }
 
+        [GLib.ConnectBefore]
+        void OnTreeViewMouseClick(object o, ButtonPressEventArgs args)
+        {
+            TreeIter iter;
+            if (args.Event.Button == 3 && _treeView.Selection.GetSelected(out iter))
+            {
+                var item = (BaseItem)_treeStore.GetValue(iter, 0);
+                var menu = BuildTreePopupMenu(item);
+              
+                if (menu.Children.Length > 0)
+                    menu.Popup();
+                
                 args.RetVal = true;
             }
         }
@@ -695,11 +644,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         #region Popup Menu
 
-        Gtk.Menu GetPopupMenu()
+        enum MenuType
+        {
+            Tree,
+            List
+        }
+
+        Gtk.Menu BuildListViewPopupMenu()
         {
             Gtk.Menu menu = new Gtk.Menu();
-
             var items = new List<ExtendedItem>();
+
             foreach (var path in _listView.Selection.GetSelectedRows())
             {
                 TreeIter iter;
@@ -709,38 +664,29 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
             if (items.All(i => IsMapped(i.ServerPath)))
             {
-                foreach (var item in GetVersionMenu(items))
+                foreach (var item in GetGroup(items))
                 {
                     menu.Add(item);
                 }
 
-                var editMenu = GetEditMenu(items);
-                if (editMenu.Any())
+                menu.Add(new Gtk.SeparatorMenuItem());
+
+                foreach (var item in EditGroup(items))
                 {
-                    menu.Add(new Gtk.SeparatorMenuItem());
-                    foreach (var item in editMenu)
-                    {
-                        menu.Add(item);
-                    }
+                    menu.Add(item);
                 }
 
-                if (items.All(i => i.ItemType == ItemType.Folder && i.LocalPath.Exists))
+                if (items.Count == 1)
                 {
-                    var folderMenu = GetFolderMenu(items);
-
-                    menu.Add(new Gtk.SeparatorMenuItem());
-                    foreach (var item in folderMenu)
+                    foreach (var menuItem in ForlderMenuItems(items[0], MenuType.List))
                     {
-                        menu.Add(item);
+                        menu.Add(menuItem);
                     }
                 }
             }
             else
             {
-                foreach (var item in GetMapMenu(items))
-                {
-                    menu.Add(item);
-                }
+                menu.Add(NotMappedMenu(items, MenuType.List));
             }
 
             menu.ShowAll();
@@ -748,101 +694,89 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             return menu;
         }
 
-        List<Gtk.MenuItem> GetVersionMenu(List<ExtendedItem> items)
+        IEnumerable<Gtk.MenuItem> GetGroup(List<ExtendedItem> items)
         {
-            var groupItems = new List<Gtk.MenuItem>();
             Gtk.MenuItem getLatestVersionItem = new Gtk.MenuItem(GettextCatalog.GetString("Get Latest Version"));
+            getLatestVersionItem.Activated += (sender, e) => GetLatestVersion(items);
 
-            getLatestVersionItem.Activated += (sender, e) =>
-            {
-                List<GetRequest> requests = new List<GetRequest>();
-               
-                foreach (var item in items)
-                {
-                    RecursionType recursion = item.ItemType == ItemType.File ? RecursionType.None : RecursionType.Full;
-                    requests.Add(new GetRequest(item.ServerPath, recursion, VersionSpec.Latest));
-                }
-
-                using (var progress = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull))
-                {
-                    var option = GetOptions.None;
-                    progress.Log.WriteLine("Start downloading items. GetOption: " + option);
-                  
-                    foreach (var request in requests)
-                    {
-                        progress.Log.WriteLine(request);
-                    }
-
-                    _currentWorkspace.Get(requests, option);
-                    progress.ReportSuccess("Finish Downloading.");
-                }
-
-                Refresh(items);
-            };
-
-            groupItems.Add(getLatestVersionItem);
+            yield return getLatestVersionItem;
 
             Gtk.MenuItem forceGetLatestVersionItem = new Gtk.MenuItem(GettextCatalog.GetString("Get Specific Version"));
+            forceGetLatestVersionItem.Activated += (sender, e) => ForceGetLatestVersion(items);
 
-            forceGetLatestVersionItem.Activated += (sender, e) =>
-            {
-                using (var specVersionDialog = new GetSpecVersionDialog(_currentWorkspace))
-                {
-                    specVersionDialog.AddData(items);
-
-                    if (specVersionDialog.Run() == Command.Ok)
-                    {
-                        Refresh(items);
-                    }
-                }
-            };
-
-            groupItems.Add(forceGetLatestVersionItem);
-
-            return groupItems;
+            yield return forceGetLatestVersionItem;
         }
 
-        List<Gtk.MenuItem> GetEditMenu(List<ExtendedItem> items)
+        void GetLatestVersion(List<ExtendedItem> items)
         {
-            var editItems = new List<Gtk.MenuItem>();
+            List<GetRequest> requests = new List<GetRequest>();
 
+            foreach (var item in items)
+            {
+                RecursionType recursion = item.ItemType == ItemType.File ? RecursionType.None : RecursionType.Full;
+                requests.Add(new GetRequest(item.ServerPath, recursion, VersionSpec.Latest));
+            }
+
+            using (var progress = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull))
+            {
+                var option = GetOptions.None;
+                progress.Log.WriteLine("Start downloading items. GetOption: " + option);
+
+                foreach (var request in requests)
+                {
+                    progress.Log.WriteLine(request);
+                }
+
+                _currentWorkspace.Get(requests, option);
+                progress.ReportSuccess("Finish Downloading.");
+            }
+
+            Refresh(items);
+        }
+
+        void ForceGetLatestVersion(List<ExtendedItem> items)
+        {
+            using (var specVersionDialog = new GetSpecVersionDialog(_currentWorkspace))
+            {
+                specVersionDialog.AddData(items);
+
+                if (specVersionDialog.Run() == Command.Ok)
+                {
+                    Refresh(items);
+                }
+            }
+        }
+
+        IEnumerable<Gtk.MenuItem> EditGroup(List<ExtendedItem> items)
+        {
             //Check Out
-            var checkOutItems = items
-                .Where(i => i.ChangeType == ChangeType.None || i.ChangeType == ChangeType.Lock || i.ItemType == ItemType.Folder)
-                .ToList();
-
+            var checkOutItems = items.Where(i => i.ChangeType == ChangeType.None || i.ChangeType == ChangeType.Lock || i.ItemType == ItemType.Folder).ToList();
+        
             if (checkOutItems.Any())
             {
                 Gtk.MenuItem checkOutItem = new Gtk.MenuItem(GettextCatalog.GetString("Check out items"));
-
+              
                 checkOutItem.Activated += (sender, e) =>
                 {
-                    if (checkOutItems.Count > 1)
+                    using (var dialog = new CheckOutDialog(checkOutItems, _currentWorkspace))
                     {
-                        using (var dialog = new CheckOutDialog(checkOutItems, _currentWorkspace))
+                        if (dialog.Run() == Command.Ok)
                         {
-                            if (dialog.Run() == Command.Ok)
-                            {
-                                var itemsToCheckOut = dialog.SelectedItems;
-                                CheckOut(itemsToCheckOut);
-                            }
+                            var itemsToCheckOut = dialog.SelectedItems;
+                            CheckOut(itemsToCheckOut);
                         }
-                    }
-                    else
-                    {
-                        CheckOut(checkOutItems);
                     }
 
                     FireFilesChanged(checkOutItems);
                     Refresh(items);
                 };
 
-                editItems.Add(checkOutItem);
+                yield return checkOutItem;
             }
 
             // Check In
             var checkInItems = items.Where(i => !i.ChangeType.HasFlag(ChangeType.None)).ToList();
-          
+
             if (checkInItems.Any())
             {
                 Gtk.MenuItem checkinItem = new Gtk.MenuItem(GettextCatalog.GetString("Check In"));
@@ -858,7 +792,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                                 progress.BeginTask("Check In", 1);
 
                                 var result = _currentWorkspace.CheckIn(dialog.SelectedChanges, dialog.Comment, dialog.SelectedWorkItems);
-                       
+
                                 foreach (var failure in result.Failures.Where(f => f.SeverityType == SeverityType.Error))
                                 {
                                     progress.ReportError(failure.Code, new Exception(failure.Message));
@@ -874,16 +808,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                     Refresh(items);
                 };
 
-                editItems.Add(checkinItem);
+                yield return checkinItem;
             }
 
-            // Lock
+            //Lock
             var lockItems = items.Where(i => !i.IsLocked).ToList();
-
+         
             if (lockItems.Any())
             {
                 Gtk.MenuItem lockItem = new Gtk.MenuItem(GettextCatalog.GetString("Lock"));
-              
+               
                 lockItem.Activated += (sender, e) =>
                 {
                     var itemsToLock = items;
@@ -892,7 +826,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                     using (var progress = new MessageDialogProgressMonitor(true, false, true))
                     {
                         progress.BeginTask("Lock Files", itemsToLock.Count);
-                        _currentWorkspace.LockItems(itemsToLock.Select(i => i.ServerPath), lockLevel);               
+                        _currentWorkspace.LockItems(itemsToLock.Select(i => i.ServerPath), lockLevel);
                         progress.EndTask();
                         progress.ReportSuccess("Finish locking.");
                     }
@@ -901,12 +835,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                     Refresh(items);
                 };
 
-                editItems.Add(lockItem);
+                yield return lockItem;
             }
 
-            // Unlock
+            //UnLock
             var unLockItems = items.Where(i => i.IsLocked && !i.HasOtherPendingChange).ToList();
-           
+
             if (unLockItems.Any())
             {
                 Gtk.MenuItem unLockItem = new Gtk.MenuItem(GettextCatalog.GetString("UnLock"));
@@ -918,82 +852,50 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                     Refresh(items);
                 };
 
-                editItems.Add(unLockItem);
+                yield return unLockItem;
             }
 
             //Rename
-            var itemToRename = items.FirstOrDefault(i => !i.ChangeType.HasFlag(ChangeType.Delete));
-           
-            if (itemToRename != null)
+            var ableToRename = items.FirstOrDefault(i => !i.ChangeType.HasFlag(ChangeType.Delete));
+          
+            if (ableToRename != null)
             {
                 Gtk.MenuItem renameItem = new Gtk.MenuItem(GettextCatalog.GetString("Rename"));
-             
+               
                 renameItem.Activated += (sender, e) =>
                 {
-                    using (var dialog = new RenameDialog(itemToRename))
+                    using (var dialog = new RenameDialog(ableToRename))
                     {
                         if (dialog.Run() == Command.Ok)
                         {
                             ICollection<Failure> failures;
 
-                            _currentWorkspace.PendRename(itemToRename.LocalPath, dialog.NewPath, out failures);
-                      
+                            _currentWorkspace.PendRename(ableToRename.LocalPath, dialog.NewPath, out failures);
+
                             if (failures != null && failures.Any(f => f.SeverityType == SeverityType.Error))
                             {
                                 foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
                                 {
                                     MessageService.ShowError(failure.Message);
                                 }
-                            }      
-
-                            FireFilesChanged(new List<ExtendedItem> { itemToRename });
-                            Refresh(items);
-                        }
-                    }
-                };
-
-                editItems.Add(renameItem);
-            }
-
-            //Undo
-            var undoItems = items.Where(i => !i.ChangeType.HasFlag(ChangeType.None) || i.ItemType == ItemType.Folder).ToList();
-         
-            if (undoItems.Any())
-            {
-                Gtk.MenuItem undoItem = new Gtk.MenuItem(GettextCatalog.GetString("Undo Changes"));
-
-                undoItem.Activated += (sender, e) =>
-                {
-                    using (var dialog = new UndoDialog(undoItems, _currentWorkspace))
-                    {
-                        if (dialog.Run() == Command.Ok)
-                        {
-                            var changesToUndo = dialog.SelectedItems;
-                            var itemSpecs = new List<ItemSpec>();
-
-                            foreach (var change in changesToUndo)
-                            {
-                                itemSpecs.Add(new ItemSpec(change.LocalItem, change.ItemType == ItemType.File ? RecursionType.None : RecursionType.Full));
                             }
 
-                            _currentWorkspace.Undo(itemSpecs);
-                          
-                            FireFilesChanged(undoItems);
+                            FireFilesChanged(new List<ExtendedItem> { ableToRename });
                             Refresh(items);
                         }
                     }
                 };
 
-                editItems.Add(undoItem);
+                yield return renameItem;
             }
 
-            // Delete
-            var deleteItems = items.Where(i => !i.ChangeType.HasFlag(ChangeType.Delete)).ToList();
-
-            if (deleteItems.Any())
+            //Delete
+            var ableToDelete = items.Where(i => !i.ChangeType.HasFlag(ChangeType.Delete)).ToList();
+           
+            if (ableToDelete.Any())
             {
                 Gtk.MenuItem deleteItem = new Gtk.MenuItem(GettextCatalog.GetString("Delete"));
-
+               
                 deleteItem.Activated += (sender, e) =>
                 {
                     if (MessageService.Confirm(GettextCatalog.GetString("Are you sure you want to delete selected files?"), AlertButton.Yes))
@@ -1013,34 +915,224 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                         Refresh(items);
                     }
                 };
-               
-                editItems.Add(deleteItem);
+              
+                yield return deleteItem;
             }
 
-            return editItems;
-        }
+            //Undo
+            var undoItems = items.Where(i => !i.ChangeType.HasFlag(ChangeType.None) || i.ItemType == ItemType.Folder).ToList();
 
-        List<Gtk.MenuItem> GetMapMenu(List<ExtendedItem> items)
-        {
-            Gtk.MenuItem mapItem = new Gtk.MenuItem(GettextCatalog.GetString("Map"));
-            mapItem.Activated += (sender, e) => MapItem(items);
-
-            return new List<Gtk.MenuItem> { mapItem };
-        }
-
-        List<Gtk.MenuItem> GetFolderMenu(List<ExtendedItem> items)
-        {
-            Gtk.MenuItem openFolder = new Gtk.MenuItem(GettextCatalog.GetString("Open mapped folder"));
-            openFolder.Activated += (sender, e) =>
+            if (undoItems.Any())
             {
-                foreach (var item in items)
+                Gtk.MenuItem undoItem = new Gtk.MenuItem(GettextCatalog.GetString("Undo Changes"));
+             
+                undoItem.Activated += (sender, e) =>
                 {
-                    var path = _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
-                    DesktopService.OpenFolder(new FilePath(path));
+                    using (var dialog = new UndoDialog(undoItems, _currentWorkspace))
+                    {
+                        if (dialog.Run() == Command.Ok)
+                        {
+                            var changesToUndo = dialog.SelectedItems;
+                            var itemSpecs = new List<ItemSpec>();
+
+                            foreach (var change in changesToUndo)
+                            {
+                                itemSpecs.Add(new ItemSpec(change.LocalItem, change.ItemType == ItemType.File ? RecursionType.None : RecursionType.Full));
+                            }
+
+                            _currentWorkspace.Undo(itemSpecs);
+
+                            FireFilesChanged(undoItems);
+                            Refresh(items);
+                        }
+                    }
+                };
+
+                yield return undoItem;
+            }
+        }
+
+        void CheckOut(List<ExtendedItem> itemsToCheckOut)
+        {
+            using (var progress = VersionControlService.GetProgressMonitor("Check Out", VersionControlOperationType.Pull))
+            {
+                progress.BeginTask("Check Out", itemsToCheckOut.Count);
+
+                foreach (var item in itemsToCheckOut)
+                {
+                    var path = item.IsInWorkspace ? item.LocalPath : _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
+                    _currentWorkspace.Get(new GetRequest(item.ServerPath, RecursionType.Full, VersionSpec.Latest), GetOptions.None);
+                    progress.Log.WriteLine("Check out item: " + item.ServerPath);
+
+                    ICollection<Failure> failures;
+                    _currentWorkspace.PendEdit(path.ToEnumerable(), RecursionType.Full, LockLevel.CheckOut, out failures);
+
+                    if (failures != null && failures.Any())
+                    {
+                        if (failures.Any(f => f.SeverityType == SeverityType.Error))
+                        {
+                            foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
+                            {
+                                progress.ReportError(failure.Code, new Exception(failure.Message));
+                            }
+
+                            break;
+                        }
+
+                        foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Warning))
+                        {
+                            progress.ReportWarning(failure.Message);
+                        }
+                    }
+                }
+
+                progress.EndTask();
+                progress.ReportSuccess("Finish Check Out.");
+            }
+        }
+
+        IEnumerable<Gtk.MenuItem> ForlderMenuItems(BaseItem item, MenuType menuType)
+        {
+            if (item.ItemType != ItemType.Folder)
+                yield break;
+            
+            yield return CreateAddFileMenuItem(item, menuType);
+            yield return new Gtk.SeparatorMenuItem();
+            yield return CreateOpenFolderMenuItem(item);
+        }
+
+
+        Gtk.MenuItem CreateAddFileMenuItem(BaseItem item, MenuType menuType)
+        {
+            Gtk.MenuItem addItem = new Gtk.MenuItem(GettextCatalog.GetString("Add new item"));
+           
+            addItem.Activated += (sender, e) =>
+            {
+                var path = _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
+
+                using (OpenFileDialog openFileDialog = new OpenFileDialog("Browse For File"))
+                {
+                    openFileDialog.CurrentFolder = path;
+                    openFileDialog.Multiselect = true;
+                 
+                    if (openFileDialog.Run())
+                    {
+                        var files = new List<LocalPath>();
+                        foreach (var fileName in openFileDialog.FileNames)
+                        {
+                            if (!string.Equals(Path.GetDirectoryName(fileName), path))
+                            {
+                                var newPath = Path.Combine(path, Path.GetFileName(fileName));
+                                File.Copy(fileName, newPath);
+                                files.Add(newPath);
+                            }
+                            else
+                                files.Add(fileName);
+                        }
+
+                        ICollection<Failure> failures;
+                        _currentWorkspace.PendAdd(files, false, out failures);
+
+                        if (failures.Any())
+                        {
+                            var failuresDialog = new FailuresDialog(failures);
+                            failuresDialog.Show();
+                        }
+                        else
+                        {
+                            var checkOutItems = item.ToEnumerable();
+
+                            using (var dialog = new CheckInDialog(checkOutItems, _currentWorkspace))
+                            {
+                                if (dialog.Run() == Command.Ok)
+                                {
+                                    using (var progress = new MessageDialogProgressMonitor(true, false, false))
+                                    {
+                                        progress.BeginTask("Check In", 1);
+
+                                        var result = _currentWorkspace.CheckIn(dialog.SelectedChanges, dialog.Comment, dialog.SelectedWorkItems);
+
+                                        foreach (var failure in result.Failures.Where(f => f.SeverityType == SeverityType.Error))
+                                        {
+                                            progress.ReportError(failure.Code, new Exception(failure.Message));
+                                        }
+
+                                        progress.EndTask();
+                                        progress.ReportSuccess("Finish Check In");
+                                    }
+                                }
+                            }
+
+                            Refresh(item, menuType);
+                        }
+                    }
                 }
             };
 
-            return new List<Gtk.MenuItem> { openFolder };
+            return addItem;
+        }
+
+        Gtk.MenuItem CreateOpenFolderMenuItem(BaseItem item)
+        {
+            Gtk.MenuItem openFolder = new Gtk.MenuItem(GettextCatalog.GetString("Open mapped folder"));
+          
+            openFolder.Activated += (sender, e) =>
+            {
+                var path = _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
+                DesktopService.OpenFolder(new FilePath(path));
+            };
+
+            return openFolder;
+        }
+
+        Gtk.MenuItem NotMappedMenu(IEnumerable<BaseItem> items, MenuType menuType)
+        {
+            Gtk.MenuItem mapItem = new Gtk.MenuItem(GettextCatalog.GetString("Map"));
+            var item = items.FirstOrDefault(i => i.ItemType == ItemType.Folder);
+            mapItem.Activated += (sender, e) => MapItem(item, menuType);
+           
+            return mapItem;
+        }
+
+        void MapItem(BaseItem item, MenuType menuType)
+        {
+            if (_currentWorkspace == null || item == null)
+                return;
+            
+            using (Xwt.SelectFolderDialog folderSelect = new Xwt.SelectFolderDialog("Browse For Folder"))
+            {
+                folderSelect.Multiselect = false;
+                folderSelect.CanCreateFolders = true;
+             
+                if (folderSelect.Run())
+                {
+                    _currentWorkspace.Map(item.ServerPath, folderSelect.Folder);
+                }
+
+                Refresh(item, menuType);
+            }
+        }
+       
+        Gtk.Menu BuildTreePopupMenu(BaseItem item)
+        {
+            Gtk.Menu menu = new Gtk.Menu();
+        
+            if (item == null || item.ServerPath == RepositoryPath.RootPath)
+                return menu;
+            
+            if (!IsMapped(item.ServerPath))
+            {
+                menu.Add(NotMappedMenu(item.ToEnumerable(), MenuType.Tree));
+            }
+            else
+            {
+                foreach (var menuItem in ForlderMenuItems(item, MenuType.Tree))
+                {
+                    menu.Add(menuItem);
+                }
+            }
+            menu.ShowAll();
+            return menu;
         }
 
         #endregion

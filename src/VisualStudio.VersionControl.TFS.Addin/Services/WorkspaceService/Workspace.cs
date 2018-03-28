@@ -483,6 +483,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                 
                 return new UpdateLocalVersion(operation.ItemId, path, operation.VersionServer);
             }
+
             return null;
         }
 

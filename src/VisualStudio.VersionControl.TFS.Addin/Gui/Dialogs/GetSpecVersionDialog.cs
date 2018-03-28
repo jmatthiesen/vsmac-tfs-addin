@@ -46,6 +46,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         ListStore _listStore;
         ComboBox _versionBox;
         SpinButton _changeSetNumber;
+        CheckBox _forceGet;
 
         internal GetSpecVersionDialog(IWorkspace workspace)
         {
@@ -65,6 +66,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _listStore = new ListStore(_itemField, _isSelectedField, _nameField, _pathField);
             _versionBox = new ComboBox();
             _changeSetNumber = new SpinButton();
+            _forceGet = new CheckBox(GettextCatalog.GetString("Force get file already in workspace"));
         }
 
         void BuildGui()
@@ -101,6 +103,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _changeSetNumber.Digits = 0;
             typeBox.PackStart(_changeSetNumber);
             content.PackStart(typeBox);
+            content.PackStart(_forceGet);
 
             HBox buttonBox = new HBox();
             Button okButton = new Button(GettextCatalog.GetString("Get"));
@@ -148,15 +151,23 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
                     requests.Add(new GetRequest(spec, version));
 
-                    // Force Get 
-                    _workspace.ResetDownloadStatus(item.ItemId);
+                    if (_forceGet.State == CheckBoxState.On)
+                    {
+                        // Force Get 
+                        _workspace.ResetDownloadStatus(item.ItemId);
+                    }
 
                 }
             }
 
             Respond(Command.Ok);
 
-            var option =  GetOptions.GetAll;
+            var option = GetOptions.None;
+           
+            if (_forceGet.State == CheckBoxState.On)
+            {
+                option |= GetOptions.GetAll;
+            }
 
             using (var progress = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull))
             {
