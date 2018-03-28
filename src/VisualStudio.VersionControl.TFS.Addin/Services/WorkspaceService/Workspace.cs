@@ -474,7 +474,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         UpdateLocalVersion ProcessGet(GetOperation operation, ProcessDirection processDirection)
         {
-            if (processDirection == ProcessDirection.Normal && !string.IsNullOrEmpty(operation.ArtifactUri))
+            if (processDirection == ProcessDirection.Normal)
             {
                 LocalPath path = DownloadFile(operation);
              
