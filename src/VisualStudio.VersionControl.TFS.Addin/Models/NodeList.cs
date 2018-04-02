@@ -32,7 +32,7 @@ using System.Linq;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
-    internal sealed class NodeList : List<Node>
+    public sealed class NodeList : List<Node>
     {
         public void RemoveFieldsAndValues()
         {

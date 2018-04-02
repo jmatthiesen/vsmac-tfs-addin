@@ -44,10 +44,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         TreeStore _queryStore;
         TreeView _listView;
         TreeStore _listStore;
+        DataField<bool> _isCheckedField;
         DataField<WorkItem> _workItemField;
 
         TeamFoundationServerVersionControlService _versionControlService;
         WorkItem _workItem;
+
+        internal delegate void WorkItemSelectedEventHandler(WorkItem workItem);
+        internal event WorkItemSelectedEventHandler OnSelectWorkItem;
+        internal event WorkItemSelectedEventHandler OnRemoveWorkItem;
 
         public ChooseWorkItemDialog()
         {
@@ -221,6 +226,28 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
                     if (dataFields.Any())
                     {
+                        _isCheckedField = new DataField<bool>();
+                        dataFields.Insert(0, _isCheckedField);
+                        var checkColumn = new CheckBoxCellView(_isCheckedField) { Editable = true };
+                      
+                        checkColumn.Toggled += (sender, e) =>
+                        {
+                            var astore = (TreeStore)_listView.DataSource;
+                            var node = astore.GetNavigatorAt(_listView.CurrentEventRow);
+                            var workItem = node.GetValue(_workItemField);
+
+                            if (!node.GetValue(_isCheckedField))
+                            {
+                                OnSelectWorkItem?.Invoke(_workItem);
+                            }
+                            else
+                            {
+                                OnRemoveWorkItem?.Invoke(_workItem);
+                            }
+                        };
+
+                        _listView.Columns.Add("", checkColumn);
+
                         _workItemField = new DataField<WorkItem>();
                         dataFields.Insert(0, _workItemField);
                         _listStore = new TreeStore(dataFields.ToArray());

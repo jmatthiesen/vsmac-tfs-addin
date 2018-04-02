@@ -83,7 +83,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             VBox content = new VBox();
 
             content.PackStart(new Label(GettextCatalog.GetString("Workspaces:")));
-            _listView.SelectionChanged += (sender, args) => ValidateEditWorkspace();
+            _listView.SelectionChanged += (sender, args) => UpdateEditWorkspace();
             content.PackStart(_listView);
 
             HBox remoteBox = new HBox();
@@ -136,7 +136,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                     _listStore.SetValue(row, _owner, workspace.Owner);
                 }
 
-                ValidateEditWorkspace();
+                UpdateEditWorkspace();
             }
             catch (Exception ex)
             {
@@ -182,7 +182,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }       
         }
 
-        void ValidateEditWorkspace()
+        void UpdateEditWorkspace()
         {
             _editWorkspaceButton.Sensitive = _listView.SelectedRow != -1;
         }

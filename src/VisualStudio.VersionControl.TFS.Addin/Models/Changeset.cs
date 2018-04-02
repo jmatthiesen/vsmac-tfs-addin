@@ -37,7 +37,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
 {
     public sealed class Changeset
     {
-        private static readonly string[] DateTimeFormats = { "yyyy-MM-ddTHH:mm:ss.fZ", "yyyy-MM-ddTHH:mm:ss.ffZ", "yyyy-MM-ddTHH:mm:ss.fffZ", "yyyy-MM-ddTHH:mm:ss.ffffZ", "yyyy-MM-ddTHH:mm:ss.fffffZ", "yyyy-MM-ddTHH:mm:ss.ffffffZ", "yyyy-MM-ddTHH:mm:ssZ" };
+        static readonly string[] DateTimeFormats = { "yyyy-MM-ddTHH:mm:ss.fZ", "yyyy-MM-ddTHH:mm:ss.ffZ", "yyyy-MM-ddTHH:mm:ss.fffZ", "yyyy-MM-ddTHH:mm:ss.ffffZ", "yyyy-MM-ddTHH:mm:ss.fffffZ", "yyyy-MM-ddTHH:mm:ss.ffffffZ", "yyyy-MM-ddTHH:mm:ssZ" };
         //      <QueryChangesetResult cmtr="string" cmtrdisp="string" date="dateTime" cset="int" owner="string" ownerdisp="string">
         //        <Comment>string</Comment>
         //        <CheckinNote>
@@ -86,6 +86,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             changeset.Changes = element.Element(element.Name.Namespace + "Changes")
                 .Elements(element.Name.Namespace + "Change")
                 .Select(Change.FromXml).ToArray();
+            
             return changeset;
         }
 

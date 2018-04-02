@@ -28,7 +28,7 @@
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
-    enum NodeType
+    public enum NodeType
     {
         Undefined,
         //System.State

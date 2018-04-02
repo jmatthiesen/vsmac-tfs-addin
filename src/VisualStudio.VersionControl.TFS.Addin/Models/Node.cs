@@ -28,7 +28,7 @@
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
-    class Node
+    public class Node
     {
         public virtual NodeType NodeType { get { return NodeType.Undefined; } }
     }

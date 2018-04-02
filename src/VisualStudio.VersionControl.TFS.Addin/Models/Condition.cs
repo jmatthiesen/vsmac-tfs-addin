@@ -28,7 +28,7 @@
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
-    enum Condition
+    public enum Condition
     {
         None,
         Equals,

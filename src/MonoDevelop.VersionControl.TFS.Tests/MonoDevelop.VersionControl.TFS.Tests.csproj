@@ -29,9 +29,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\..\..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,6 +38,9 @@
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="Autofac">
       <HintPath>..\packages\Autofac.4.6.2\lib\net45\Autofac.dll</HintPath>
     </Reference>
@@ -54,6 +54,7 @@
     <Compile Include="Tests\Base\TestLoggingService.cs" />
     <Compile Include="Tests\Base\TestProgressDisplay.cs" />
     <Compile Include="Tests\Base\TestProgressService.cs" />
+    <Compile Include="Tests\QueryTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VisualStudio.VersionControl.TFS.Addin\MonoDevelop.VersionControl.TFS.csproj">

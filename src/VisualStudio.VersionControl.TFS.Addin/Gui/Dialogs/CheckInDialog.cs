@@ -36,7 +36,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
     public class CheckInDialog : Dialog
     {
-        VBox _content;
+        Notebook _notebook;
         ListView _filesView;
         DataField<bool> _isCheckedField;
         DataField<string> _nameField;
@@ -45,9 +45,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<PendingChange> _changeField;
         ListStore _fileStore;
         TextEntry _commentEntry;
-        Button _addWorkItemButton;
-        Label _workItemLabel;
-        WorkItem _workItem;
+        ListView _workItemsView;
+        DataField<WorkItem> _workItemField;
+        DataField<int> _idField;
+        DataField<string> _titleField;
+        ListStore _workItemsStore;
+        Button _removeWorkItemButton;
 
         internal CheckInDialog(IEnumerable<BaseItem> items, IWorkspace workspace)
         {
@@ -86,25 +89,21 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             get
             {
-                if (_workItem != null)
+                var items = new Dictionary<int, WorkItemCheckinAction>();
+            
+                for (int i = 0; i < _workItemsStore.RowCount; i++)
                 {
-                    var items = new Dictionary<int, WorkItemCheckinAction>
-                    {
-                        { _workItem.Id, WorkItemCheckinAction.Associate }
-                    };
+                    var workItem = _workItemsStore.GetValue(i, _workItemField);
+                    items.Add(workItem.Id, WorkItemCheckinAction.Associate);
+                }
 
-                    return items;
-                }
-                else
-                {
-                    return null;    
-                }
+                return items;
             }
         }
 
         void Init()
         {
-            _content = new VBox();
+            _notebook = new Notebook();
             _filesView = new ListView();
             _isCheckedField = new DataField<bool>();
             _nameField = new DataField<string>();
@@ -114,12 +113,20 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _fileStore = new ListStore(_isCheckedField, _nameField, _changesField, _folderField, _changeField);
             _commentEntry = new TextEntry();
             _commentEntry.MultiLine = true;
+            _workItemsView = new ListView();
+            _workItemField = new DataField<WorkItem>();
+            _idField = new DataField<int>();
+            _titleField = new DataField<string>();
+            _workItemsStore = new ListStore(_idField, _titleField, _workItemField);
         }
 
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Check In files");
                 
+            _notebook.TabOrientation = NotebookTabOrientation.Left;
+
+            var checkInTab = new VBox();
             _filesView.WidthRequest = 600;
             _filesView.HeightRequest = 150;
             var checkView = new CheckBoxCellView(_isCheckedField);
@@ -128,27 +135,46 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _filesView.Columns.Add("Changes", _changesField);
             _filesView.Columns.Add("Folder", _folderField);
             _filesView.DataSource = _fileStore;
-            _content.PackStart(new Label(GettextCatalog.GetString("Pending Changes") + ":"));
-            _content.PackStart(_filesView, true, true);
+            checkInTab.PackStart(new Label(GettextCatalog.GetString("Pending Changes") + ":"));
+            checkInTab.PackStart(_filesView, true, true);
 
-            _content.PackStart(new Label(GettextCatalog.GetString("Comment") + ":"));
+            checkInTab.PackStart(new Label(GettextCatalog.GetString("Comment") + ":"));
             _commentEntry.MultiLine = true;
-            _content.PackStart(_commentEntry);
+            checkInTab.PackStart(_commentEntry);
                     
-            _content.PackStart(new Label(GettextCatalog.GetString("Work Item") + ":"));
+            _notebook.Add(checkInTab, GettextCatalog.GetString("Pending Changes"));
+
+            var workItemsTab = new HBox();
+            var workItemsListBox = new VBox();
+            workItemsListBox.PackStart(new Label(GettextCatalog.GetString("Work Items") + ":"));
+            _workItemsView.Columns.Add("Id", _idField);
+            _workItemsView.Columns.Add("Title", _titleField);
+            _workItemsView.DataSource = _workItemsStore;
+            _workItemsView.SelectionChanged += (sender, args) => UpdateRemoveWorkItem();
+            workItemsListBox.PackStart(_workItemsView, true);
+            workItemsTab.PackStart(workItemsListBox, true, true);
+
             var workItemButtonBox = new VBox();
-            _addWorkItemButton = new Button(GettextCatalog.GetString("Add Work Item"));
-            _addWorkItemButton.Clicked += OnAddWorkItem;
-            workItemButtonBox.PackStart(_addWorkItemButton);
-            _workItemLabel = new Label();
-            _workItemLabel.Visible = false;
-            workItemButtonBox.PackStart(_workItemLabel);
-            _content.PackStart(workItemButtonBox);
+            var addWorkItemButton = new Button(GettextCatalog.GetString("Add Work Item"));
+            addWorkItemButton.Clicked += OnAddWorkItem;
+            workItemButtonBox.PackStart(addWorkItemButton);
+
+            _removeWorkItemButton = new Button(GettextCatalog.GetString("Remove Work Item"));
+            _removeWorkItemButton.Clicked += OnRemoveWorkItem;
+            workItemButtonBox.PackStart(_removeWorkItemButton);
+
+            addWorkItemButton.MinWidth = _removeWorkItemButton.MinWidth = GuiSettings.ButtonWidth;
+
+            workItemsTab.PackStart(workItemButtonBox);
+
+            _notebook.Add(workItemsTab, GettextCatalog.GetString("Work Items"));
 
             Buttons.Add(Command.Ok, Command.Cancel);
 
-            Content = _content;
+            Content = _notebook;
             Resizable = false; 
+
+            UpdateRemoveWorkItem();
         }
 
         void GetData(IEnumerable<BaseItem> items, IWorkspace workspace)
@@ -178,27 +204,56 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void OnAddWorkItem(object sender, EventArgs e)
         {
-            using (var selectWorkItemDialog = new ChooseWorkItemDialog())
+            using (var chooseWorkItemDialog = new ChooseWorkItemDialog())
             {
-                if (selectWorkItemDialog.Run() == Command.Ok)
+                chooseWorkItemDialog.OnSelectWorkItem += (workItem) =>
                 {
-                    var workItem = selectWorkItemDialog.WorkItem;
-
-                    if(workItem != null)
-                    {
-                        _addWorkItemButton.Visible = false;
-                        _workItemLabel.Text = string.Format("{0} - {1}", workItem.Id, workItem.WorkItemInfo["System.Title"]);
-                        _workItemLabel.Visible = true;
-
-                        _workItem = workItem;
+                    if (IsWorkItemAdded(workItem.Id))
+                    { 
+                        return;
                     }
-                    else
+
+                    string title = string.Empty;
+
+                    if (workItem.WorkItemInfo.ContainsKey("System.Title"))
                     {
-                        _addWorkItemButton.Visible = true;
-                        _workItemLabel.Visible = false;
+                        title = Convert.ToString(workItem.WorkItemInfo["System.Title"]);
                     }
-                }
+
+                    var row = _workItemsStore.AddRow();
+                    _workItemsStore.SetValue(row, _workItemField, workItem);
+                    _workItemsStore.SetValue(row, _idField, workItem.Id);
+                    _workItemsStore.SetValue(row, _titleField, title);
+                };
+
+                chooseWorkItemDialog.Run();
             }
+        }
+
+        bool IsWorkItemAdded(int workItemId)
+        {
+            for (int i = 0; i < _workItemsStore.RowCount; i++)
+            {
+                var workItem = _workItemsStore.GetValue(i, _workItemField);
+
+                if (workItem.Id == workItemId)
+                    return true;
+            }
+
+            return false;
+        }
+
+        void OnRemoveWorkItem(object sender, EventArgs e)
+        {
+            if (_workItemsView.SelectedRow > -1)
+            {
+                _workItemsStore.RemoveRow(_workItemsView.SelectedRow);
+            }
+        }
+
+        void UpdateRemoveWorkItem()
+        {
+            _removeWorkItemButton.Sensitive = _workItemsView.SelectedRow != -1;  
         }
     }
 }

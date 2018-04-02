@@ -32,9 +32,9 @@ using System.Text;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
-    sealed class LexalParser
+    public sealed class LexalParser
     {
-        private enum CursorState
+        enum CursorState
         {
             None,
             FieldName,
@@ -44,7 +44,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             ArrayOfValues,
             Operator,
             OpenBracket,
-            CloseBracket,
+            CloseBracket
         }
 
         const char StringDelimeter = '\'';
@@ -135,6 +135,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                     nodes.Add(node);
                 currentState = state;
             }
+
             return node;
         }
 
@@ -157,19 +158,25 @@ namespace MonoDevelop.VersionControl.TFS.Models
         string ReadOperator(ref int i)
         {
             StringBuilder builder = new StringBuilder();
+          
             for (int j = i; j < whereClause.Length; j++)
             {
                 i = j;
+
                 //After operator should be only empty space or open bracet "and(..", " and " 
                 if ((char.IsWhiteSpace(whereClause[j]) || whereClause[i] == OpenBracket) && builder.ToString().Trim().Length > 0)
                 {
                     break;
                 }
+
                 builder.Append(whereClause[j]);
             }
+
             var @operator = builder.ToString().Trim();
+
             if (whereClause[i] == OpenBracket)
                 i--;
+            
             return @operator;
         }
 
@@ -205,6 +212,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                     return whereClause[j];
                 }
             }
+
             return NullChar;
         }
 
@@ -228,6 +236,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                 }
                 builder.Append(whereClause[j]);
             }
+
             return builder.ToString();
         }
 
@@ -247,6 +256,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         string ReadNumberConstant(ref int i)
         {
             StringBuilder builder = new StringBuilder();
+         
             for (int j = i; j < whereClause.Length; j++)
             {
                 i = j;
@@ -260,6 +270,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                 }
                 builder.Append(whereClause[j]);
             }
+
             return builder.ToString();
         }
 
@@ -278,6 +289,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                 throw new Exception("Invalid Array Of Values");
             var copyI = i;
             MoveToSymbol(ref i, CloseBracket);
+
             return whereClause.Substring(copyI, i - copyI + 1).Trim(Brackets);
         }
 
@@ -312,6 +324,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                     break;
                 }
             }
+
             return new Tuple<string, int>(builder.ToString().Trim().Trim(Brackets), k + 1);
         }
 
@@ -353,6 +366,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                 }
                 builder.Append(whereClause[j]);
             }
+
             return builder.ToString().Trim();
         }
 
@@ -374,7 +388,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             return result;
         }
 
-        internal NodeList ProcessWherePart()
+        public NodeList ProcessWherePart()
         {
             for (int i = 0; i < whereClause.Length; i++)
             {
@@ -441,6 +455,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             }
 
             AnalyzeNodes();
+
             return nodes;
         }
 
@@ -455,6 +470,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                     list.Add(new SelectNode(item));
                 }
             }
+
             return list;
         }
 
@@ -510,8 +526,10 @@ namespace MonoDevelop.VersionControl.TFS.Models
                     {
                         if (nodes[j].NodeType == NodeType.CloseBracket)
                             continue;
+                       
                         if (nodes[j].NodeType == NodeType.Operator)
                             break;
+                        
                         if (nodes[j].NodeType == NodeType.Field ||
                             nodes[j].NodeType == NodeType.Condition ||
                             nodes[j].NodeType == NodeType.Parameter ||

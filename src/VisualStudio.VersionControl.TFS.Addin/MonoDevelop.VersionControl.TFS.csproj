@@ -67,7 +67,6 @@
     <Folder Include="Services\ClientService\" />
     <Folder Include="Services\ProgressDisplayService\" />
     <Folder Include="Services\TFSService\" />
-    <Folder Include="Services\OAuthService\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Models\ServerAuthentication.cs" />

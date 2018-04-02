@@ -3,6 +3,7 @@ using NUnit.Framework;
 
 namespace MonoDevelop.VersionControl.TFS.Tests
 {
+    [TestFixture]
     public class ProjectCollectionTests
     {
         TestServer _server;

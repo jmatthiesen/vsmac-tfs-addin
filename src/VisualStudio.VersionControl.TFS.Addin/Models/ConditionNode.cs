@@ -30,7 +30,7 @@ using System;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
-    sealed class ConditionNode : Node
+    public sealed class ConditionNode : Node
     {
         public ConditionNode(string condition)
         {

@@ -5,6 +5,7 @@ using NUnit.Framework;
 
 namespace MonoDevelop.VersionControl.TFS.Tests
 {
+    [TestFixture]
     public class SoapMessageTests
     {
         [Test]
