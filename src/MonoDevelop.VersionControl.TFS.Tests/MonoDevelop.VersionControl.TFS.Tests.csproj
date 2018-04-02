@@ -55,6 +55,7 @@
     <Compile Include="Tests\Base\TestProgressDisplay.cs" />
     <Compile Include="Tests\Base\TestProgressService.cs" />
     <Compile Include="Tests\QueryTests.cs" />
+    <Compile Include="Tests\NodeListTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VisualStudio.VersionControl.TFS.Addin\MonoDevelop.VersionControl.TFS.csproj">

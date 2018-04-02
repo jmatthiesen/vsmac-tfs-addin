@@ -19,7 +19,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         VBox _view;
         Button _acceptLocal;
-        Button _merge;
         Button _acceptServer;
         Button _viewLocal;
         Button _viewServer;
@@ -36,6 +35,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         {
             Init();
             BuildGui();
+            AttachEvents();
         }
 
         public override Control Control => new XwtControl(_view);
@@ -64,7 +64,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         {
             _view = new VBox();
             _acceptLocal = new Button(GettextCatalog.GetString("Keep Local Version"));
-            _merge = new Button(GettextCatalog.GetString("Merge"));
             _acceptServer = new Button(GettextCatalog.GetString("Take Server Version"));
             _viewLocal = new Button(GettextCatalog.GetString("View Local"));
             _viewServer = new Button(GettextCatalog.GetString("View Server"));
@@ -87,16 +86,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         
             HBox headerBox = new HBox();
             headerBox.PackStart(_acceptLocal);
-            headerBox.PackStart(_merge);
             headerBox.PackStart(_acceptServer);
             headerBox.PackStart(_viewLocal);
             headerBox.PackStart(_viewServer);
-
-            _acceptLocal.Clicked += (sender, e) => AcceptLocalClicked();
-            _merge.Clicked += (sender, e) => AcceptMerge();
-            _acceptServer.Clicked += (sender, e) => AcceptServerClicked();
-            _viewLocal.Clicked += (sender, e) => ViewLocalClicked();
-            _viewServer.Clicked += (sender, e) => ViewRemoteClicked();
 
             _view.PackStart(headerBox);
 
@@ -106,11 +98,18 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _listView.Columns.Add("Server Version", _versionTheirField);
             _listView.Columns.Add("Your Version", _versionYourField);
           
-            _listView.RowActivated += (sender, e) => RowClicked();
-            _listView.SelectionChanged += (sender, e) => SetButtonSensitive();
-
             _listView.DataSource = _listStore;
             _view.PackStart(_listView, true, true);
+        }
+
+        void AttachEvents()
+        {
+            _listView.SelectionChanged += (sender, e) => SetButtonSensitive();
+            _listView.RowActivated += (sender, e) => RowClicked();
+            _acceptLocal.Clicked += (sender, e) => AcceptLocalClicked();
+            _acceptServer.Clicked += (sender, e) => AcceptServerClicked();
+            _viewLocal.Clicked += (sender, e) => ViewLocalClicked();
+            _viewServer.Clicked += (sender, e) => ViewRemoteClicked();  
         }
 
         void GetData(IWorkspace workspace, List<LocalPath> paths)
@@ -141,11 +140,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             var conflict = _listStore.GetValue(_listView.SelectedRow, _itemField);
             _workspace.Resolve(conflict, ResolutionType.AcceptYours);
             LoadConflicts();
-        }
-
-        void AcceptMerge()
-        {
-            // TODO:
         }
 
         void AcceptServerClicked()

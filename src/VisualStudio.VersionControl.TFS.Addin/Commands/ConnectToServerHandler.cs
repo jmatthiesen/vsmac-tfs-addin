@@ -1,5 +1,4 @@
 ﻿using MonoDevelop.Components.Commands;
-using MonoDevelop.Ide;
 using MonoDevelop.VersionControl.TFS.Gui.Dialogs;
 
 namespace MonoDevelop.VersionControl.TFS.Commands
@@ -8,9 +7,6 @@ namespace MonoDevelop.VersionControl.TFS.Commands
     {
         protected override void Run()
         {
-            var RootWindow = IdeApp.Workbench.RootWindow;
-            Xwt.MessageDialog.RootWindow = Xwt.Toolkit.CurrentEngine.WrapWindow(IdeApp.Workbench.RootWindow);
-
             using (var chooseVersionControlDialog = new ChooseVersionControlDialog())
             {
                 if (chooseVersionControlDialog.Run() == Xwt.Command.Ok)

@@ -139,13 +139,15 @@ namespace MonoDevelop.VersionControl.TFS.Services
             envelope.Header.Add(GetHeaderElement());
             XNamespace queryNs = XNamespace.Get("");
             envelope.Body.Add(new XElement(MessageNs + "psQuery",
-                new XElement(queryNs + "Query", new XAttribute("Product", this.Url.ToString()), query.GetQueryXml(context, fields))));
+                new XElement(queryNs + "Query", new XAttribute("Product", Url.ToString()), query.GetQueryXml(context, fields))));
 
             XElement sorting = query.GetSortingXml();
+
             foreach (var items in sorting.DescendantsAndSelf())
             {
                 items.Name = MessageNs + items.Name.LocalName;
             }
+
             envelope.Body.Add(sorting);
             envelope.Body.Add(new XElement(MessageNs + "useMaster", "false"));
             var response = invoker.InvokeResponse();
@@ -156,6 +158,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                 return new List<int>();
             
             var list = new List<int>();
+
             foreach (var item in queryIds.Elements("id"))
             {
                 var startId = item.Attribute("s");
@@ -163,6 +166,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                     continue;
                 var s = Convert.ToInt32(startId.Value);
                 var endId = item.Attribute("e");
+
                 if (endId != null)
                 {
                     var e = Convert.ToInt32(endId.Value);
