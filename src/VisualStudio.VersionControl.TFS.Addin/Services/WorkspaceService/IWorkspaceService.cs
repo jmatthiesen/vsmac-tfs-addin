@@ -32,7 +32,7 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
-    public interface IWorkspace : IEquatable<IWorkspace>, IComparable<IWorkspace>
+    public interface IWorkspaceService : IEquatable<IWorkspaceService>, IComparable<IWorkspaceService>
     {
         CheckInResult CheckIn(ICollection<PendingChange> changes, string comment, Dictionary<int, WorkItemCheckinAction> workItems);
         CheckInResult CheckIn(CommitItem[] changes, string comment, Dictionary<int, WorkItemCheckinAction> workItems);

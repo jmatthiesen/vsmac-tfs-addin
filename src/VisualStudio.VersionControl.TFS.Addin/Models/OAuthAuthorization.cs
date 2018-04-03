@@ -40,21 +40,22 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         }
 
-        public string Token { get; private set; }
+        public string OauthToken { get; set; }
+        public DateTimeOffset ExpiresOn { get; set; }
 
         public void Authorize(HttpWebRequest request)
         {
-            request.Headers.Add(HttpRequestHeader.Authorization, "Bearer " + Token);
+            request.Headers.Add(HttpRequestHeader.Authorization, "Bearer " + OauthToken);
         }
 
         public void Authorize(WebClient client)
         {
-            client.Headers.Add(HttpRequestHeader.Authorization, "Bearer " + Token);
+            client.Headers.Add(HttpRequestHeader.Authorization, "Bearer " + OauthToken);
         }
 
         public void Authorize(HttpClientHandler clientHandler, HttpRequestMessage message)
         {
-            clientHandler.Credentials = new NetworkCredential(UserName, Password);
+            // TODO:
         }
 
         public static OAuthAuthorization FromConfigXml(XElement element, Uri serverUri)
@@ -62,15 +63,18 @@ namespace MonoDevelop.VersionControl.TFS.Models
             var auth = new OAuthAuthorization();
 
             auth.ReadConfig(element, serverUri);
-            auth.Token = element.GetAttributeValue("Token");
+            auth.OauthToken = element.GetAttributeValue("OauthToken");
+            auth.ExpiresOn = DateTimeOffsetHelper.FromString(element.GetAttributeValue("ExpiresOn"));                  
 
             return auth;
         }
 
         public XElement ToConfigXml()
         {
-            var element = new XElement("Oauth", new XAttribute("Token", Token));
-         
+            var element = new XElement("Oauth", 
+                                       new XAttribute("OauthToken", OauthToken));
+            element.Add(new XAttribute("ExpiresOn", ExpiresOn));
+
             return element;
         }
 
@@ -78,7 +82,9 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             var authorization = new OAuthAuthorization();
             authorization.ReadConfig(config);
-            authorization.Token = config.Token;
+
+            authorization.OauthToken = config.OauthToken;
+            authorization.ExpiresOn = config.ExpiresOn;
 
             return authorization;
         }

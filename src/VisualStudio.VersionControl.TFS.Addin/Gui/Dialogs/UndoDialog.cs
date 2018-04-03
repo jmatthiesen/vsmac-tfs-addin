@@ -43,7 +43,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<PendingChange> _changeField = new DataField<PendingChange>();
         ListStore _filesStore;
 
-        internal UndoDialog(List<ExtendedItem> items, IWorkspace workspace)
+        internal UndoDialog(List<ExtendedItem> items, IWorkspaceService workspace)
         {
             Init();
             BuildGui();
@@ -104,7 +104,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false;
         }
 
-        void GetData(List<ExtendedItem> items, IWorkspace workspace)
+        void GetData(List<ExtendedItem> items, IWorkspaceService workspace)
         {
             _filesStore.Clear();
 

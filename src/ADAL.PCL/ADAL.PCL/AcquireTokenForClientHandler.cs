@@ -32,7 +32,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         public AcquireTokenForClientHandler(Authenticator authenticator, TokenCache tokenCache, string resource, ClientKey clientKey)
             : base(authenticator, tokenCache, resource, clientKey, TokenSubjectType.Client)
         {
-            this.SupportADFS = true;
+            SupportADFS = true;
         }
 
         protected override void AddAditionalRequestParameters(DictionaryRequestParameters requestParameters)

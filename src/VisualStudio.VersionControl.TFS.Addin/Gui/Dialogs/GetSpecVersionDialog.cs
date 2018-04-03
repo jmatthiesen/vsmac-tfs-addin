@@ -36,7 +36,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
     public class GetSpecVersionDialog : Dialog
     {
-        IWorkspace _workspace;
+        IWorkspaceService _workspace;
 
         ListView _listView;
         DataField<ExtendedItem> _itemField;
@@ -48,13 +48,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         SpinButton _changeSetNumber;
         CheckBox _forceGet;
 
-        internal GetSpecVersionDialog(IWorkspace workspace)
+        internal GetSpecVersionDialog(IWorkspaceService workspace)
         {
             Init(workspace);
             BuildGui();    
         }
 
-        void Init(IWorkspace workspace)
+        void Init(IWorkspaceService workspace)
         {
             _workspace = workspace;
 

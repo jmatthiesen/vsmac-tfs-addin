@@ -36,7 +36,7 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
-    sealed class Workspace : IWorkspace
+    sealed class WorkspaceService : IWorkspaceService
     {
         readonly ProjectCollection collection;
         readonly TeamFoundationServerVersionControlService _versionControlService;
@@ -44,7 +44,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
         readonly ILoggingService _loggingService;
         readonly IProgressService _progressService;
 
-        public Workspace(WorkspaceData data, ProjectCollection collection, TeamFoundationServerVersionControlService versionControlService,
+        public WorkspaceService(WorkspaceData data, ProjectCollection collection, TeamFoundationServerVersionControlService versionControlService,
             ILoggingService loggingService, IProgressService progressService)
         {
             if (data == null || collection == null)
@@ -355,7 +355,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         #region IComparable<Workspace> Members
 
-        public int CompareTo(IWorkspace other)
+        public int CompareTo(IWorkspaceService other)
         {
             var nameCompare = string.Compare(Data.Name, other.Data.Name, StringComparison.Ordinal);
          
@@ -369,7 +369,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         #region IEquatable<Workspace> Members
 
-        public bool Equals(IWorkspace other)
+        public bool Equals(IWorkspaceService other)
         {
             if (ReferenceEquals(null, other))
                 return false;
@@ -390,7 +390,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             if (ReferenceEquals(this, obj))
                 return true;
             
-            var cast = obj as IWorkspace;
+            var cast = obj as IWorkspaceService;
 
             if (cast == null)
                 return false;
@@ -405,12 +405,12 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return hash;
         }
 
-        public static bool operator ==(Workspace left, Workspace right)
+        public static bool operator ==(WorkspaceService left, WorkspaceService right)
         {
             return ReferenceEquals(null, left) ? ReferenceEquals(null, right) : left.Equals(right);
         }
 
-        public static bool operator !=(Workspace left, Workspace right)
+        public static bool operator !=(WorkspaceService left, WorkspaceService right)
         {
             return !(left == right);
         }

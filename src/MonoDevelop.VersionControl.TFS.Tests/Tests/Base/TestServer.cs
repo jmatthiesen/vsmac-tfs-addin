@@ -9,7 +9,7 @@ namespace MonoDevelop.VersionControl.TFS.Tests
     public class TestServer
     {
         internal TeamFoundationServer Server;
-
+       
         public TestServer()
         {
             DependencyContainer.Register(new TestServiceBuilder());

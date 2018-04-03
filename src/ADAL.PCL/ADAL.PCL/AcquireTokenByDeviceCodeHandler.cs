@@ -32,7 +32,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 {
     class AcquireTokenByDeviceCodeHandler : AcquireTokenHandlerBase
     {
-        private DeviceCodeResult deviceCodeResult = null;
+        DeviceCodeResult deviceCodeResult = null;
 
         public AcquireTokenByDeviceCodeHandler(Authenticator authenticator, TokenCache tokenCache, DeviceCodeResult deviceCodeResult)
             : base(authenticator, tokenCache, deviceCodeResult.Resource, new ClientKey(deviceCodeResult.ClientId), TokenSubjectType.User)

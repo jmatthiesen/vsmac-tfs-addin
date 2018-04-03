@@ -39,20 +39,21 @@ namespace MonoDevelop.VersionControl.TFS.Models
     {
         public LocalPath(string localPath)
         {
-            this.Path = !string.IsNullOrWhiteSpace(localPath) ? localPath.TrimEnd(System.IO.Path.DirectorySeparatorChar) : string.Empty;
+            Path = !string.IsNullOrWhiteSpace(localPath) ? localPath.TrimEnd(System.IO.Path.DirectorySeparatorChar) : string.Empty;
+           
             //When runing linux we should check formating. If localPath is comming from server the it will be in format U:\SomeFolder\...
             //We have to convert it to /SomeFolder/...
             if (EnvironmentHelper.IsRunningOnUnix)
             {
                 var regEx = new Regex("^[a-zA-Z]:\\\\");
-                if (regEx.IsMatch(this.Path))
+                if (regEx.IsMatch(Path))
                 {
-                    this.Path = this.Path.Remove(0, 2).Replace('\\', '/'); //Remove Drive letter and convert slashes
+                    Path = Path.Remove(0, 2).Replace('\\', '/'); //Remove Drive letter and convert slashes
                 }
             }
          }
 
-        private StringComparison CompareType
+        StringComparison CompareType
         {
             get
             {
@@ -142,7 +143,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                 return this.Path;
             else
             {
-                return "U:" + this.Path.Replace('/', '\\'); //Use U: like git-tf
+                return "U:" + Path.Replace('/', '\\'); //Use U: like git-tf
             }
         }
 
@@ -165,7 +166,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         public override string ToString()
         {
-            return this.Path;
+            return Path;
         }
 
         #region Equal
@@ -175,7 +176,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         public int CompareTo(LocalPath other)
         {
 
-            return string.Compare(this.Path, other.Path, CompareType);
+            return string.Compare(Path, other.Path, CompareType);
         }
 
         #endregion
@@ -186,9 +187,11 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             if (ReferenceEquals(null, other))
                 return false;
+            
             if (ReferenceEquals(this, other))
                 return true;
-            return string.Equals(this.Path, other.Path, CompareType);
+            
+            return string.Equals(Path, other.Path, CompareType);
         }
 
         #endregion
@@ -197,11 +200,15 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             if (ReferenceEquals(null, obj))
                 return false;
+            
             if (ReferenceEquals(this, obj))
                 return true;
+            
             var cast = obj as LocalPath;
+
             if (cast == null)
                 return false;
+            
             return Equals(cast);
         }
 
@@ -243,6 +250,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                         MakeWritable();
                     File.Delete(Path);
                 }
+
                 return true;
             }
             catch
@@ -263,10 +271,12 @@ namespace MonoDevelop.VersionControl.TFS.Models
                         return false;
                     destination.Delete();
                 }
+
                 if (IsDirectory)
                     Directory.Move(Path, destination);
                 else
                     File.Move(Path, destination);
+                
                 return true;
             }
             catch

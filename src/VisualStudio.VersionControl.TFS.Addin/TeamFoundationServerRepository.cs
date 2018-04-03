@@ -43,12 +43,12 @@ namespace MonoDevelop.VersionControl.TFS
 {
     public class TeamFoundationServerRepository : Repository
     {
-        readonly IWorkspace workspace;
+        readonly IWorkspaceService workspace;
         readonly VersionInfoResolver _versionInfoResolver;
         readonly TeamFoundationServerVersionControlService _versionControlService;
         readonly FileKeeperService _fileKeeperService;
 
-        public TeamFoundationServerRepository(string rootPath, IWorkspace workspace,
+        public TeamFoundationServerRepository(string rootPath, IWorkspaceService workspace,
                                               TeamFoundationServerVersionControlService versionControlService, FileKeeperService fileKeeperService)
         {
             if (workspace == null)
@@ -477,6 +477,6 @@ namespace MonoDevelop.VersionControl.TFS
             _versionInfoResolver.InvalidateCache();
         }
 
-        internal IWorkspace Workspace { get { return workspace; }}
+        internal IWorkspaceService Workspace { get { return workspace; }}
     }
 }

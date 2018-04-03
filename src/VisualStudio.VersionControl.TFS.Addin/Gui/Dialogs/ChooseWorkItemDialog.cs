@@ -128,12 +128,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _listView.SelectionChanged += (sender, e) =>
             {
                 var position = _listView.SelectedRow;
-                var navigator = _listStore.GetNavigatorAt(position);
-                var workItem = navigator.GetValue(_workItemField);
 
-                if (workItem != null)
+                if (position != null)
                 {
-                    WorkItem = workItem;
+                    var navigator = _listStore.GetNavigatorAt(position);
+                    var workItem = navigator.GetValue(_workItemField);
+
+                    if (workItem != null)
+                    {
+                        WorkItem = workItem;
+                    }
                 }
             };
         }
@@ -165,11 +169,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                         if (privateQueries.Any())
                         {
                             node.AddChild().SetValue(_titleField, "My Queries");
+                         
                             foreach (var query in privateQueries)
                             {
                                 node.AddChild().SetValue(_titleField, query.QueryName).SetValue(_queryField, query).SetValue(_collectionField, projectCollection);
                                 node.MoveToParent();
                             }
+
                             node.MoveToParent();
                         }
 
@@ -187,6 +193,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
                             node.MoveToParent();
                         }
+
                         node.MoveToParent();
                     }
 
@@ -238,11 +245,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
                             if (!node.GetValue(_isCheckedField))
                             {
-                                OnSelectWorkItem?.Invoke(_workItem);
+                                OnSelectWorkItem?.Invoke(workItem);
                             }
                             else
                             {
-                                OnRemoveWorkItem?.Invoke(_workItem);
+                                OnRemoveWorkItem?.Invoke(workItem);
                             }
                         };
 

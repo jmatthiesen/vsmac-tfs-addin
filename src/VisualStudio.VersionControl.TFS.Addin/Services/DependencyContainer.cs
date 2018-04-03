@@ -40,7 +40,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
         {
             builder.RegisterType<FileKeeperService>().As<IFileKeeperService>().SingleInstance();
             builder.RegisterType<TeamFoundationServerVersionControlService>().SingleInstance();
-            builder.RegisterType<Workspace>().As<IWorkspace>();
+            builder.RegisterType<WorkspaceService>().As<IWorkspaceService>();
             builder.RegisterType<SoapInvoker>().As<ISoapInvoker>();
 
             Container = builder.Build();
@@ -48,9 +48,9 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         public static IContainer Container { get; private set; }
 
-        public static IWorkspace GetWorkspace(WorkspaceData workspaceData, ProjectCollection collection)
+        public static IWorkspaceService GetWorkspace(WorkspaceData workspaceData, ProjectCollection collection)
         {
-            return Container.Resolve<IWorkspace>(new TypedParameter(typeof(WorkspaceData), workspaceData),
+            return Container.Resolve<IWorkspaceService>(new TypedParameter(typeof(WorkspaceData), workspaceData),
                                                  new TypedParameter(typeof(ProjectCollection), collection));
         }
 
@@ -59,7 +59,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             using (var scope = Container.BeginLifetimeScope())
             {
                 var workspace = GetWorkspace(workspaceData, collection);
-                return scope.Resolve<TeamFoundationServerRepository>(new NamedParameter("rootPath", path), new TypedParameter(typeof (IWorkspace), workspace));
+                return scope.Resolve<TeamFoundationServerRepository>(new NamedParameter("rootPath", path), new TypedParameter(typeof (IWorkspaceService), workspace));
             }
         }
 

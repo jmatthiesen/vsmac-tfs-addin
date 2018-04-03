@@ -36,7 +36,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
     public class CheckOutDialog : Dialog
     {
         List<ExtendedItem> _items;
-        IWorkspace _workspace;
+        IWorkspaceService _workspace;
         
         ListView _filesView;
         DataField<bool> _isCheckedField;
@@ -45,7 +45,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<ExtendedItem> _itemField;
         ListStore _fileStore;
 
-        internal CheckOutDialog(List<ExtendedItem> items, IWorkspace workspace)
+        internal CheckOutDialog(List<ExtendedItem> items, IWorkspaceService workspace)
         {
             Init(items, workspace);
             BuildGui();
@@ -70,7 +70,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
-        void Init(List<ExtendedItem> items, IWorkspace workspace)
+        void Init(List<ExtendedItem> items, IWorkspaceService workspace)
         {
             _items = items;
             _workspace = workspace;

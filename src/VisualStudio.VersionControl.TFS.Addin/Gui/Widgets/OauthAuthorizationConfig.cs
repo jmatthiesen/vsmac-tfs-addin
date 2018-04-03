@@ -36,12 +36,7 @@ using Xwt;
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
     sealed class OauthAuthorizationConfig : UserPasswordAuthorizationConfig, IOAuthAuthorizationConfig
-    {
-        const string Authority = "https://login.microsoftonline.com/Common/oauth2/authorize";
-        const string ClientId = "872cd9fa-d31f-45e0-9eab-6e460a02d1f1";
-        const string RedirectUri = "urn:ietf:wg:oauth:2.0:oob";
-        const string Resource = "499b84ac-1321-427f-aa17-267ca6975798"; 
-
+    {     
         AuthenticationContext _context;
 
         Button _webViewButton;
@@ -54,7 +49,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
             AttachEvents();
         }
 
-        public string Token { get; set; }
+        public string OauthToken { get; set; }
+        public DateTimeOffset ExpiresOn { get; set; }
 
         void Init()
         {
@@ -77,17 +73,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
         {
             try
             {
-                TokenCache.DefaultShared.Clear();
-
-                _context = new AuthenticationContext(Authority, true);
+                _context = new AuthenticationContext(OAuthConstants.Authority, true);
 
                 var rootWindow = MessageService.RootWindow;
                 var nsWindow = Components.Mac.GtkMacInterop.GetNSWindow(rootWindow);
                 var platformParameter = new PlatformParameters(nsWindow);
 
-                var authenticationResult = await _context.AcquireTokenAsync(Resource, ClientId, new Uri(RedirectUri), platformParameter, UserIdentifier.AnyUser);
+                var authenticationResult = await _context.AcquireTokenAsync(OAuthConstants.Resource, OAuthConstants.ClientId, new Uri(OAuthConstants.RedirectUri), platformParameter, UserIdentifier.AnyUser);
 
-                Token = authenticationResult.AccessToken;
+                OauthToken = authenticationResult.AccessToken;
+                ExpiresOn = authenticationResult.ExpiresOn;
             }
             catch (Exception ex)
             {

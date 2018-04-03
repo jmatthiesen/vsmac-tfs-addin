@@ -7,17 +7,9 @@ namespace MonoDevelop.VersionControl.TFS.Commands
     {
         protected override void Run()
         {
-            using (var chooseVersionControlDialog = new ChooseVersionControlDialog())
+            using (var dialog = new ConnectToServerDialog())
             {
-                if (chooseVersionControlDialog.Run() == Xwt.Command.Ok)
-                {
-                    chooseVersionControlDialog.Close();
-
-                    using (var dialog = new ConnectToServerDialog())
-                    {
-                        dialog.Run(Xwt.MessageDialog.RootWindow);
-                    }
-                }
+                dialog.Run(Xwt.MessageDialog.RootWindow);
             }
         }
 

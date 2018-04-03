@@ -34,9 +34,9 @@ namespace MonoDevelop.VersionControl.TFS.Models
 {
     public sealed class UpdateLocalVersionQueue : List<UpdateLocalVersion>
     {
-        readonly IWorkspace workspace;
+        readonly IWorkspaceService workspace;
 
-        public UpdateLocalVersionQueue(IWorkspace workspace)
+        public UpdateLocalVersionQueue(IWorkspaceService workspace)
         {
             this.workspace = workspace;
         }

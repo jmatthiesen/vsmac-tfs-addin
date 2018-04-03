@@ -28,6 +28,7 @@
 using System;
 using System.Collections.Generic;
 using MonoDevelop.Core;
+using MonoDevelop.Ide;
 using MonoDevelop.VersionControl.TFS.Models;
 using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
@@ -36,6 +37,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
     public class CheckInDialog : Dialog
     {
+        VBox _content;
         Notebook _notebook;
         ListView _filesView;
         DataField<bool> _isCheckedField;
@@ -52,7 +54,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         ListStore _workItemsStore;
         Button _removeWorkItemButton;
 
-        internal CheckInDialog(IEnumerable<BaseItem> items, IWorkspace workspace)
+        internal CheckInDialog(IEnumerable<BaseItem> items, IWorkspaceService workspace)
         {
             Init();
             BuildGui();
@@ -103,6 +105,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void Init()
         {
+            _content = new VBox();
             _notebook = new Notebook();
             _filesView = new ListView();
             _isCheckedField = new DataField<bool>();
@@ -169,15 +172,29 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             _notebook.Add(workItemsTab, GettextCatalog.GetString("Work Items"));
 
-            Buttons.Add(Command.Ok, Command.Cancel);
+            HBox buttonBox = new HBox();
+            buttonBox.HorizontalPlacement = WidgetPlacement.End;
 
-            Content = _notebook;
+            Button okButton = new Button(GettextCatalog.GetString("OK"));
+            okButton.MinWidth = GuiSettings.ButtonWidth;
+            okButton.Clicked += OnCheckIn;
+            buttonBox.PackStart(okButton);
+
+            Button cancelButton = new Button(GettextCatalog.GetString("Cancel"));
+            cancelButton.MinWidth = GuiSettings.ButtonWidth;
+            cancelButton.Clicked += (sender, e) => Respond(Command.Cancel);
+            buttonBox.PackStart(cancelButton);
+
+            _content.PackStart(_notebook);
+            _content.PackEnd(buttonBox);
+
+            Content = _content;
             Resizable = false; 
 
             UpdateRemoveWorkItem();
         }
 
-        void GetData(IEnumerable<BaseItem> items, IWorkspace workspace)
+        void GetData(IEnumerable<BaseItem> items, IWorkspaceService workspace)
         {
             _fileStore.Clear();
 
@@ -208,7 +225,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             {
                 chooseWorkItemDialog.OnSelectWorkItem += (workItem) =>
                 {
-                    if (IsWorkItemAdded(workItem.Id))
+                    if (workItem == null || IsWorkItemAdded(workItem.Id))
                     { 
                         return;
                     }
@@ -224,6 +241,20 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                     _workItemsStore.SetValue(row, _workItemField, workItem);
                     _workItemsStore.SetValue(row, _idField, workItem.Id);
                     _workItemsStore.SetValue(row, _titleField, title);
+                };
+
+                chooseWorkItemDialog.OnRemoveWorkItem += (removeWorkitem) =>
+                {
+                    for (int i = 0; i < _workItemsStore.RowCount; i++)
+                    {
+                        var workItem = _workItemsStore.GetValue(i, _workItemField);
+
+                        if (workItem.Id == removeWorkitem.Id)
+                        {
+                            _workItemsStore.RemoveRow(i);
+                            break;
+                        }
+                    }
                 };
 
                 chooseWorkItemDialog.Run();
@@ -254,6 +285,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         void UpdateRemoveWorkItem()
         {
             _removeWorkItemButton.Sensitive = _workItemsView.SelectedRow != -1;  
+        }
+
+        void OnCheckIn(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(Comment))
+            {
+                MessageService.ShowWarning("Comment is mandatory.");
+                return;
+            }
+
+            Respond(Command.Ok);
         }
     }
 }

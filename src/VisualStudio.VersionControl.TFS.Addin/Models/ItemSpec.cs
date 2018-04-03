@@ -62,7 +62,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             return new ItemSpec(path, path.IsDirectory ? RecursionType.Full : RecursionType.None);
         }
 
-        internal static ItemSpec FromServerPath(RepositoryPath path)
+        public static ItemSpec FromServerPath(RepositoryPath path)
         {
             return new ItemSpec(path, path.IsDirectory ? RecursionType.Full : RecursionType.None);
         }

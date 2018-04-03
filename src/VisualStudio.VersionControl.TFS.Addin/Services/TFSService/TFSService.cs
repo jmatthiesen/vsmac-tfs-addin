@@ -59,6 +59,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             {
                 XmlNamespaceManager manager = new XmlNamespaceManager(new NameTable());
                 manager.AddNamespace("msg", MessageNs.ToString());
+
                 return manager;
             }
         }

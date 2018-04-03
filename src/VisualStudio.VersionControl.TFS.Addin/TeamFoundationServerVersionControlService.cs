@@ -126,9 +126,7 @@ namespace MonoDevelop.VersionControl.TFS
         {
             foreach(var system in VersionControlService.GetVersionControlSystems())
             {
-                var tfsSystem = system as TeamFoundationServerVersionControl;
-
-                if (tfsSystem != null)
+                if (system is TeamFoundationServerVersionControl tfsSystem)
                 {
                     tfsSystem.RefreshRepositories();
                 }

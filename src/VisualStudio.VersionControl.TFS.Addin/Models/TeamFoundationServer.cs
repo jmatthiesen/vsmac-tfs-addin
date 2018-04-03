@@ -62,7 +62,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         public string UserName { get; set; }
 
-        public IServerAuthorization Authorization { get; private set; }
+        public IServerAuthorization Authorization { get; set; }
 
         public List<ProjectCollection> ProjectCollections { get; set; }
 

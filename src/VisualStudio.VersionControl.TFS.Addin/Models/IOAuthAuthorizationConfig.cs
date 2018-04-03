@@ -25,10 +25,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
+
 namespace MonoDevelop.VersionControl.TFS.Models
 {
     interface IOAuthAuthorizationConfig : IUserPasswordAuthorizationConfig
     {
-        string Token { get; }
+        string OauthToken { get; set; }
+        DateTimeOffset ExpiresOn { get; set; }
     }
 }

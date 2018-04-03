@@ -42,18 +42,8 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
         public RepositoryCache(TeamFoundationServerRepository repo)
         {
             this.repo = repo;
-            this.cachedItems = new List<ExtendedItem>();
-//            FileService.FileChanged += OnFileChanged;
+            cachedItems = new List<ExtendedItem>();
         }
-
-//        void OnFileChanged (object sender, FileEventArgs e)
-//        {
-//            foreach (var item in e)
-//            {
-//                RefreshItem(item.FileName);
-//            }
-//        }
-
 
         public void AddToCache(IEnumerable<ExtendedItem> items)
         {
@@ -67,8 +57,10 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
         {
             if (item == null)
                 return;
+
             if (cachedItems.Contains(item))
                 cachedItems.Remove(item);
+
             cachedItems.Add(item);
         }
 
@@ -89,19 +81,20 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
 
         public List<ExtendedItem> GetItems(List<LocalPath> paths, RecursionType recursionType)
         {
-            lock(locker)
+            lock (locker)
             {
                 List<ExtendedItem> items = new List<ExtendedItem>();
-                var workspaceFilesMapping = new Dictionary<IWorkspace, List<ItemSpec>>();
-                foreach (var path in paths) 
+                var workspaceFilesMapping = new Dictionary<IWorkspaceService, List<ItemSpec>>();
+
+                foreach (var path in paths)
                 {
                     var workspace = repo.Workspace;
-                   
+
                     if (workspace == null)
                         continue;
-                    
+
                     var serverPath = workspace.Data.GetServerPathForLocalPath(path);
-                 
+
                     if (HasItem(serverPath) && recursionType == RecursionType.None)
                     {
                         items.Add(GetItem(serverPath));
@@ -135,13 +128,13 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
 
         public void RefreshItem(LocalPath localPath)
         {
-            lock(locker)
+            lock (locker)
             {
                 var workspace = repo.Workspace;
 
                 if (workspace == null)
                     return;
-                
+
                 var repoItem = workspace.GetExtendedItem(ItemSpec.FromLocalPath(localPath), ItemType.Any);
                 AddToCache(repoItem);
             }
