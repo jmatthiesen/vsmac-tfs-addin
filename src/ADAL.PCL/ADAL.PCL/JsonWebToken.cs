@@ -66,16 +66,16 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     internal class JsonWebToken
     {
         // (64K) This is an arbitrary large value for the token length. We can adjust it as needed.
-        private const int MaxTokenLength = 65536;   
+        const int MaxTokenLength = 65536;   
 
-        private readonly JWTPayload payload;
+        readonly JWTPayload payload;
 
         public JsonWebToken(IClientAssertionCertificate certificate, string audience)
         {
             DateTime validFrom = DateTime.UtcNow;
             DateTime validTo = validFrom + TimeSpan.FromSeconds(JsonWebTokenConstants.JwtToAadLifetimeInSeconds);
 
-            this.payload = new JWTPayload
+            payload = new JWTPayload
                            {
                                Audience = audience,
                                Issuer = certificate.ClientId,
@@ -89,7 +89,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         public ClientAssertion Sign(IClientAssertionCertificate credential)
         {
             // Base64Url encoded header and claims
-            string token = this.Encode(credential);     
+            string token = Encode(credential);     
 
             // Length check before sign
             if (MaxTokenLength < token.Length)
@@ -97,33 +97,33 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 throw new AdalException(AdalError.EncodedTokenTooLong);
             }
 
-            return new ClientAssertion(this.payload.Issuer, string.Concat(token, ".", UrlEncodeSegment(credential.Sign(token))));
+            return new ClientAssertion(payload.Issuer, string.Concat(token, ".", UrlEncodeSegment(credential.Sign(token))));
         }
 
-        private static string EncodeSegment(string segment)
+        static string EncodeSegment(string segment)
         {
             return UrlEncodeSegment(Encoding.UTF8.GetBytes(segment));
         }
 
-        private static string UrlEncodeSegment(byte[] segment)
+        static string UrlEncodeSegment(byte[] segment)
         {
             return Base64UrlEncoder.Encode(segment);
         }
 
-        private static string EncodeHeaderToJson(IClientAssertionCertificate credential)
+        static string EncodeHeaderToJson(IClientAssertionCertificate credential)
         {
             JWTHeaderWithCertificate header = new JWTHeaderWithCertificate(credential);
             return JsonHelper.EncodeToJson(header);
         }
 
-        private static long ConvertToTimeT(DateTime time)
+        static long ConvertToTimeT(DateTime time)
         {
             var startTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
             TimeSpan diff = time - startTime;
             return (long)(diff.TotalSeconds);
         }
 
-        private string Encode(IClientAssertionCertificate credential)
+        string Encode(IClientAssertionCertificate credential)
         {
             // Header segment
             string jsonHeader = EncodeHeaderToJson(credential);
@@ -131,7 +131,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             string encodedHeader = EncodeSegment(jsonHeader);
 
             // Payload segment
-            string jsonPayload = JsonHelper.EncodeToJson(this.payload);
+            string jsonPayload = JsonHelper.EncodeToJson(payload);
 
             string encodedPayload = EncodeSegment(jsonPayload);
 
@@ -141,11 +141,11 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         [DataContract]
         internal class JWTHeader
         {
-            protected IClientAssertionCertificate Credential { get; private set; }
+            protected IClientAssertionCertificate Credential { get; set; }
 
             public JWTHeader(IClientAssertionCertificate credential)
             {
-                this.Credential = credential;
+                Credential = credential;
             }
 
             [DataMember(Name = JsonWebTokenConstants.ReservedHeaderParameters.Type)]
@@ -167,7 +167,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             {
                 get
                 {
-                    return this.Credential == null ? JsonWebTokenConstants.Algorithms.None : JsonWebTokenConstants.Algorithms.RsaSha256;
+                    return Credential == null ? JsonWebTokenConstants.Algorithms.None : JsonWebTokenConstants.Algorithms.RsaSha256;
                 }
 
                 set
@@ -214,7 +214,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 get
                 {
                     // Thumbprint should be url encoded
-                    return this.Credential.Thumbprint;
+                    return Credential.Thumbprint;
                 }
 
                 set

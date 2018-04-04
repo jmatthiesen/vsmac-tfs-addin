@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -36,16 +36,16 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     {
         public HttpWebResponseWrapper(Stream responseStream, Dictionary<string, string> headers, HttpStatusCode statusCode)
         {
-            this.ResponseStream = responseStream;
-            this.Headers = headers;
-            this.StatusCode = statusCode;
+            ResponseStream = responseStream;
+            Headers = headers;
+            StatusCode = statusCode;
         }
 
-        public HttpStatusCode StatusCode { get; private set; }
+        public HttpStatusCode StatusCode { get; set; }
 
-        public Dictionary<string, string> Headers { get; private set; }
+        public Dictionary<string, string> Headers { get; set; }
 
-        public Stream ResponseStream { get; private set; }
+        public Stream ResponseStream { get; set; }
 
         public void Dispose()
         {
@@ -53,15 +53,15 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             GC.SuppressFinalize(this);
         }
 
-        private void Dispose(bool disposing)
+        void Dispose(bool disposing)
         {
             if (disposing)
             {
                 // TODO: Address the missing Dispose method issue.
-                if (this.ResponseStream != null)
+                if (ResponseStream != null)
                 {
-                    this.ResponseStream.Dispose();
-                    this.ResponseStream = null;
+                    ResponseStream.Dispose();
+                    ResponseStream = null;
                 }
             }
         }

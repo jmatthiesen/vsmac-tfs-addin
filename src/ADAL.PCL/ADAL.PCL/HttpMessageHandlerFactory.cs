@@ -43,7 +43,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             return new HttpClientHandler { UseDefaultCredentials = useDefaultCredentials };
         }
 
-        private readonly static Queue<HttpMessageHandler> MockHandlerQueue = new Queue<HttpMessageHandler>();
+        readonly static Queue<HttpMessageHandler> MockHandlerQueue = new Queue<HttpMessageHandler>();
 
         public static void AddMockHandler(HttpMessageHandler mockHandler)
         {

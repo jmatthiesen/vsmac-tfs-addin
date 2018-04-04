@@ -40,24 +40,24 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 throw new ArgumentNullException("userId", AdalErrorMessage.SpecifyAnyUser);
             }
 
-            this.UniqueId = userId.UniqueId;
-            this.DisplayableId = userId.DisplayableId;
-            this.UserIdentifierType = userId.Type;
+            UniqueId = userId.UniqueId;
+            DisplayableId = userId.DisplayableId;
+            UserIdentifierType = userId.Type;
             PlatformPlugin.BrokerHelper.PlatformParameters = parameters;    
-            this.SupportADFS = true;
-            this.CacheQueryData.DisplayableId = this.DisplayableId;
-            this.CacheQueryData.UniqueId = this.UniqueId;
+            SupportADFS = true;
+            CacheQueryData.DisplayableId = DisplayableId;
+            CacheQueryData.UniqueId = UniqueId;
 
-            this.brokerParameters["username"] = userId.Id;
-            this.brokerParameters["username_type"] = userId.Type.ToString();
-            this.brokerParameters["silent_broker_flow"] = null; //add key
+            brokerParameters["username"] = userId.Id;
+            brokerParameters["username_type"] = userId.Type.ToString();
+            brokerParameters["silent_broker_flow"] = null; //add key
         }
 
         protected override Task<AuthenticationResultEx> SendTokenRequestAsync()
         {
             if (ResultEx == null)
                 {
-                PlatformPlugin.Logger.Verbose(this.CallState, "No token matching arguments found in the cache");
+                PlatformPlugin.Logger.Verbose(CallState, "No token matching arguments found in the cache");
                 throw new AdalSilentTokenAcquisitionException();
                 }
             

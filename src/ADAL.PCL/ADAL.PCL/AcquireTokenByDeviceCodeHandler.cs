@@ -32,7 +32,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 {
     class AcquireTokenByDeviceCodeHandler : AcquireTokenHandlerBase
     {
-        DeviceCodeResult deviceCodeResult = null;
+        DeviceCodeResult _deviceCodeResult = null;
 
         public AcquireTokenByDeviceCodeHandler(Authenticator authenticator, TokenCache tokenCache, DeviceCodeResult deviceCodeResult)
             : base(authenticator, tokenCache, deviceCodeResult.Resource, new ClientKey(deviceCodeResult.ClientId), TokenSubjectType.User)
@@ -42,15 +42,15 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 throw new ArgumentNullException("deviceCodeResult");
             }
             
-            this.LoadFromCache = false; // No cache lookup for token
-            this.StoreToCache = (tokenCache != null);
-            this.SupportADFS = false;
-            this.deviceCodeResult = deviceCodeResult;
+            LoadFromCache = false; // No cache lookup for token
+            StoreToCache = (tokenCache != null);
+            SupportADFS = false;
+            _deviceCodeResult = deviceCodeResult;
         }
 
         protected override async Task<AuthenticationResultEx> SendTokenRequestAsync()
         {
-            TimeSpan timeRemaining = deviceCodeResult.ExpiresOn - DateTimeOffset.UtcNow;
+            TimeSpan timeRemaining = _deviceCodeResult.ExpiresOn - DateTimeOffset.UtcNow;
             AuthenticationResultEx resultEx = null;
             while (timeRemaining.TotalSeconds > 0)
             {
@@ -67,8 +67,8 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                     }
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(deviceCodeResult.Interval));
-                timeRemaining = deviceCodeResult.ExpiresOn - DateTimeOffset.UtcNow;
+                await Task.Delay(TimeSpan.FromSeconds(_deviceCodeResult.Interval));
+                timeRemaining = _deviceCodeResult.ExpiresOn - DateTimeOffset.UtcNow;
             }
 
             return resultEx;
@@ -77,7 +77,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         protected override void AddAditionalRequestParameters(DictionaryRequestParameters requestParameters)
         {
             requestParameters[OAuthParameter.GrantType] = OAuthGrantType.DeviceCode;
-            requestParameters[OAuthParameter.Code] = this.deviceCodeResult.DeviceCode;
+            requestParameters[OAuthParameter.Code] = _deviceCodeResult.DeviceCode;
         }
     }
 }

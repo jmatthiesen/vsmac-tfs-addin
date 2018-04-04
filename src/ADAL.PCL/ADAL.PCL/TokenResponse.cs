@@ -55,7 +55,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     [DataContract]
     internal class TokenResponse
     {
-        private const string CorrelationIdClaim = "correlation_id";
+        const string CorrelationIdClaim = "correlation_id";
 
         [DataMember(Name = TokenResponseClaim.TokenType, IsRequired = false)]
         public string TokenType { get; set; }
@@ -177,9 +177,9 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
             if (AccessToken != null)
             {
-                var result = new AuthenticationResult(this.TokenType, this.AccessToken, expiresOn);
+                var result = new AuthenticationResult(TokenType, AccessToken, expiresOn);
 
-                IdToken idToken = IdToken.Parse(this.IdTokenString);
+                IdToken idToken = IdToken.Parse(IdTokenString);
                 if (idToken != null)
                 {
                     string tenantId = idToken.TenantId;
@@ -220,16 +220,16 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                         changePasswordUri = new Uri(idToken.PasswordChangeUrl);
                     }
 
-                    result.UpdateTenantAndUserInfo(tenantId, this.IdTokenString, new UserInfo { UniqueId = uniqueId, DisplayableId = displayableId, GivenName = givenName, FamilyName = familyName, IdentityProvider = identityProvider, PasswordExpiresOn = passwordExpiresOffest, PasswordChangeUrl = changePasswordUri });
+                    result.UpdateTenantAndUserInfo(tenantId, IdTokenString, new UserInfo { UniqueId = uniqueId, DisplayableId = displayableId, GivenName = givenName, FamilyName = familyName, IdentityProvider = identityProvider, PasswordExpiresOn = passwordExpiresOffest, PasswordChangeUrl = changePasswordUri });
                 }
 
                 resultEx = new AuthenticationResultEx
                 {
                     Result = result,
-                    RefreshToken = this.RefreshToken,
+                    RefreshToken = RefreshToken,
                     // This is only needed for AcquireTokenByAuthorizationCode in which parameter resource is optional and we need
                     // to get it from the STS response.
-                    ResourceInResponse = this.Resource
+                    ResourceInResponse = Resource
                 };
             }
             else if (Error != null)

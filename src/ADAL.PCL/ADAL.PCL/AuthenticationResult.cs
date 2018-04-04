@@ -55,7 +55,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         /// Gets the type of the Access Token returned. 
         /// </summary>
         [DataMember]
-        public string AccessTokenType { get; private set; }
+        public string AccessTokenType { get; set; }
 
         /// <summary>
         /// Gets the Access Token requested.
@@ -74,7 +74,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         /// Gets an identifier for the tenant the token was acquired from. This property will be null if tenant information is not returned by the service.
         /// </summary>
         [DataMember]
-        public string TenantId { get; private set; }
+        public string TenantId { get; set; }
 
         /// <summary>
         /// Gets user information including user Id. Some elements in UserInfo might be null if not returned by the service.
@@ -94,7 +94,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         /// <returns>Created authorization header</returns>
         public string CreateAuthorizationHeader()
         {
-            return Oauth2AuthorizationHeader + this.AccessToken;
+            return Oauth2AuthorizationHeader + AccessToken;
         }
 
         internal void UpdateTenantAndUserInfo(string tenantId, string idToken, UserInfo userInfo)

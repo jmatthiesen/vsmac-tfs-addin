@@ -34,9 +34,9 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         public HttpRequestWrapperException(IHttpWebResponse webResponse, Exception innerException) 
             : base(string.Empty, innerException)
         {
-            this.WebResponse = webResponse;
+            WebResponse = webResponse;
         }
 
-        public IHttpWebResponse WebResponse { get; private set; }
+        public IHttpWebResponse WebResponse { get; set; }
     }
 }

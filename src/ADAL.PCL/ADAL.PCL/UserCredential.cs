@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -44,7 +44,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         /// </summary>
         public UserCredential()
         {
-            this.UserAuthType = UserAuthType.IntegratedAuth;
+            UserAuthType = UserAuthType.IntegratedAuth;
         }
 
         /// <summary>
@@ -57,8 +57,8 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
         internal UserCredential(string userName, UserAuthType userAuthType)
         {
-            this.UserName = userName;
-            this.UserAuthType = userAuthType;
+            UserName = userName;
+            UserAuthType = userAuthType;
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         /// </summary>
         public string UserName { get; internal set; }
 
-        internal UserAuthType UserAuthType { get; private set; }
+        internal UserAuthType UserAuthType { get; set; }
 
         internal virtual void ApplyTo(DictionaryRequestParameters requestParameters)
         {

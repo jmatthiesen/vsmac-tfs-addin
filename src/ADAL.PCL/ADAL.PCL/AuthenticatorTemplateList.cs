@@ -49,12 +49,12 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             {
                 foreach (string host in trustedHostList)
                 {
-                    this.Add(AuthenticatorTemplate.CreateFromHost(host));
+                    Add(AuthenticatorTemplate.CreateFromHost(host));
                 }
             }
             else
             {
-                this.Add(AuthenticatorTemplate.CreateFromHost(customAuthorityHost));
+                Add(AuthenticatorTemplate.CreateFromHost(customAuthorityHost));
             }
         }
 

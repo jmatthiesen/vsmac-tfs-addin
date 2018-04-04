@@ -71,9 +71,9 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     /// </summary>
     public sealed class LoggerCallbackHandler
     {
-        private static readonly object LockObj = new object();
+        static readonly object LockObj = new object();
 
-        private static IAdalLogCallback _localCallback;
+        static IAdalLogCallback _localCallback;
 
         /// <summary>
         /// Callback implementation

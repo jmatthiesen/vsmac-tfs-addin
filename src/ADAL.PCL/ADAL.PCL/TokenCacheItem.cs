@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -39,29 +39,29 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         /// </summary>
         internal TokenCacheItem(TokenCacheKey key, AuthenticationResult result)
         {
-            this.Authority = key.Authority;
-            this.Resource = key.Resource;
-            this.ClientId = key.ClientId;
-            this.TokenSubjectType = key.TokenSubjectType;
-            this.UniqueId = key.UniqueId;
-            this.DisplayableId = key.DisplayableId;
-            this.TenantId = result.TenantId;
-            this.ExpiresOn = result.ExpiresOn;
-            this.AccessToken = result.AccessToken;
-            this.IdToken = result.IdToken;
+            Authority = key.Authority;
+            Resource = key.Resource;
+            ClientId = key.ClientId;
+            TokenSubjectType = key.TokenSubjectType;
+            UniqueId = key.UniqueId;
+            DisplayableId = key.DisplayableId;
+            TenantId = result.TenantId;
+            ExpiresOn = result.ExpiresOn;
+            AccessToken = result.AccessToken;
+            IdToken = result.IdToken;
 
             if (result.UserInfo != null)
             {
-                this.FamilyName = result.UserInfo.FamilyName;
-                this.GivenName = result.UserInfo.GivenName;
-                this.IdentityProvider = result.UserInfo.IdentityProvider;
+                FamilyName = result.UserInfo.FamilyName;
+                GivenName = result.UserInfo.GivenName;
+                IdentityProvider = result.UserInfo.IdentityProvider;
             }
         }
 
         /// <summary>
         /// Gets the Authority.
         /// </summary>
-        public string Authority { get; private set; }
+        public string Authority { get; set; }
 
         /// <summary>
         /// Gets the ClientId.
@@ -122,8 +122,8 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
         internal bool Match(TokenCacheKey key)
         {
-            return (key.Authority == this.Authority && key.ResourceEquals(this.Resource) && key.ClientIdEquals(this.ClientId)
-                    && key.TokenSubjectType == this.TokenSubjectType && key.UniqueId == this.UniqueId && key.DisplayableIdEquals(this.DisplayableId));
+            return (key.Authority == Authority && key.ResourceEquals(Resource) && key.ClientIdEquals(ClientId)
+                    && key.TokenSubjectType == TokenSubjectType && key.UniqueId == UniqueId && key.DisplayableIdEquals(DisplayableId));
         }
     }
 }

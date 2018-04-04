@@ -36,68 +36,57 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     {
         internal AuthorizationResult authorizationResult;
 
-        private readonly Uri redirectUri;
-
-        private readonly string redirectUriRequestParameter;
-
-        private readonly IPlatformParameters authorizationParameters;
-
-        private readonly string extraQueryParameters;
-
-        private readonly IWebUI webUi;
-
-        private readonly UserIdentifier userId;
+        readonly Uri _redirectUri;
+        readonly string _redirectUriRequestParameter;
+        readonly IPlatformParameters _authorizationParameters;
+        readonly string _extraQueryParameters;
+        readonly IWebUI _webUi;
+        readonly UserIdentifier _userId;
 
         public AcquireTokenInteractiveHandler(Authenticator authenticator, TokenCache tokenCache, string resource, string clientId, Uri redirectUri, IPlatformParameters parameters, UserIdentifier userId, string extraQueryParameters, IWebUI webUI)
             : base(authenticator, tokenCache, resource, new ClientKey(clientId), TokenSubjectType.User)
         {
-            this.redirectUri = PlatformPlugin.PlatformInformation.ValidateRedirectUri(redirectUri, this.CallState);
+            _redirectUri = PlatformPlugin.PlatformInformation.ValidateRedirectUri(redirectUri, CallState);
 
-            if (!string.IsNullOrWhiteSpace(this.redirectUri.Fragment))
+            if (!string.IsNullOrWhiteSpace(redirectUri.Fragment))
             {
                 throw new ArgumentException(AdalErrorMessage.RedirectUriContainsFragment, "redirectUri");
             }
 
-            this.authorizationParameters = parameters;
+            _authorizationParameters = parameters;
 
-            this.redirectUriRequestParameter = PlatformPlugin.PlatformInformation.GetRedirectUriAsString(this.redirectUri, this.CallState);
-
-            if (userId == null)
-            {
-                throw new ArgumentNullException("userId", AdalErrorMessage.SpecifyAnyUser);
-            }
-
-            this.userId = userId;
+            _redirectUriRequestParameter = PlatformPlugin.PlatformInformation.GetRedirectUriAsString(redirectUri, CallState);
+            _userId = userId ?? throw new ArgumentNullException("userId", AdalErrorMessage.SpecifyAnyUser);
 
             if (!string.IsNullOrEmpty(extraQueryParameters) && extraQueryParameters[0] == '&')
             {
                 extraQueryParameters = extraQueryParameters.Substring(1);
             }
 
-            this.extraQueryParameters = extraQueryParameters;
-            this.webUi = webUI;
-            this.UniqueId = userId.UniqueId;
-            this.DisplayableId = userId.DisplayableId;
-            this.UserIdentifierType = userId.Type;
-            this.LoadFromCache = (tokenCache != null && parameters != null && PlatformPlugin.PlatformInformation.GetCacheLoadPolicy(parameters));
-            this.SupportADFS = true;
-            this.CacheQueryData.DisplayableId = this.DisplayableId;
-            this.CacheQueryData.UniqueId = this.UniqueId;
+            _extraQueryParameters = extraQueryParameters;
+            _webUi = webUI;
+            UniqueId = _userId.UniqueId;
+            DisplayableId = _userId.DisplayableId;
+            UserIdentifierType = _userId.Type;
+            LoadFromCache = (tokenCache != null && parameters != null && PlatformPlugin.PlatformInformation.GetCacheLoadPolicy(parameters));
+            SupportADFS = true;
+            CacheQueryData.DisplayableId = DisplayableId;
+            CacheQueryData.UniqueId = UniqueId;
 
-            this.brokerParameters["force"] = "NO";
-            if (userId != UserIdentifier.AnyUser)
+            brokerParameters["force"] = "NO";
+            if (_userId != UserIdentifier.AnyUser)
             {
-                this.brokerParameters["username"] = userId.Id;
+                brokerParameters["username"] = userId.Id;
             }
             else
             {
-                this.brokerParameters["username"] = string.Empty;
+                brokerParameters["username"] = string.Empty;
             }
-            this.brokerParameters["username_type"] = userId.Type.ToString();
+            brokerParameters["username_type"] = userId.Type.ToString();
 
-            this.brokerParameters["redirect_uri"] = redirectUri.AbsoluteUri;
-            this.brokerParameters["extra_qp"] = extraQueryParameters;
-            PlatformPlugin.BrokerHelper.PlatformParameters = authorizationParameters;
+            brokerParameters["redirect_uri"] = redirectUri.AbsoluteUri;
+            brokerParameters["extra_qp"] = extraQueryParameters;
+            PlatformPlugin.BrokerHelper.PlatformParameters = _authorizationParameters;
         }
 
         protected override async Task PreTokenRequest()
@@ -105,33 +94,34 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             await base.PreTokenRequest();
 
             // We do not have async interactive API in .NET, so we call this synchronous method instead.
-            await this.AcquireAuthorizationAsync();
-            this.VerifyAuthorizationResult();
+            await AcquireAuthorizationAsync();
+            VerifyAuthorizationResult();
         }
 
         internal async Task AcquireAuthorizationAsync()
         {
-            Uri authorizationUri = this.CreateAuthorizationUri();
-            this.authorizationResult = await this.webUi.AcquireAuthorizationAsync(authorizationUri, this.redirectUri, this.CallState);
+            Uri authorizationUri = CreateAuthorizationUri();
+            authorizationResult = await _webUi.AcquireAuthorizationAsync(authorizationUri, _redirectUri, CallState);
         }
 
         internal async Task<Uri> CreateAuthorizationUriAsync(Guid correlationId)
         {
-            this.CallState.CorrelationId = correlationId;
-            await this.Authenticator.UpdateFromTemplateAsync(this.CallState);
-            return this.CreateAuthorizationUri();
+            CallState.CorrelationId = correlationId;
+            await Authenticator.UpdateFromTemplateAsync(CallState);
+            return CreateAuthorizationUri();
         }
         protected override void AddAditionalRequestParameters(DictionaryRequestParameters requestParameters)
         {
             requestParameters[OAuthParameter.GrantType] = OAuthGrantType.AuthorizationCode;
-            requestParameters[OAuthParameter.Code] = this.authorizationResult.Code;
-            requestParameters[OAuthParameter.RedirectUri] = this.redirectUriRequestParameter;
+            requestParameters[OAuthParameter.Code] = authorizationResult.Code;
+            requestParameters[OAuthParameter.RedirectUri] = _redirectUriRequestParameter;
         }
 
         protected override void PostTokenRequest(AuthenticationResultEx resultEx)
         {
             base.PostTokenRequest(resultEx);
-            if ((this.DisplayableId == null && this.UniqueId == null) || this.UserIdentifierType == UserIdentifierType.OptionalDisplayableId)
+        
+            if ((DisplayableId == null && UniqueId == null) || UserIdentifierType == UserIdentifierType.OptionalDisplayableId)
             {
                 return;
             }
@@ -139,53 +129,53 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             string uniqueId = (resultEx.Result.UserInfo != null && resultEx.Result.UserInfo.UniqueId != null) ? resultEx.Result.UserInfo.UniqueId : "NULL";
             string displayableId = (resultEx.Result.UserInfo != null) ? resultEx.Result.UserInfo.DisplayableId : "NULL";
 
-            if (this.UserIdentifierType == UserIdentifierType.UniqueId && string.Compare(uniqueId, this.UniqueId, StringComparison.Ordinal) != 0)
+            if (UserIdentifierType == UserIdentifierType.UniqueId && string.Compare(uniqueId, UniqueId, StringComparison.Ordinal) != 0)
             {
-                throw new AdalUserMismatchException(this.UniqueId, uniqueId);
+                throw new AdalUserMismatchException(UniqueId, uniqueId);
             }
 
-            if (this.UserIdentifierType == UserIdentifierType.RequiredDisplayableId && string.Compare(displayableId, this.DisplayableId, StringComparison.OrdinalIgnoreCase) != 0)
+            if (UserIdentifierType == UserIdentifierType.RequiredDisplayableId && string.Compare(displayableId, DisplayableId, StringComparison.OrdinalIgnoreCase) != 0)
             {
-                throw new AdalUserMismatchException(this.DisplayableId, displayableId);
+                throw new AdalUserMismatchException(DisplayableId, displayableId);
             }
         }
 
-        private Uri CreateAuthorizationUri()
+        Uri CreateAuthorizationUri()
         {
             string loginHint = null;
 
-            if (!userId.IsAnyUser
-                && (userId.Type == UserIdentifierType.OptionalDisplayableId
-                    || userId.Type == UserIdentifierType.RequiredDisplayableId))
+            if (!_userId.IsAnyUser
+                && (_userId.Type == UserIdentifierType.OptionalDisplayableId
+                    || _userId.Type == UserIdentifierType.RequiredDisplayableId))
             {
-                loginHint = userId.Id;
+                loginHint = _userId.Id;
             }
 
-            IRequestParameters requestParameters = this.CreateAuthorizationRequest(loginHint);
+            IRequestParameters requestParameters = CreateAuthorizationRequest(loginHint);
 
-            return  new Uri(new Uri(this.Authenticator.AuthorizationUri), "?" + requestParameters);
+            return  new Uri(new Uri(Authenticator.AuthorizationUri), "?" + requestParameters);
         }
 
-        private DictionaryRequestParameters CreateAuthorizationRequest(string loginHint)
+        DictionaryRequestParameters CreateAuthorizationRequest(string loginHint)
         {
-            var authorizationRequestParameters = new DictionaryRequestParameters(this.Resource, this.ClientKey);
+            var authorizationRequestParameters = new DictionaryRequestParameters(Resource, ClientKey);
             authorizationRequestParameters[OAuthParameter.ResponseType] = OAuthResponseType.Code;
             authorizationRequestParameters[OAuthParameter.HasChrome] = "1";
-            authorizationRequestParameters[OAuthParameter.RedirectUri] = this.redirectUriRequestParameter;
+            authorizationRequestParameters[OAuthParameter.RedirectUri] = _redirectUriRequestParameter;
 
             if (!string.IsNullOrWhiteSpace(loginHint))
             {
                 authorizationRequestParameters[OAuthParameter.LoginHint] = loginHint;
             }
 
-            if (this.CallState != null && this.CallState.CorrelationId != Guid.Empty)
+            if (CallState != null && CallState.CorrelationId != Guid.Empty)
             {
-                authorizationRequestParameters[OAuthParameter.CorrelationId] = this.CallState.CorrelationId.ToString();
+                authorizationRequestParameters[OAuthParameter.CorrelationId] = CallState.CorrelationId.ToString();
             }
 
-            if (this.authorizationParameters != null)
+            if (_authorizationParameters != null)
             {
-                PlatformPlugin.PlatformInformation.AddPromptBehaviorQueryParameter(this.authorizationParameters, authorizationRequestParameters);
+                PlatformPlugin.PlatformInformation.AddPromptBehaviorQueryParameter(_authorizationParameters, authorizationRequestParameters);
             }
 
             if (PlatformPlugin.HttpClientFactory.AddAdditionalHeaders)
@@ -197,10 +187,10 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(extraQueryParameters))
+            if (!string.IsNullOrWhiteSpace(_extraQueryParameters))
             {
                 // Checks for extraQueryParameters duplicating standard parameters
-                Dictionary<string, string> kvps = EncodingHelper.ParseKeyValueList(extraQueryParameters, '&', false, this.CallState);
+                Dictionary<string, string> kvps = EncodingHelper.ParseKeyValueList(_extraQueryParameters, '&', false, CallState);
                 foreach (KeyValuePair<string, string> kvp in kvps)
                 {
                     if (authorizationRequestParameters.ContainsKey(kvp.Key))
@@ -209,40 +199,40 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                     }
                 }
 
-                authorizationRequestParameters.ExtraQueryParameter = extraQueryParameters;
+                authorizationRequestParameters.ExtraQueryParameter = _extraQueryParameters;
             }
 
             return authorizationRequestParameters;
         }
 
-        private void VerifyAuthorizationResult()
+        void VerifyAuthorizationResult()
         {
-            if (this.authorizationResult.Error == OAuthError.LoginRequired)
+            if (authorizationResult.Error == OAuthError.LoginRequired)
             {
                 throw new AdalException(AdalError.UserInteractionRequired);
             }
 
-            if (this.authorizationResult.Status != AuthorizationStatus.Success)
+            if (authorizationResult.Status != AuthorizationStatus.Success)
             {
-                throw new AdalServiceException(this.authorizationResult.Error, this.authorizationResult.ErrorDescription);
+                throw new AdalServiceException(authorizationResult.Error, authorizationResult.ErrorDescription);
             }
         }
 
         protected override void UpdateBrokerParameters(IDictionary<string, string> parameters)
         {
-            Uri uri = new Uri(this.authorizationResult.Code);
+            Uri uri = new Uri(authorizationResult.Code);
             string query = EncodingHelper.UrlDecode(uri.Query);
-            Dictionary<string, string> kvps = EncodingHelper.ParseKeyValueList(query, '&', false, this.CallState);
+            Dictionary<string, string> kvps = EncodingHelper.ParseKeyValueList(query, '&', false, CallState);
             parameters["username"] = kvps["username"];
         }
 
         protected override bool BrokerInvocationRequired()
         {
-            if (this.authorizationResult != null
-                && !string.IsNullOrEmpty(this.authorizationResult.Code)
-                && this.authorizationResult.Code.StartsWith("msauth://", StringComparison.CurrentCultureIgnoreCase))
+            if (authorizationResult != null
+                && !string.IsNullOrEmpty(authorizationResult.Code)
+                && authorizationResult.Code.StartsWith("msauth://", StringComparison.CurrentCultureIgnoreCase))
             {
-                this.brokerParameters["broker_install_url"] = this.authorizationResult.Code;
+                brokerParameters["broker_install_url"] = authorizationResult.Code;
                 return true;
             }
 

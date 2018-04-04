@@ -39,73 +39,73 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
     internal class Authenticator
     {
-        private const string TenantlessTenantName = "Common";
+        const string TenantlessTenantName = "Common";
 
-        private static readonly AuthenticatorTemplateList AuthenticatorTemplateList = new AuthenticatorTemplateList();
+        static readonly AuthenticatorTemplateList AuthenticatorTemplateList = new AuthenticatorTemplateList();
 
-        private bool updatedFromTemplate; 
+        bool updatedFromTemplate; 
 
         public Authenticator(string authority, bool validateAuthority)
         {
-            this.Authority = CanonicalizeUri(authority);
+            Authority = CanonicalizeUri(authority);
 
-            this.AuthorityType = DetectAuthorityType(this.Authority);
+            AuthorityType = DetectAuthorityType(Authority);
 
-            if (this.AuthorityType != AuthorityType.AAD && validateAuthority)
+            if (AuthorityType != AuthorityType.AAD && validateAuthority)
             {
                 throw new ArgumentException(AdalErrorMessage.UnsupportedAuthorityValidation, "validateAuthority");
             }
 
-            this.ValidateAuthority = validateAuthority;
+            ValidateAuthority = validateAuthority;
         }
 
-        public string Authority { get; private set; }
+        public string Authority { get; set; }
 
-        public AuthorityType AuthorityType { get; private set; }
+        public AuthorityType AuthorityType { get; set; }
 
-        public bool ValidateAuthority { get; private set; }
+        public bool ValidateAuthority { get; set; }
 
-        public bool IsTenantless { get; private set; }
+        public bool IsTenantless { get; set; }
 
         public string AuthorizationUri { get; set; }
 
         public string DeviceCodeUri { get; set; }
 
-        public string TokenUri { get; private set; }
+        public string TokenUri { get; set; }
 
-        public string UserRealmUri { get; private set; }
+        public string UserRealmUri { get; set; }
 
-        public string SelfSignedJwtAudience { get; private set; }
+        public string SelfSignedJwtAudience { get; set; }
 
         public Guid CorrelationId { get; set; }
 
         public async Task UpdateFromTemplateAsync(CallState callState)
         {
-            if (!this.updatedFromTemplate)
+            if (!updatedFromTemplate)
             {
-                var authorityUri = new Uri(this.Authority);
+                var authorityUri = new Uri(Authority);
                 string host = authorityUri.Authority;
                 string path = authorityUri.AbsolutePath.Substring(1);
                 string tenant = path.Substring(0, path.IndexOf("/", StringComparison.Ordinal));
 
-                AuthenticatorTemplate matchingTemplate = await AuthenticatorTemplateList.FindMatchingItemAsync(this.ValidateAuthority, host, tenant, callState);
+                AuthenticatorTemplate matchingTemplate = await AuthenticatorTemplateList.FindMatchingItemAsync(ValidateAuthority, host, tenant, callState);
 
-                this.AuthorizationUri = matchingTemplate.AuthorizeEndpoint.Replace("{tenant}", tenant);
-                this.DeviceCodeUri = matchingTemplate.DeviceCodeEndpoint.Replace("{tenant}", tenant);
-                this.TokenUri = matchingTemplate.TokenEndpoint.Replace("{tenant}", tenant);
-                this.UserRealmUri = CanonicalizeUri(matchingTemplate.UserRealmEndpoint);
-                this.IsTenantless = (string.Compare(tenant, TenantlessTenantName, StringComparison.OrdinalIgnoreCase) == 0);
-                this.SelfSignedJwtAudience = matchingTemplate.Issuer.Replace("{tenant}", tenant);
-                this.updatedFromTemplate = true;
+                AuthorizationUri = matchingTemplate.AuthorizeEndpoint.Replace("{tenant}", tenant);
+                DeviceCodeUri = matchingTemplate.DeviceCodeEndpoint.Replace("{tenant}", tenant);
+                TokenUri = matchingTemplate.TokenEndpoint.Replace("{tenant}", tenant);
+                UserRealmUri = CanonicalizeUri(matchingTemplate.UserRealmEndpoint);
+                IsTenantless = (string.Compare(tenant, TenantlessTenantName, StringComparison.OrdinalIgnoreCase) == 0);
+                SelfSignedJwtAudience = matchingTemplate.Issuer.Replace("{tenant}", tenant);
+                updatedFromTemplate = true;
             }
         }
 
         public void UpdateTenantId(string tenantId)
         {
-            if (this.IsTenantless && !string.IsNullOrWhiteSpace(tenantId))
+            if (IsTenantless && !string.IsNullOrWhiteSpace(tenantId))
             {
-                this.ReplaceTenantlessTenant(tenantId);
-                this.updatedFromTemplate = false;
+                ReplaceTenantlessTenant(tenantId);
+                updatedFromTemplate = false;
             }
         }
 
@@ -139,7 +139,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             return authorityType;
         }
 
-        private static string CanonicalizeUri(string uri)
+        static string CanonicalizeUri(string uri)
         {
             if (!string.IsNullOrWhiteSpace(uri) && !uri.EndsWith("/", StringComparison.OrdinalIgnoreCase))
             {
@@ -149,15 +149,15 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             return uri;
         }
 
-        private static bool IsAdfsAuthority(string firstPath)
+        static bool IsAdfsAuthority(string firstPath)
         {
             return string.Compare(firstPath, "adfs", StringComparison.OrdinalIgnoreCase) == 0;
         }
 
-        private void ReplaceTenantlessTenant(string tenantId)
+        void ReplaceTenantlessTenant(string tenantId)
         {
             var regex = new Regex(Regex.Escape(TenantlessTenantName), RegexOptions.IgnoreCase);
-            this.Authority = regex.Replace(this.Authority, tenantId, 1);
+            Authority = regex.Replace(Authority, tenantId, 1);
         }
     }
 }

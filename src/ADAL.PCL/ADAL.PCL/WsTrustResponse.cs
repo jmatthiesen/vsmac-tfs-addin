@@ -37,9 +37,9 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     {
         public const string Saml1Assertion = "urn:oasis:names:tc:SAML:1.0:assertion";
 
-        public string Token { get; private set; }
+        public string Token { get; set; }
 
-        public string TokenType { get; private set; }
+        public string TokenType { get; set; }
 
         public static WsTrustResponse CreateFromResponse(Stream responseStream, WsTrustVersion version)
         {

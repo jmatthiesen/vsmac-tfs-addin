@@ -29,6 +29,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.IdentityService.Clients.ActiveDirectory;
+using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Models;
 using MonoDevelop.VersionControl.TFS.Services;
 
@@ -36,6 +38,8 @@ namespace MonoDevelop.VersionControl.TFS
 {
     public sealed class TeamFoundationServerVersionControlService
     {
+        const int ExpirationMarginInMinutes = 5;
+
         readonly IConfigurationService _configurationService;
         readonly Configuration _configuration;
 
@@ -43,6 +47,8 @@ namespace MonoDevelop.VersionControl.TFS
         {
             _configurationService = configurationService;
             _configuration = _configurationService.Load();
+
+            RefreshAccessTokenAsync();
         }
 
         public void AddServer(TeamFoundationServer server)
@@ -136,6 +142,35 @@ namespace MonoDevelop.VersionControl.TFS
         void Save()
         {
             _configurationService.Save(_configuration);
+        }
+
+        async void RefreshAccessTokenAsync()
+        {
+            var server = _configuration.Servers.SingleOrDefault(s => s.Authorization is OAuthAuthorization);
+
+            if (server != null)
+            {
+                var auth = (OAuthAuthorization)server.Authorization;
+
+                bool tokenNearExpiry = (auth.ExpiresOn <=                                 
+                                        DateTime.UtcNow + TimeSpan.FromMinutes(ExpirationMarginInMinutes));
+
+                if (tokenNearExpiry)
+                {      
+                    var tokenCache = AdalCacheHelper.GetAdalFileCacheInstance();
+                    var context = new AuthenticationContext(OAuthConstants.Authority, true, tokenCache);
+
+                    var result = await context.AcquireTokenSilentAsync(OAuthConstants.Resource, OAuthConstants.ClientId);
+
+                    auth.OauthToken = result.AccessToken;
+                    auth.ExpiresOn = result.ExpiresOn;
+
+                    server.Authorization = auth;
+
+                    AddServer(server);
+                    AdalCacheHelper.PersistTokenCache(tokenCache);
+                }
+            }
         }
     }
 }

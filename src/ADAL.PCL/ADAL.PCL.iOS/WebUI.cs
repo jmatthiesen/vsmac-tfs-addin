@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -33,9 +33,9 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 {
     internal class WebUI : IWebUI
     {
-        private static SemaphoreSlim returnedUriReady;
-        private static AuthorizationResult authorizationResult;
-        private readonly PlatformParameters parameters;
+        static SemaphoreSlim returnedUriReady;
+        static AuthorizationResult authorizationResult;
+        readonly PlatformParameters parameters;
 
         public WebUI(IPlatformParameters parameters)
         {
@@ -77,7 +77,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             }
         }
 
-        private void CallbackMethod(AuthorizationResult result)
+        void CallbackMethod(AuthorizationResult result)
         {
             SetAuthorizationResult(result);
         }

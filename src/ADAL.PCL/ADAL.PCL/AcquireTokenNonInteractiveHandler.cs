@@ -34,25 +34,19 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 {
     internal class AcquireTokenNonInteractiveHandler : AcquireTokenHandlerBase
     {
-        private readonly UserCredential userCredential;
-
-        private UserAssertion userAssertion;
+        readonly UserCredential _userCredential;
+        UserAssertion _userAssertion;
         
         public AcquireTokenNonInteractiveHandler(Authenticator authenticator, TokenCache tokenCache, string resource, string clientId, UserCredential userCredential)
             : base(authenticator, tokenCache, resource, new ClientKey(clientId), TokenSubjectType.User)
         {
-            if (userCredential == null)
-            {
-                throw new ArgumentNullException("userCredential");
-            }
-
             // We enable ADFS support only when it makes sense to do so
             if (authenticator.AuthorityType == AuthorityType.ADFS)
             {
-                this.SupportADFS = true;
+                SupportADFS = true;
             }
 
-            this.userCredential = userCredential;
+            _userCredential = userCredential ?? throw new ArgumentNullException("userCredential");
         }
 
         public AcquireTokenNonInteractiveHandler(Authenticator authenticator, TokenCache tokenCache, string resource, string clientId, UserAssertion userAssertion)
@@ -68,42 +62,43 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 throw new ArgumentException(AdalErrorMessage.UserCredentialAssertionTypeEmpty, "userAssertion");
             }
 
-            this.userAssertion = userAssertion;
+            _userAssertion = userAssertion;
         }
 
         protected override async Task PreRunAsync()
         {
             await base.PreRunAsync();
 
-            if (this.userCredential != null)
+            if (_userCredential != null)
             {
-                if (string.IsNullOrWhiteSpace(this.userCredential.UserName))
+                if (string.IsNullOrWhiteSpace(_userCredential.UserName))
                 {
-                    this.userCredential.UserName = await PlatformPlugin.PlatformInformation.GetUserPrincipalNameAsync();
-                    if (string.IsNullOrWhiteSpace(userCredential.UserName))
+                    _userCredential.UserName = await PlatformPlugin.PlatformInformation.GetUserPrincipalNameAsync();
+                 
+                    if (string.IsNullOrWhiteSpace(_userCredential.UserName))
                     {
-                        PlatformPlugin.Logger.Information(this.CallState, "Could not find UPN for logged in user");
+                        PlatformPlugin.Logger.Information(CallState, "Could not find UPN for logged in user");
                         throw new AdalException(AdalError.UnknownUser);
                     }
 
-                    PlatformPlugin.Logger.Verbose(this.CallState, string.Format(CultureInfo.CurrentCulture, " Logged in user with hash '{0}' detected", PlatformPlugin.CryptographyHelper.CreateSha256Hash(userCredential.UserName)));
+                    PlatformPlugin.Logger.Verbose(CallState, string.Format(CultureInfo.CurrentCulture, " Logged in user with hash '{0}' detected", PlatformPlugin.CryptographyHelper.CreateSha256Hash(_userCredential.UserName)));
                 }
 
-                this.DisplayableId = userCredential.UserName;
+                DisplayableId = _userCredential.UserName;
             }
-            else if (this.userAssertion != null)
+            else if (_userAssertion != null)
             {
-                this.DisplayableId = userAssertion.UserName;                
+                DisplayableId = _userAssertion.UserName;                
             }
         }
 
         protected override async Task PreTokenRequest()
         {
             await base.PreTokenRequest();
-            if (this.PerformUserRealmDiscovery())
+            if (PerformUserRealmDiscovery())
             {
-                UserRealmDiscoveryResponse userRealmResponse = await UserRealmDiscoveryResponse.CreateByDiscoveryAsync(this.Authenticator.UserRealmUri, this.userCredential.UserName, this.CallState);
-                PlatformPlugin.Logger.Information(this.CallState, string.Format(CultureInfo.CurrentCulture, " User with hash '{0}' detected as '{1}'", PlatformPlugin.CryptographyHelper.CreateSha256Hash(this.userCredential.UserName), userRealmResponse.AccountType));
+                UserRealmDiscoveryResponse userRealmResponse = await UserRealmDiscoveryResponse.CreateByDiscoveryAsync(Authenticator.UserRealmUri, _userCredential.UserName, CallState);
+                PlatformPlugin.Logger.Information(CallState, string.Format(CultureInfo.CurrentCulture, " User with hash '{0}' detected as '{1}'", PlatformPlugin.CryptographyHelper.CreateSha256Hash(_userCredential.UserName), userRealmResponse.AccountType));
 
                 if (string.Compare(userRealmResponse.AccountType, "federated", StringComparison.OrdinalIgnoreCase) == 0)
                 {
@@ -112,19 +107,19 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                         throw new AdalException(AdalError.MissingFederationMetadataUrl);
                     }
 
-                    WsTrustAddress wsTrustAddress = await MexParser.FetchWsTrustAddressFromMexAsync(userRealmResponse.FederationMetadataUrl, this.userCredential.UserAuthType, this.CallState);
-                    PlatformPlugin.Logger.Information(this.CallState, string.Format(CultureInfo.CurrentCulture, " WS-Trust endpoint '{0}' fetched from MEX at '{1}'", wsTrustAddress.Uri, userRealmResponse.FederationMetadataUrl));
+                    WsTrustAddress wsTrustAddress = await MexParser.FetchWsTrustAddressFromMexAsync(userRealmResponse.FederationMetadataUrl, _userCredential.UserAuthType, CallState);
+                    PlatformPlugin.Logger.Information(CallState, string.Format(CultureInfo.CurrentCulture, " WS-Trust endpoint '{0}' fetched from MEX at '{1}'", wsTrustAddress.Uri, userRealmResponse.FederationMetadataUrl));
 
-                    WsTrustResponse wsTrustResponse = await WsTrustRequest.SendRequestAsync(wsTrustAddress, this.userCredential, this.CallState);
-                    PlatformPlugin.Logger.Information(this.CallState, string.Format(CultureInfo.CurrentCulture, " Token of type '{0}' acquired from WS-Trust endpoint", wsTrustResponse.TokenType));
+                    WsTrustResponse wsTrustResponse = await WsTrustRequest.SendRequestAsync(wsTrustAddress, _userCredential, CallState);
+                    PlatformPlugin.Logger.Information(CallState, string.Format(CultureInfo.CurrentCulture, " Token of type '{0}' acquired from WS-Trust endpoint", wsTrustResponse.TokenType));
 
                     // We assume that if the response token type is not SAML 1.1, it is SAML 2
-                    this.userAssertion = new UserAssertion(wsTrustResponse.Token, (wsTrustResponse.TokenType == WsTrustResponse.Saml1Assertion) ? OAuthGrantType.Saml11Bearer : OAuthGrantType.Saml20Bearer);
+                    _userAssertion = new UserAssertion(wsTrustResponse.Token, (wsTrustResponse.TokenType == WsTrustResponse.Saml1Assertion) ? OAuthGrantType.Saml11Bearer : OAuthGrantType.Saml20Bearer);
                 }
                 else if (string.Compare(userRealmResponse.AccountType, "managed", StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     // handle password grant flow for the managed user
-                    if (this.userCredential.PasswordToCharArray() == null)
+                    if (_userCredential.PasswordToCharArray() == null)
                     {
                         throw new AdalException(AdalError.PasswordRequiredForManagedUserError);
                     }
@@ -138,26 +133,26 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
         protected override void AddAditionalRequestParameters(DictionaryRequestParameters requestParameters)
         {
-            if (this.userAssertion != null)
+            if (_userAssertion != null)
             {
-                requestParameters[OAuthParameter.GrantType] = this.userAssertion.AssertionType;
-                requestParameters[OAuthParameter.Assertion] = Convert.ToBase64String(Encoding.UTF8.GetBytes(this.userAssertion.Assertion));
+                requestParameters[OAuthParameter.GrantType] = _userAssertion.AssertionType;
+                requestParameters[OAuthParameter.Assertion] = Convert.ToBase64String(Encoding.UTF8.GetBytes(_userAssertion.Assertion));
             }
             else
             {
-                this.userCredential.ApplyTo(requestParameters);
+                _userCredential.ApplyTo(requestParameters);
             }
 
             // To request id_token in response
             requestParameters[OAuthParameter.Scope] = OAuthValue.ScopeOpenId;
         }
         
-        private bool PerformUserRealmDiscovery()
+        bool PerformUserRealmDiscovery()
         {
             // To decide whether user realm discovery is needed or not
             // we should also consider if that is supported by the authority
-            return this.userAssertion == null &&
-                   this.SupportADFS == false;
+            return _userAssertion == null &&
+                   SupportADFS == false;
         }
     }
 }

@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -34,7 +34,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     /// </summary>
     public class PlatformParameters : IPlatformParameters
     {
-        private PlatformParameters()
+        PlatformParameters()
         {
         }
 
@@ -50,6 +50,6 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         /// <summary>
         /// Caller NSWindow
         /// </summary>
-        public NSWindow CallerWindow { get; private set; }
+        public NSWindow CallerWindow { get; set; }
     }
 }

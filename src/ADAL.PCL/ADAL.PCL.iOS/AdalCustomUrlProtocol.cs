@@ -80,10 +80,10 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             this.connection.Cancel();
         }
 
-        private class AdalCustomConnectionDelegate : NSUrlConnectionDataDelegate
+        class AdalCustomConnectionDelegate : NSUrlConnectionDataDelegate
         {
-            private AdalCustomUrlProtocol handler;
-            private INSUrlProtocolClient client;
+            AdalCustomUrlProtocol handler;
+            INSUrlProtocolClient client;
 
             public AdalCustomConnectionDelegate(AdalCustomUrlProtocol handler)
             {
@@ -120,10 +120,12 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                     RemoveProperty("ADURLProtocol", mutableRequest);
                     client.Redirected(handler, mutableRequest, response);
                     connection.Cancel();
+                   
                     if (!request.Headers.ContainsKey(new NSString("x-ms-PkeyAuth")))
                     {
                         mutableRequest[BrokerConstants.ChallengeHeaderKey] = BrokerConstants.ChallengeHeaderValue;
                     }
+
                     return mutableRequest;
                 }
 

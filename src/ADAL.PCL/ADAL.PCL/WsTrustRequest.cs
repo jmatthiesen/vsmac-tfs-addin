@@ -38,12 +38,12 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 {
     internal static class WsTrustRequest
     {
-        private const int MaxExpectedMessageSize = 1024;
+        const int MaxExpectedMessageSize = 1024;
 
         // appliesTo like urn:federation:MicrosoftOnline. Either wst:TokenType or wst:AppliesTo should be defined in the token request message. 
         // If both are specified, the wst:AppliesTo field takes precedence.
         // If we don't specify TokenType, it will return SAML v1.1
-        private const string WsTrustEnvelopeTemplate =
+        const string WsTrustEnvelopeTemplate =
             @"<s:Envelope xmlns:s='http://www.w3.org/2003/05/soap-envelope' xmlns:a='http://www.w3.org/2005/08/addressing' xmlns:u='{0}'>
               <s:Header>
               <a:Action s:mustUnderstand='1'>{1}</a:Action>
@@ -66,7 +66,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
               </s:Envelope>";
 
         // We currently send this for all requests. We may need to change it in the future.
-        private const string DefaultAppliesTo = "urn:federation:MicrosoftOnline";
+        const string DefaultAppliesTo = "urn:federation:MicrosoftOnline";
 
         public static async Task<WsTrustResponse> SendRequestAsync(WsTrustAddress wsTrustAddress, UserCredential credential, CallState callState)
         {
@@ -117,7 +117,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             return wstResponse;
         }
 
-        private static void SetKerberosOption(IHttpClient request)
+        static void SetKerberosOption(IHttpClient request)
         {
             request.UseDefaultCredentials = true;
         }
@@ -164,7 +164,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             return escapeStr;
         }
 
-        private static StringBuilder BuildSecurityHeader(WsTrustAddress address, UserCredential credential)
+        static StringBuilder BuildSecurityHeader(WsTrustAddress address, UserCredential credential)
         {
             StringBuilder securityHeaderBuilder = new StringBuilder(MaxExpectedMessageSize);
 
@@ -213,7 +213,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             return securityHeaderBuilder;
         }
 
-        private static string BuildTimeString(DateTime utcTime)
+        static string BuildTimeString(DateTime utcTime)
         {
             return utcTime.ToString("yyyy-MM-ddTHH:mm:ss.068Z", CultureInfo.InvariantCulture);
         }

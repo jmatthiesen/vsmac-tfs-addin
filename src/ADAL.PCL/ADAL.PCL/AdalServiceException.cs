@@ -79,28 +79,28 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 IHttpWebResponse response = httpRequestWrapperException.WebResponse;
                 if (response != null)
                 {
-                    this.StatusCode = (int)response.StatusCode;
+                    StatusCode = (int)response.StatusCode;
                 }
                 else if (innerException.InnerException is TaskCanceledException)
                 {
                     var taskCanceledException = ((TaskCanceledException)(innerException.InnerException));
                     if (!taskCanceledException.CancellationToken.IsCancellationRequested)
                     {
-                        this.StatusCode = (int)HttpStatusCode.RequestTimeout;
+                        StatusCode = (int)HttpStatusCode.RequestTimeout;
                     }
                     else
                     {
                         // There is no HttpStatusCode for user cancelation
-                        this.StatusCode = 0;
+                        StatusCode = 0;
                     }
                 }
                 else
                 {
-                    this.StatusCode = 0;
+                    StatusCode = 0;
                 }
             }
 
-            this.ServiceErrorCodes = serviceErrorCodes;
+            ServiceErrorCodes = serviceErrorCodes;
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         /// <returns>A string representation of the current exception.</returns>
         public override string ToString()
         {
-            return base.ToString() + string.Format(CultureInfo.CurrentCulture, "\n\tStatusCode: {0}", this.StatusCode);
+            return base.ToString() + string.Format(CultureInfo.CurrentCulture, "\n\tStatusCode: {0}", StatusCode);
         }
 
     }

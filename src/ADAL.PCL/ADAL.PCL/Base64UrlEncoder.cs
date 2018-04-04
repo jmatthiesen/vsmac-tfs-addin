@@ -33,13 +33,13 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 {
     internal static class Base64UrlEncoder
     {
-        private const char Base64PadCharacter = '=';
-        private const char Base64Character62 = '+';
-        private const char Base64Character63 = '/';
-        private const char Base64UrlCharacter62 = '-';
-        private const char Base64UrlCharacter63 = '_';
-        private static readonly Encoding TextEncoding = Encoding.UTF8;
-        private static readonly string DoubleBase64PadCharacter = string.Format(CultureInfo.InvariantCulture, "{0}{0}", Base64PadCharacter);
+        const char Base64PadCharacter = '=';
+        const char Base64Character62 = '+';
+        const char Base64Character63 = '/';
+        const char Base64UrlCharacter62 = '-';
+        const char Base64UrlCharacter63 = '_';
+        static readonly Encoding TextEncoding = Encoding.UTF8;
+        static readonly string DoubleBase64PadCharacter = string.Format(CultureInfo.InvariantCulture, "{0}{0}", Base64PadCharacter);
 
         //
         // The following functions perform base64url encoding which differs from regular base64 encoding as follows

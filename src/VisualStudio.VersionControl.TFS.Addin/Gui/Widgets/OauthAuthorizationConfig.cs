@@ -30,6 +30,7 @@ using System.Diagnostics;
 using Microsoft.IdentityService.Clients.ActiveDirectory;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
+using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 
@@ -73,7 +74,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
         {
             try
             {
-                _context = new AuthenticationContext(OAuthConstants.Authority, true);
+                var tokenCache = AdalCacheHelper.GetAdalFileCacheInstance();
+
+                _context = new AuthenticationContext(OAuthConstants.Authority, true, tokenCache);
 
                 var rootWindow = MessageService.RootWindow;
                 var nsWindow = Components.Mac.GtkMacInterop.GetNSWindow(rootWindow);
@@ -83,6 +86,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 
                 OauthToken = authenticationResult.AccessToken;
                 ExpiresOn = authenticationResult.ExpiresOn;
+
+                AdalCacheHelper.PersistTokenCache(tokenCache);
             }
             catch (Exception ex)
             {

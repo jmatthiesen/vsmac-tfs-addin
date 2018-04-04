@@ -597,6 +597,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                         progressDisplay.EndTask();
                     }
                 }
+
                 updates.Flush();
                 progressDisplay.EndTask();
             }

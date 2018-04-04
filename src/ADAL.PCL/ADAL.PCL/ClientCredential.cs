@@ -51,15 +51,15 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 throw new ArgumentNullException("clientSecret");
             }
 
-            this.ClientId = clientId;
-            this.ClientSecret = clientSecret;
+            ClientId = clientId;
+            ClientSecret = clientSecret;
         }
 
         /// <summary>
         /// Gets the identifier of the client requesting the token.
         /// </summary>
-        public string ClientId { get; private set; }
+        public string ClientId { get; set; }
 
-        internal string ClientSecret { get; private set; }
+        internal string ClientSecret { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -55,9 +55,9 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 EncodingHelper.AddKeyValueString(messageBuilder, EncodingHelper.UrlEncode(kvp.Key), EncodingHelper.UrlEncode(kvp.Value));
             }
 
-            if (this.ExtraQueryParameter != null)
+            if (ExtraQueryParameter != null)
             {
-                messageBuilder.Append('&' + this.ExtraQueryParameter);
+                messageBuilder.Append('&' + ExtraQueryParameter);
             }
 
             return messageBuilder.ToString();
@@ -68,16 +68,16 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
     internal class StringRequestParameters : IRequestParameters
     {
-        private readonly StringBuilder parameter;
+        readonly StringBuilder parameter;
 
         public StringRequestParameters(StringBuilder stringBuilderParameter)
         {
-            this.parameter = stringBuilderParameter;
+            parameter = stringBuilderParameter;
         }
 
         public override string ToString()
         {
-            return this.parameter.ToString();
+            return parameter.ToString();
         }
     }
 }

@@ -37,10 +37,10 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     {
         public DeviceAuthHeader(string base64EncodedCertificate)
         {
-            this.Alg = "RS256";
-            this.Type = "JWT";
-            this.X5c = new List<string>();
-            this.X5c.Add(base64EncodedCertificate);
+            Alg = "RS256";
+            Type = "JWT";
+            X5c = new List<string>();
+            X5c.Add(base64EncodedCertificate);
         }
 
         [DataMember(Name = "x5c", IsRequired = true)]
@@ -50,7 +50,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         public string Type { get; set; }
 
         [DataMember(Name = "alg", IsRequired = true)]
-        public string Alg { get; private set; }
+        public string Alg { get; set; }
     }
 
     [DataContract]
@@ -58,10 +58,10 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     {
         public DeviceAuthPayload(string audience, string nonce)
         {
-            this.Nonce = nonce;
-            this.Audience = audience;
+            Nonce = nonce;
+            Audience = audience;
             var timeSpan = (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0));
-            this.Iat = (long)timeSpan.TotalSeconds;
+            Iat = (long)timeSpan.TotalSeconds;
         }
 
         [DataMember(Name = "iat", IsRequired = true)]
@@ -71,20 +71,20 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         public string Audience { get; set; }
 
         [DataMember(Name = "nonce", IsRequired = true)]
-        public string Nonce { get; private set; }
+        public string Nonce { get; set; }
     }
 
 
     internal class DeviceAuthJWTResponse
     {
-        private DeviceAuthHeader header;
-        private DeviceAuthPayload payload;
+        DeviceAuthHeader header;
+        DeviceAuthPayload payload;
 
         public DeviceAuthJWTResponse(string audience, string nonce,
             string base64EncodedCertificate)
         {
-            this.header = new DeviceAuthHeader(base64EncodedCertificate);
-            this.payload = new DeviceAuthPayload(audience, nonce);
+            header = new DeviceAuthHeader(base64EncodedCertificate);
+            payload = new DeviceAuthPayload(audience, nonce);
         }
 
         public string GetResponseToSign()

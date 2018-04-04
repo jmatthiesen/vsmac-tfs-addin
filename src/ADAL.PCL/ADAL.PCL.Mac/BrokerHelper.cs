@@ -36,8 +36,10 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     {
         public IPlatformParameters PlatformParameters { get; set; }
 
-        public bool CanInvokeBroker {
-            get {
+        public bool CanInvokeBroker 
+        {
+            get 
+            {
                 return false;
             }
         }

@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -58,8 +58,8 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     /// </summary>
     public sealed class UserIdentifier
     {
-        private const string AnyUserId = "AnyUser";
-        private static readonly UserIdentifier AnyUserSingleton = new UserIdentifier(AnyUserId, UserIdentifierType.UniqueId);
+        const string AnyUserId = "AnyUser";
+        static readonly UserIdentifier AnyUserSingleton = new UserIdentifier(AnyUserId, UserIdentifierType.UniqueId);
 
         /// <summary>
         /// 
@@ -73,19 +73,19 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 throw new ArgumentNullException("id");
             }
 
-            this.Id = id;
-            this.Type = type;
+            Id = id;
+            Type = type;
         }
 
         /// <summary>
         /// Gets type of the <see cref="UserIdentifier"/>.
         /// </summary>
-        public UserIdentifierType Type { get; private set; }
+        public UserIdentifierType Type { get; set; }
         
         /// <summary>
         /// Gets Id of the <see cref="UserIdentifier"/>.
         /// </summary>
-        public string Id { get; private set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets an static instance of <see cref="UserIdentifier"/> to represent any user.
@@ -101,7 +101,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         {
             get
             {
-                return (this.Type == AnyUser.Type && this.Id == AnyUser.Id);
+                return (Type == AnyUser.Type && Id == AnyUser.Id);
             }            
         }
 
@@ -109,7 +109,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         {
             get
             {
-                return (!this.IsAnyUser && this.Type == UserIdentifierType.UniqueId) ? this.Id : null;
+                return (!IsAnyUser && Type == UserIdentifierType.UniqueId) ? Id : null;
             }
         }
 
@@ -117,7 +117,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         {
             get
             {
-                return (!this.IsAnyUser && (this.Type == UserIdentifierType.OptionalDisplayableId || this.Type == UserIdentifierType.RequiredDisplayableId)) ? this.Id : null;
+                return (!IsAnyUser && (Type == UserIdentifierType.OptionalDisplayableId || Type == UserIdentifierType.RequiredDisplayableId)) ? Id : null;
             }
         }
     }

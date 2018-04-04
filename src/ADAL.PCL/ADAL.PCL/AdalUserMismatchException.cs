@@ -41,19 +41,19 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             : base(AdalError.UserMismatch, 
                    string.Format(CultureInfo.CurrentCulture, AdalErrorMessage.UserMismatch, returnedUser, requestedUser))
         {
-            this.RequestedUser = requestedUser;
-            this.ReturnedUser = returnedUser;
+            RequestedUser = requestedUser;
+            ReturnedUser = returnedUser;
         }
 
         /// <summary>
         /// Gets the user requested from service.
         /// </summary>
-        public string RequestedUser { get; private set; }
+        public string RequestedUser { get; set; }
 
         /// <summary>
         /// Gets the user returned by service.
         /// </summary>
-        public string ReturnedUser { get; private set; }
+        public string ReturnedUser { get; set; }
 
         /// <summary>
         /// Creates and returns a string representation of the current exception.
@@ -61,7 +61,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         /// <returns>A string representation of the current exception.</returns>
         public override string ToString()
         {
-            return base.ToString() + string.Format(CultureInfo.CurrentCulture, "\n\tRequestedUser: {0}\n\tReturnedUser: {1}", this.RequestedUser, this.ReturnedUser);
+            return base.ToString() + string.Format(CultureInfo.CurrentCulture, "\n\tRequestedUser: {0}\n\tReturnedUser: {1}", RequestedUser, ReturnedUser);
         }
     }
 }

@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -60,25 +60,25 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
         internal TokenCacheKey(string authority, string resource, string clientId, TokenSubjectType tokenSubjectType, string uniqueId, string displayableId)
         {
-            this.Authority = authority;
-            this.Resource = resource;
-            this.ClientId = clientId;
-            this.TokenSubjectType = tokenSubjectType;
-            this.UniqueId = uniqueId;
-            this.DisplayableId = displayableId;
+            Authority = authority;
+            Resource = resource;
+            ClientId = clientId;
+            TokenSubjectType = tokenSubjectType;
+            UniqueId = uniqueId;
+            DisplayableId = displayableId;
         }
 
-        public string Authority { get; private set; }
+        public string Authority { get; set; }
 
         public string Resource { get; internal set; }
 
-        public string ClientId { get; private set; }
+        public string ClientId { get; set; }
 
-        public string UniqueId { get; private set; }
+        public string UniqueId { get; set; }
 
-        public string DisplayableId { get; private set; }
+        public string DisplayableId { get; set; }
 
-        public TokenSubjectType TokenSubjectType { get; private set; }
+        public TokenSubjectType TokenSubjectType { get; set; }
 
         /// <summary>
         /// Determines whether the specified object is equal to the current object.
@@ -90,7 +90,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         public override bool Equals(object obj)
         {
             TokenCacheKey other = obj as TokenCacheKey;
-            return (other != null) && this.Equals(other);
+            return (other != null) && Equals(other);
         }
 
         /// <summary>
@@ -104,12 +104,12 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         {
             return ReferenceEquals(this, other) ||
                (other != null
-               && (other.Authority == this.Authority)
-               && this.ResourceEquals(other.Resource)
-               && this.ClientIdEquals(other.ClientId)
-               && (other.UniqueId == this.UniqueId)
-               && this.DisplayableIdEquals(other.DisplayableId)
-               && (other.TokenSubjectType == this.TokenSubjectType));
+               && (other.Authority == Authority)
+               && ResourceEquals(other.Resource)
+               && ClientIdEquals(other.ClientId)
+               && (other.UniqueId == UniqueId)
+               && DisplayableIdEquals(other.DisplayableId)
+               && (other.TokenSubjectType == TokenSubjectType));
         }
 
         /// <summary>
@@ -121,27 +121,27 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         public override int GetHashCode()
         {
             const string Delimiter = ":::";
-            return (this.Authority + Delimiter 
-                + this.Resource.ToLower() + Delimiter
-                + this.ClientId.ToLower() + Delimiter
-                + this.UniqueId + Delimiter
-                + ((this.DisplayableId != null) ? this.DisplayableId.ToLower() : null) + Delimiter
-                + (int)this.TokenSubjectType).GetHashCode();
+            return (Authority + Delimiter 
+                + Resource.ToLower() + Delimiter
+                + ClientId.ToLower() + Delimiter
+                + UniqueId + Delimiter
+                + ((DisplayableId != null) ? DisplayableId.ToLower() : null) + Delimiter
+                + (int)TokenSubjectType).GetHashCode();
         }
 
         internal bool ResourceEquals(string otherResource)
         {
-            return (string.Compare(otherResource, this.Resource, StringComparison.OrdinalIgnoreCase) == 0);
+            return (string.Compare(otherResource, Resource, StringComparison.OrdinalIgnoreCase) == 0);
         }
 
         internal bool ClientIdEquals(string otherClientId)
         {
-            return (string.Compare(otherClientId, this.ClientId, StringComparison.OrdinalIgnoreCase) == 0);
+            return (string.Compare(otherClientId, ClientId, StringComparison.OrdinalIgnoreCase) == 0);
         }
 
         internal bool DisplayableIdEquals(string otherDisplayableId)
         {
-            return (string.Compare(otherDisplayableId, this.DisplayableId, StringComparison.OrdinalIgnoreCase) == 0);
+            return (string.Compare(otherDisplayableId, DisplayableId, StringComparison.OrdinalIgnoreCase) == 0);
         }
     }
 }

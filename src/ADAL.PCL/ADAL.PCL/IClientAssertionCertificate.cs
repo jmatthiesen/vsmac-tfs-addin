@@ -33,7 +33,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     public interface IClientAssertionCertificate
     {
         /// <summary>
-        /// Signs a message using the private key in the certificate
+        /// Signs a message using the key in the certificate
         /// </summary>
         /// <param name="message">Message that needs to be signed</param>
         /// <returns>Signed message as a byte array</returns>

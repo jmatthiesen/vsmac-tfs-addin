@@ -31,9 +31,8 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 {
     class AcquireTokenByAuthorizationCodeHandler : AcquireTokenHandlerBase
     {
-        private readonly string authorizationCode;
-
-        private readonly Uri redirectUri;
+        readonly string _authorizationCode;
+        readonly Uri _redirectUri;
 
         public AcquireTokenByAuthorizationCodeHandler(Authenticator authenticator, TokenCache tokenCache, string resource, ClientKey clientKey, string authorizationCode, Uri redirectUri)
             : base(authenticator, tokenCache, resource ?? NullResource, clientKey, TokenSubjectType.UserPlusClient)
@@ -43,43 +42,37 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 throw new ArgumentNullException("authorizationCode");
             }
 
-            this.authorizationCode = authorizationCode;
+            _authorizationCode = authorizationCode;
+            _redirectUri = redirectUri ?? throw new ArgumentNullException("redirectUri");
 
-            if (redirectUri == null)
-            {
-                throw new ArgumentNullException("redirectUri");
-            }
+            LoadFromCache = false;
 
-            this.redirectUri = redirectUri;
-
-            this.LoadFromCache = false;
-
-            this.SupportADFS = true;
+            SupportADFS = true;
         }
 
         protected override void AddAditionalRequestParameters(DictionaryRequestParameters requestParameters)
         {
             requestParameters[OAuthParameter.GrantType] = OAuthGrantType.AuthorizationCode;
-            requestParameters[OAuthParameter.Code] = this.authorizationCode;
-            requestParameters[OAuthParameter.RedirectUri] = this.redirectUri.OriginalString;
+            requestParameters[OAuthParameter.Code] = _authorizationCode;
+            requestParameters[OAuthParameter.RedirectUri] = _redirectUri.OriginalString;
         }
 
         protected override void PostTokenRequest(AuthenticationResultEx resultEx)
         {
             base.PostTokenRequest(resultEx);
             UserInfo userInfo = resultEx.Result.UserInfo;
-            this.UniqueId = (userInfo == null) ? null : userInfo.UniqueId;
-            this.DisplayableId = (userInfo == null) ? null : userInfo.DisplayableId;
+            UniqueId = (userInfo == null) ? null : userInfo.UniqueId;
+            DisplayableId = (userInfo == null) ? null : userInfo.DisplayableId;
             if (resultEx.ResourceInResponse != null)
             {
-                this.Resource = resultEx.ResourceInResponse;
-                PlatformPlugin.Logger.Verbose(this.CallState, "Resource value in the token response was used for storing tokens in the cache");
+                Resource = resultEx.ResourceInResponse;
+                PlatformPlugin.Logger.Verbose(CallState, "Resource value in the token response was used for storing tokens in the cache");
             }
 
             // If resource is not passed as an argument and is not returned by STS either, 
             // we cannot store the token in the cache with null resource.
             // TODO: Store refresh token though if STS supports MRRT.
-            this.StoreToCache = this.StoreToCache && (this.Resource != null);
+            StoreToCache = StoreToCache && (Resource != null);
         }
     }
 }

@@ -48,32 +48,32 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
         internal AuthorizationResult(AuthorizationStatus status)
         {
-            this.Status = status;
+            Status = status;
         }
 
         internal AuthorizationResult(AuthorizationStatus status, string returnedUriInput) :this(status)
         {
-            if (this.Status == AuthorizationStatus.UserCancel)
+            if (Status == AuthorizationStatus.UserCancel)
             {
-                this.Error = AdalError.AuthenticationCanceled;
-                this.ErrorDescription = AdalErrorMessage.AuthenticationCanceled;
+                Error = AdalError.AuthenticationCanceled;
+                ErrorDescription = AdalErrorMessage.AuthenticationCanceled;
             }
-            else if (this.Status == AuthorizationStatus.UnknownError)
+            else if (Status == AuthorizationStatus.UnknownError)
             {
-                this.Error = AdalError.Unknown;
-                this.ErrorDescription = AdalErrorMessage.Unknown;
+                Error = AdalError.Unknown;
+                ErrorDescription = AdalErrorMessage.Unknown;
             }
             else
             {
-                this.ParseAuthorizeResponse(returnedUriInput);
+                ParseAuthorizeResponse(returnedUriInput);
             }
         }
 
         [DataMember]
-        public AuthorizationStatus Status { get; private set; }
+        public AuthorizationStatus Status { get; set; }
 
         [DataMember]
-        public string Code { get; private set; }
+        public string Code { get; set; }
 
         [DataMember]
         public string Error { get; set; }
@@ -95,32 +95,32 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
                 if (response.ContainsKey(TokenResponseClaim.Code))
                 {
-                    this.Code = response[TokenResponseClaim.Code];
+                    Code = response[TokenResponseClaim.Code];
                 }
                 else if (webAuthenticationResult.StartsWith("msauth://", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    this.Code = webAuthenticationResult;
+                    Code = webAuthenticationResult;
                 }
                 else if (response.ContainsKey(TokenResponseClaim.Error))
                 {
-                    this.Error = response[TokenResponseClaim.Error];
-                    this.ErrorDescription = response.ContainsKey(TokenResponseClaim.ErrorDescription)
+                    Error = response[TokenResponseClaim.Error];
+                    ErrorDescription = response.ContainsKey(TokenResponseClaim.ErrorDescription)
                         ? response[TokenResponseClaim.ErrorDescription]
                         : null;
-                    this.Status = AuthorizationStatus.ProtocolError;
+                    Status = AuthorizationStatus.ProtocolError;
                 }
                 else
                 {
-                    this.Error = AdalError.AuthenticationFailed;
-                    this.ErrorDescription = AdalErrorMessage.AuthorizationServerInvalidResponse;
-                    this.Status = AuthorizationStatus.UnknownError;
+                    Error = AdalError.AuthenticationFailed;
+                    ErrorDescription = AdalErrorMessage.AuthorizationServerInvalidResponse;
+                    Status = AuthorizationStatus.UnknownError;
                 }
             }
             else
             {
-                this.Error = AdalError.AuthenticationFailed;
-                this.ErrorDescription = AdalErrorMessage.AuthorizationServerInvalidResponse;
-                this.Status = AuthorizationStatus.UnknownError;
+                Error = AdalError.AuthenticationFailed;
+                ErrorDescription = AdalErrorMessage.AuthorizationServerInvalidResponse;
+                Status = AuthorizationStatus.UnknownError;
             }
         }
     }

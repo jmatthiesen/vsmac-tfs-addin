@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -33,7 +33,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     {
         public CallState(Guid correlationId)
         {
-            this.CorrelationId = correlationId;
+            CorrelationId = correlationId;
         }
 
         public Guid CorrelationId { get; set; }

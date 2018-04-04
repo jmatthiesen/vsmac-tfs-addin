@@ -38,14 +38,14 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 {
     internal class HttpClientWrapper : IHttpClient
     {
-        private readonly string uri;
-        private int timeoutInMilliSeconds = 30000;
+        readonly string _uri;
+        int timeoutInMilliSeconds = 30000;
 
         public HttpClientWrapper(string uri, CallState callState)
         {
-            this.uri = uri;
-            this.Headers = new Dictionary<string, string>();
-            this.CallState = callState;
+            _uri = uri;
+            Headers = new Dictionary<string, string>();
+            CallState = callState;
         }
 
         protected CallState CallState { get; set; }
@@ -58,57 +58,57 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
         public bool UseDefaultCredentials { get; set; }
 
-        public Dictionary<string, string> Headers { get; private set; }
+        public Dictionary<string, string> Headers { get; set; }
 
         public int TimeoutInMilliSeconds
         {
             set
             {
-                this.timeoutInMilliSeconds = value;
+                timeoutInMilliSeconds = value;
             }
         }
 
         public async Task<IHttpWebResponse> GetResponseAsync()
         {
-            using (HttpClient client = new HttpClient(HttpMessageHandlerFactory.GetMessageHandler(this.UseDefaultCredentials)))
+            using (HttpClient client = new HttpClient(HttpMessageHandlerFactory.GetMessageHandler(UseDefaultCredentials)))
             {
                 client.DefaultRequestHeaders.Accept.Clear();
                 HttpRequestMessage requestMessage = new HttpRequestMessage();
-                requestMessage.RequestUri = new Uri(uri);
+                requestMessage.RequestUri = new Uri(_uri);
                 requestMessage.Headers.Accept.Clear();
 
-                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(this.Accept ?? "application/json"));
+                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(Accept ?? "application/json"));
             
-                foreach (KeyValuePair<string, string> kvp in this.Headers)
+                foreach (KeyValuePair<string, string> kvp in Headers)
                 {
                     requestMessage.Headers.Add(kvp.Key, kvp.Value);
                 }
 
-                bool addCorrelationId = (this.CallState != null && this.CallState.CorrelationId != Guid.Empty);
+                bool addCorrelationId = (CallState != null && CallState.CorrelationId != Guid.Empty);
               
                 if (addCorrelationId)
                 {
-                    requestMessage.Headers.Add(OAuthHeader.CorrelationId, this.CallState.CorrelationId.ToString());
+                    requestMessage.Headers.Add(OAuthHeader.CorrelationId, CallState.CorrelationId.ToString());
                     requestMessage.Headers.Add(OAuthHeader.RequestCorrelationIdInResponse, "true");
                 }
 
-                client.Timeout = TimeSpan.FromMilliseconds(this.timeoutInMilliSeconds);
+                client.Timeout = TimeSpan.FromMilliseconds(timeoutInMilliSeconds);
 
                 HttpResponseMessage responseMessage;
 
                 try
                 {
-                    if (this.BodyParameters != null)
+                    if (BodyParameters != null)
                     {
                         HttpContent content;
                        
-                        if (this.BodyParameters is StringRequestParameters)
+                        if (BodyParameters is StringRequestParameters)
                         {
-                            content = new StringContent(this.BodyParameters.ToString(), Encoding.UTF8, this.ContentType);
+                            content = new StringContent(BodyParameters.ToString(), Encoding.UTF8, ContentType);
                         }
                         else
                         {
-                            content = new FormUrlEncodedContent(((DictionaryRequestParameters)this.BodyParameters).ToList());
+                            content = new FormUrlEncodedContent(((DictionaryRequestParameters)BodyParameters).ToList());
                         }
 
                         requestMessage.Method = HttpMethod.Post;
@@ -153,6 +153,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         public async static Task<IHttpWebResponse> CreateResponseAsync(HttpResponseMessage response)
         {
             var headers = new Dictionary<string, string>();
+          
             if (response.Headers != null)
             {
                 foreach (var kvp in response.Headers)
@@ -164,7 +165,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             return new HttpWebResponseWrapper(await response.Content.ReadAsStreamAsync(), headers, response.StatusCode);
         }
 
-        private void VerifyCorrelationIdHeaderInReponse(Dictionary<string, string> headers)
+        void VerifyCorrelationIdHeaderInReponse(Dictionary<string, string> headers)
         {
             foreach (string reponseHeaderKey in headers.Keys)
             {
@@ -173,14 +174,15 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 {
                     string correlationIdHeader = headers[trimmedKey].Trim();
                     Guid correlationIdInResponse;
+                   
                     if (!Guid.TryParse(correlationIdHeader, out correlationIdInResponse))
                     {
                         PlatformPlugin.Logger.Warning(CallState, string.Format(CultureInfo.CurrentCulture, "Returned correlation id '{0}' is not in GUID format.", correlationIdHeader));
                     }
-                    else if (correlationIdInResponse != this.CallState.CorrelationId)
+                    else if (correlationIdInResponse != CallState.CorrelationId)
                     {
                         PlatformPlugin.Logger.Warning(
-                            this.CallState,
+                            CallState,
                             string.Format(CultureInfo.CurrentCulture, "Returned correlation id '{0}' does not match the sent correlation id '{1}'", correlationIdHeader, CallState.CorrelationId));
                     }
 

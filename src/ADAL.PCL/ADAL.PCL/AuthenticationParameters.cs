@@ -39,10 +39,10 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     /// </summary>
     public sealed class AuthenticationParameters
     {
-        private const string AuthenticateHeader = "WWW-Authenticate";
-        private const string Bearer = "bearer";
-        private const string AuthorityKey = "authorization_uri";
-        private const string ResourceKey = "resource_id";
+        const string AuthenticateHeader = "WWW-Authenticate";
+        const string Bearer = "bearer";
+        const string AuthorityKey = "authorization_uri";
+        const string ResourceKey = "resource_id";
 
         /// <summary>
         /// Gets or sets the address of the authority to issue token.
@@ -114,7 +114,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             return authParams;
         }
 
-        private static async Task<AuthenticationParameters> CreateFromResourceUrlCommonAsync(Uri resourceUrl)
+        static async Task<AuthenticationParameters> CreateFromResourceUrlCommonAsync(Uri resourceUrl)
         {
             if (resourceUrl == null)
             {
@@ -149,7 +149,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             return authParams;
         }
 
-        private static AuthenticationParameters CreateFromUnauthorizedResponseCommon(IHttpWebResponse response)
+        static AuthenticationParameters CreateFromUnauthorizedResponseCommon(IHttpWebResponse response)
         {
             if (response == null)
             {

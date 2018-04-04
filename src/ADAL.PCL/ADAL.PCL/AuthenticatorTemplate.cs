@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -36,9 +36,9 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     [DataContract]
     internal class AuthenticatorTemplate
     {
-        private const string AuthorizeEndpointTemplate = "https://{host}/{tenant}/oauth2/authorize";
-        private const string DeviceCodeEndpointTemplate = "https://{host}/{tenant}/oauth2/devicecode";
-        private const string MetadataTemplate = "{\"Host\":\"{host}\", \"Authority\":\"https://{host}/{tenant}/\", \"InstanceDiscoveryEndpoint\":\"https://{host}/common/discovery/instance\", \"DeviceCodeEndpoint\":\"" + DeviceCodeEndpointTemplate + "\", \"AuthorizeEndpoint\":\"" + AuthorizeEndpointTemplate + "\", \"TokenEndpoint\":\"https://{host}/{tenant}/oauth2/token\", \"UserRealmEndpoint\":\"https://{host}/common/UserRealm\"}";
+        const string AuthorizeEndpointTemplate = "https://{host}/{tenant}/oauth2/authorize";
+        const string DeviceCodeEndpointTemplate = "https://{host}/{tenant}/oauth2/devicecode";
+        const string MetadataTemplate = "{\"Host\":\"{host}\", \"Authority\":\"https://{host}/{tenant}/\", \"InstanceDiscoveryEndpoint\":\"https://{host}/common/discovery/instance\", \"DeviceCodeEndpoint\":\"" + DeviceCodeEndpointTemplate + "\", \"AuthorizeEndpoint\":\"" + AuthorizeEndpointTemplate + "\", \"TokenEndpoint\":\"https://{host}/{tenant}/oauth2/token\", \"UserRealmEndpoint\":\"https://{host}/common/UserRealm\"}";
 
         public static AuthenticatorTemplate CreateFromHost(string host)
         {
@@ -81,7 +81,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
         public async Task VerifyAnotherHostByInstanceDiscoveryAsync(string host, string tenant, CallState callState)
         {
-            string instanceDiscoveryEndpoint = this.InstanceDiscoveryEndpoint;
+            string instanceDiscoveryEndpoint = InstanceDiscoveryEndpoint;
             instanceDiscoveryEndpoint += ("?api-version=1.0&authorization_endpoint=" + AuthorizeEndpointTemplate);
             instanceDiscoveryEndpoint = instanceDiscoveryEndpoint.Replace("{host}", host);
             instanceDiscoveryEndpoint = instanceDiscoveryEndpoint.Replace("{tenant}", tenant);

@@ -34,28 +34,28 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 {
     class AcquireDeviceCodeHandler
     {
-        private Authenticator authenticator;
-        private ClientKey clientKey;
-        private string resource;
-        private CallState callState;
-        private string extraQueryParameters;
+        Authenticator _authenticator;
+        ClientKey _clientKey;
+        string _resource;
+        CallState _callState;
+        string _extraQueryParameters;
 
         public AcquireDeviceCodeHandler(Authenticator authenticator, string resource, string clientId, string extraQueryParameters)
         {
-            this.authenticator = authenticator;
-            this.callState = AcquireTokenHandlerBase.CreateCallState(this.authenticator.CorrelationId);
-            this.clientKey = new ClientKey(clientId);
-            this.resource = resource;
-            this.extraQueryParameters = extraQueryParameters;
+            _authenticator = authenticator;
+            _callState = AcquireTokenHandlerBase.CreateCallState(authenticator.CorrelationId);
+            _clientKey = new ClientKey(clientId);
+            _resource = resource;
+            _extraQueryParameters = extraQueryParameters;
         }
         
-        private string CreateDeviceCodeRequestUriString()
+        string CreateDeviceCodeRequestUriString()
         {
-            var deviceCodeRequestParameters = new DictionaryRequestParameters(this.resource, this.clientKey);
+            var deviceCodeRequestParameters = new DictionaryRequestParameters(_resource, _clientKey);
 
-            if (this.callState != null && this.callState.CorrelationId != Guid.Empty)
+            if (_callState != null && _callState.CorrelationId != Guid.Empty)
             {
-                deviceCodeRequestParameters[OAuthParameter.CorrelationId] = this.callState.CorrelationId.ToString();
+                deviceCodeRequestParameters[OAuthParameter.CorrelationId] = _callState.CorrelationId.ToString();
             }
             
             if (PlatformPlugin.HttpClientFactory.AddAdditionalHeaders)
@@ -67,10 +67,10 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(extraQueryParameters))
+            if (!string.IsNullOrWhiteSpace(_extraQueryParameters))
             {
                 // Checks for extraQueryParameters duplicating standard parameters
-                Dictionary<string, string> kvps = EncodingHelper.ParseKeyValueList(extraQueryParameters, '&', false, this.callState);
+                Dictionary<string, string> kvps = EncodingHelper.ParseKeyValueList(_extraQueryParameters, '&', false, _callState);
                 foreach (KeyValuePair<string, string> kvp in kvps)
                 {
                     if (deviceCodeRequestParameters.ContainsKey(kvp.Key))
@@ -79,17 +79,17 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                     }
                 }
 
-                deviceCodeRequestParameters.ExtraQueryParameter = extraQueryParameters;
+                deviceCodeRequestParameters.ExtraQueryParameter = _extraQueryParameters;
             }
 
-            return new Uri(new Uri(this.authenticator.DeviceCodeUri), "?" + deviceCodeRequestParameters).AbsoluteUri;
+            return new Uri(new Uri(_authenticator.DeviceCodeUri), "?" + deviceCodeRequestParameters).AbsoluteUri;
         }
 
         internal async Task<DeviceCodeResult> RunHandlerAsync()
         {
-            await this.authenticator.UpdateFromTemplateAsync(this.callState);
-            this.ValidateAuthorityType();
-            AdalHttpClient client = new AdalHttpClient(CreateDeviceCodeRequestUriString(), this.callState);
+            await _authenticator.UpdateFromTemplateAsync(_callState);
+            ValidateAuthorityType();
+            AdalHttpClient client = new AdalHttpClient(CreateDeviceCodeRequestUriString(), _callState);
             DeviceCodeResponse response = await client.GetResponseAsync<DeviceCodeResponse>(ClientMetricsEndpointType.DeviceCode);
 
             if (!string.IsNullOrEmpty(response.Error))
@@ -97,15 +97,15 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 throw new AdalException(response.Error, response.ErrorDescription);
             }
 
-            return response.GetResult(clientKey.ClientId, resource);
+            return response.GetResult(_clientKey.ClientId, _resource);
         }
 
-        private void ValidateAuthorityType()
+        void ValidateAuthorityType()
         {
-            if (this.authenticator.AuthorityType == AuthorityType.ADFS)
+            if (_authenticator.AuthorityType == AuthorityType.ADFS)
             {
                 throw new AdalException(AdalError.InvalidAuthorityType,
-                    string.Format(CultureInfo.CurrentCulture, AdalErrorMessage.InvalidAuthorityTypeTemplate, this.authenticator.Authority));
+                    string.Format(CultureInfo.CurrentCulture, AdalErrorMessage.InvalidAuthorityTypeTemplate, _authenticator.Authority));
             }
         }
 

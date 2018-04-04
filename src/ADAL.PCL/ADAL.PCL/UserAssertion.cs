@@ -46,7 +46,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 throw new ArgumentNullException("assertion");
             }
 
-            this.Assertion = assertion;
+            Assertion = assertion;
         }
 
         /// <summary>
@@ -77,20 +77,20 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 throw new ArgumentNullException("assertionType");
             }
 
-            this.AssertionType = assertionType;
-            this.Assertion = assertion;
-            this.UserName = userName;
+            AssertionType = assertionType;
+            Assertion = assertion;
+            UserName = userName;
         }
 
         /// <summary>
         /// Gets the assertion.
         /// </summary>
-        public string Assertion { get; private set; }
+        public string Assertion { get; set; }
 
         /// <summary>
         /// Gets the assertion type.
         /// </summary>
-        public string AssertionType { get; private set; }
+        public string AssertionType { get; set; }
 
         /// <summary>
         /// Gets name of the user.

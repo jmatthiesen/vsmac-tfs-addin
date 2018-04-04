@@ -51,24 +51,24 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 throw new ArgumentNullException("assertion");
             }
 
-            this.ClientId = clientId;
-            this.AssertionType = OAuthAssertionType.JwtBearer;
-            this.Assertion = assertion;
+            ClientId = clientId;
+            AssertionType = OAuthAssertionType.JwtBearer;
+            Assertion = assertion;
         }
 
         /// <summary>
         /// Gets the identifier of the client requesting the token.
         /// </summary>
-        public string ClientId { get; private set; }
+        public string ClientId { get; set; }
 
         /// <summary>
         /// Gets the assertion.
         /// </summary>
-        public string Assertion { get; private set; }
+        public string Assertion { get; set; }
 
         /// <summary>
         /// Gets the assertion type.
         /// </summary>
-        public string AssertionType { get; private set; }
+        public string AssertionType { get; set; }
     }
 }

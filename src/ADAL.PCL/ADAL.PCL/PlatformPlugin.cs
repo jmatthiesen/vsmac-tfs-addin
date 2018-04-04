@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -91,7 +91,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             BrokerHelper = brokerHelper;
         }
 
-        private static Assembly LoadPlatformSpecificAssembly()
+        static Assembly LoadPlatformSpecificAssembly()
         {
             // For security reasons, it is important to have PublicKeyToken mentioned referencing the assembly.
             const string PlatformSpecificAssemblyNameTemplate = "Microsoft.IdentityService.Clients.ActiveDirectory.Platform, Version={0}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";

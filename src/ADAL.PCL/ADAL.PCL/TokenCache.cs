@@ -45,26 +45,26 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         /// <param name="args">Arguments related to the cache item impacted</param>
         public delegate void TokenCacheNotification(TokenCacheNotificationArgs args);
 
-        private const int SchemaVersion = 3;
+        const int SchemaVersion = 3;
         
-        private const string Delimiter = ":::";
+        const string Delimiter = ":::";
 
         internal readonly IDictionary<TokenCacheKey, AuthenticationResultEx> tokenCacheDictionary;
 
         // We do not want to return near expiry tokens, this is why we use this hard coded setting to refresh tokens which are close to expiration.
-        private const int ExpirationMarginInMinutes = 5;
+        const int ExpirationMarginInMinutes = 5;
 
-        private volatile bool hasStateChanged;
+        volatile bool hasStateChanged;
 
-        private Object cacheLock = new Object();
+        Object cacheLock = new Object();
 
         static TokenCache()
         {
             DefaultShared = new TokenCache
-                            {
-                                BeforeAccess = PlatformPlugin.TokenCachePlugin.BeforeAccess,
-                                AfterAccess = PlatformPlugin.TokenCachePlugin.AfterAccess
-                            };
+            {
+                BeforeAccess = PlatformPlugin.TokenCachePlugin.BeforeAccess,
+                AfterAccess = PlatformPlugin.TokenCachePlugin.AfterAccess
+            };
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         /// </summary>
         public TokenCache()
         {
-            this.tokenCacheDictionary = new ConcurrentDictionary<TokenCacheKey, AuthenticationResultEx>();
+            tokenCacheDictionary = new ConcurrentDictionary<TokenCacheKey, AuthenticationResultEx>();
         }
 
         /// <summary>
@@ -81,19 +81,18 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         public TokenCache(byte[] state)
             : this()
         {
-            this.Deserialize(state);
+            Deserialize(state);
         }
 
         /// <summary>
         /// Static token cache shared by all instances of AuthenticationContext which do not explicitly pass a cache instance during construction.
         /// </summary>
-        public static TokenCache DefaultShared { get; private set; }
+        public static TokenCache DefaultShared { get; set; }
 
         /// <summary>
         /// Notification method called before any library method accesses the cache.
         /// </summary>
         public TokenCacheNotification BeforeAccess { get; set; }
-
 
         /// <summary>
         /// Notification method called before any library method writes to the cache. This notification can be used to reload
@@ -116,7 +115,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             {
                 lock (cacheLock)
                 {
-                    return this.hasStateChanged;
+                    return hasStateChanged;
                 }
             }
 
@@ -124,7 +123,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             {
                 lock (cacheLock)
                 {
-                    this.hasStateChanged = value;
+                    hasStateChanged = value;
                 }
             }
         }
@@ -138,7 +137,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             {
                 lock (cacheLock)
                 {
-                    return this.tokenCacheDictionary.Count;
+                    return tokenCacheDictionary.Count;
                 } 
             }
         }
@@ -158,9 +157,10 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                     writer.Write(SchemaVersion);
                     PlatformPlugin.Logger.Information(null,
                         string.Format(CultureInfo.CurrentCulture, "Serializing token cache with {0} items.",
-                            this.tokenCacheDictionary.Count));
-                    writer.Write(this.tokenCacheDictionary.Count);
-                    foreach (KeyValuePair<TokenCacheKey, AuthenticationResultEx> kvp in this.tokenCacheDictionary)
+                            tokenCacheDictionary.Count));
+                    writer.Write(tokenCacheDictionary.Count);
+
+                    foreach (KeyValuePair<TokenCacheKey, AuthenticationResultEx> kvp in tokenCacheDictionary)
                     {
                         writer.Write(string.Format(CultureInfo.CurrentCulture, "{1}{0}{2}{0}{3}{0}{4}", Delimiter,
                             kvp.Key.Authority, kvp.Key.Resource, kvp.Key.ClientId, (int) kvp.Key.TokenSubjectType));
@@ -170,6 +170,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                     int length = (int) stream.Position;
                     stream.Position = 0;
                     BinaryReader reader = new BinaryReader(stream);
+
                     return reader.ReadBytes(length);
                 }
             }
@@ -185,7 +186,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             {
                 if (state == null)
                 {
-                    this.tokenCacheDictionary.Clear();
+                    tokenCacheDictionary.Clear();
                     return;
                 }
 
@@ -198,13 +199,14 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
                     BinaryReader reader = new BinaryReader(stream);
                     int schemaVersion = reader.ReadInt32();
+
                     if (schemaVersion != SchemaVersion)
                     {
                         PlatformPlugin.Logger.Warning(null,"The version of the persistent state of the cache does not match the current schema, so skipping deserialization.");
                         return;
                     }
 
-                    this.tokenCacheDictionary.Clear();
+                    tokenCacheDictionary.Clear();
                     int count = reader.ReadInt32();
                     for (int n = 0; n < count; n++)
                     {
@@ -216,7 +218,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                             (TokenSubjectType) int.Parse(kvpElements[3], CultureInfo.CurrentCulture),
                             resultEx.Result.UserInfo);
 
-                        this.tokenCacheDictionary.Add(key, resultEx);
+                        tokenCacheDictionary.Add(key, resultEx);
                     }
 
                     PlatformPlugin.Logger.Information(null,
@@ -224,7 +226,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 }
             }
         }
-
+       
         /// <summary>
         /// Reads a copy of the list of all items in the cache. 
         /// </summary>
@@ -234,12 +236,12 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             lock (cacheLock)
             {
                 TokenCacheNotificationArgs args = new TokenCacheNotificationArgs {TokenCache = this};
-                this.OnBeforeAccess(args);
+                OnBeforeAccess(args);
 
                 List<TokenCacheItem> items =
-                    this.tokenCacheDictionary.Select(kvp => new TokenCacheItem(kvp.Key, kvp.Value.Result)).ToList();
+                    tokenCacheDictionary.Select(kvp => new TokenCacheItem(kvp.Key, kvp.Value.Result)).ToList();
 
-                this.OnAfterAccess(args);
+                OnAfterAccess(args);
 
                 return items;
             }
@@ -267,13 +269,14 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                     DisplayableId = item.DisplayableId
                 };
 
-                this.OnBeforeAccess(args);
-                this.OnBeforeWrite(args);
+                OnBeforeAccess(args);
+                OnBeforeWrite(args);
 
-                TokenCacheKey toRemoveKey = this.tokenCacheDictionary.Keys.FirstOrDefault(item.Match);
+                TokenCacheKey toRemoveKey = tokenCacheDictionary.Keys.FirstOrDefault(item.Match);
+              
                 if (toRemoveKey != null)
                 {
-                    this.tokenCacheDictionary.Remove(toRemoveKey);
+                    tokenCacheDictionary.Remove(toRemoveKey);
                     PlatformPlugin.Logger.Information(null, "One item removed successfully");
                 }
                 else
@@ -281,8 +284,8 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                     PlatformPlugin.Logger.Information(null, "Item not Present in the Cache");
                 }
 
-                this.HasStateChanged = true;
-                this.OnAfterAccess(args);
+                HasStateChanged = true;
+                OnAfterAccess(args);
             }
         }
 
@@ -295,14 +298,14 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             lock (cacheLock)
             {
                 TokenCacheNotificationArgs args = new TokenCacheNotificationArgs {TokenCache = this};
-                this.OnBeforeAccess(args);
-                this.OnBeforeWrite(args);
+                OnBeforeAccess(args);
+                OnBeforeWrite(args);
                 PlatformPlugin.Logger.Information(null,
-                    String.Format(CultureInfo.CurrentCulture, "Clearing Cache :- {0} items to be removed", this.Count));
-                this.tokenCacheDictionary.Clear();
+                    String.Format(CultureInfo.CurrentCulture, "Clearing Cache :- {0} items to be removed", Count));
+                tokenCacheDictionary.Clear();
                 PlatformPlugin.Logger.Information(null, "Successfully Cleared Cache");
-                this.HasStateChanged = true;
-                this.OnAfterAccess(args);
+                HasStateChanged = true;
+                OnAfterAccess(args);
             }
         }
 
@@ -310,10 +313,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         {
             lock (cacheLock)
             {
-                if (AfterAccess != null)
-                {
-                    AfterAccess(args);
-                }
+                AfterAccess?.Invoke(args);
             }
         }
 
@@ -321,10 +321,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         {
             lock (cacheLock)
             {
-                if (BeforeAccess != null)
-                {
-                    BeforeAccess(args);
-                }
+                BeforeAccess?.Invoke(args);
             }
         }
 
@@ -332,10 +329,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         {
             lock (cacheLock)
             {
-                if (BeforeWrite != null)
-                {
-                    BeforeWrite(args);
-                }
+                BeforeWrite?.Invoke(args);
             }
         }
 
@@ -347,7 +341,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
                 AuthenticationResultEx resultEx = null;
 
-                KeyValuePair<TokenCacheKey, AuthenticationResultEx>? kvp = this.LoadSingleItemFromCache(cacheQueryData, callState);
+                KeyValuePair<TokenCacheKey, AuthenticationResultEx>? kvp = LoadSingleItemFromCache(cacheQueryData, callState);
 
                 if (kvp.HasValue)
                 {
@@ -388,9 +382,9 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
                     if (resultEx.Result.AccessToken == null && resultEx.RefreshToken == null)
                     {
-                        this.tokenCacheDictionary.Remove(cacheKey);
+                        tokenCacheDictionary.Remove(cacheKey);
                         PlatformPlugin.Logger.Information(callState, "An old item was removed from the cache");
-                        this.HasStateChanged = true;
+                        HasStateChanged = true;
                         resultEx = null;
                     }
 
@@ -418,7 +412,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 string uniqueId = (result.Result.UserInfo != null) ? result.Result.UserInfo.UniqueId : null;
                 string displayableId = (result.Result.UserInfo != null) ? result.Result.UserInfo.DisplayableId : null;
 
-                this.OnBeforeWrite(new TokenCacheNotificationArgs
+                OnBeforeWrite(new TokenCacheNotificationArgs
                 {
                     Resource = resource,
                     ClientId = clientId,
@@ -428,23 +422,24 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
                 TokenCacheKey tokenCacheKey = new TokenCacheKey(authority, resource, clientId, subjectType,
                     result.Result.UserInfo);
-                this.tokenCacheDictionary[tokenCacheKey] = result;
+                
+                tokenCacheDictionary[tokenCacheKey] = result;
                 PlatformPlugin.Logger.Verbose(callState, "An item was stored in the cache");
-                this.UpdateCachedMrrtRefreshTokens(result, clientId, subjectType);
+                UpdateCachedMrrtRefreshTokens(result, clientId, subjectType);
 
-                this.HasStateChanged = true;
+                HasStateChanged = true;
             }
         }
 
-        private void UpdateCachedMrrtRefreshTokens(AuthenticationResultEx result, string clientId, TokenSubjectType subjectType)
+        void UpdateCachedMrrtRefreshTokens(AuthenticationResultEx result, string clientId, TokenSubjectType subjectType)
         {
             lock (cacheLock)
             {
                 if (result.Result.UserInfo != null && result.IsMultipleResourceRefreshToken)
                 {
-                    //pass null for authority to update the token for all the tenants
+                    // Pass null for authority to update the token for all the tenants
                     List<KeyValuePair<TokenCacheKey, AuthenticationResultEx>> mrrtItems =
-                        this.QueryCache(null, clientId, subjectType, result.Result.UserInfo.UniqueId,
+                        QueryCache(null, clientId, subjectType, result.Result.UserInfo.UniqueId,
                             result.Result.UserInfo.DisplayableId)
                             .Where(p => p.Value.IsMultipleResourceRefreshToken)
                             .ToList();
@@ -457,12 +452,12 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             }
         }
 
-        private KeyValuePair<TokenCacheKey, AuthenticationResultEx>? LoadSingleItemFromCache(CacheQueryData cacheQueryData, CallState callState)
+        KeyValuePair<TokenCacheKey, AuthenticationResultEx>? LoadSingleItemFromCache(CacheQueryData cacheQueryData, CallState callState)
         {
             lock (cacheLock)
             {
                 // First identify all potential tokens.
-                List<KeyValuePair<TokenCacheKey, AuthenticationResultEx>> items = this.QueryCache(cacheQueryData.Authority, cacheQueryData.ClientId, cacheQueryData.SubjectType, cacheQueryData.UniqueId, cacheQueryData.DisplayableId);
+                List<KeyValuePair<TokenCacheKey, AuthenticationResultEx>> items = QueryCache(cacheQueryData.Authority, cacheQueryData.ClientId, cacheQueryData.SubjectType, cacheQueryData.UniqueId, cacheQueryData.DisplayableId);
                 
                 List<KeyValuePair<TokenCacheKey, AuthenticationResultEx>> resourceSpecificItems =
                     items.Where(p => p.Key.ResourceEquals(cacheQueryData.Resource)).ToList();
@@ -506,7 +501,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
                 // check for tokens issued to same client_id/user_id combination, but any tenant.
                 if (returnValue == null)
                 {
-                    List<KeyValuePair<TokenCacheKey, AuthenticationResultEx>> itemsForAllTenants = this.QueryCache(null, cacheQueryData.ClientId, cacheQueryData.SubjectType, cacheQueryData.UniqueId, cacheQueryData.DisplayableId);
+                    List<KeyValuePair<TokenCacheKey, AuthenticationResultEx>> itemsForAllTenants = QueryCache(null, cacheQueryData.ClientId, cacheQueryData.SubjectType, cacheQueryData.UniqueId, cacheQueryData.DisplayableId);
                     if (itemsForAllTenants.Count != 0)
                     {
                         returnValue = itemsForAllTenants.First();
@@ -534,12 +529,12 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         /// authority value that this AuthorizationContext was created with.  In every case passing
         /// null results in a wildcard evaluation.
         /// </summary>
-        private List<KeyValuePair<TokenCacheKey, AuthenticationResultEx>> QueryCache(string authority, string clientId,
+        List<KeyValuePair<TokenCacheKey, AuthenticationResultEx>> QueryCache(string authority, string clientId,
             TokenSubjectType subjectType, string uniqueId, string displayableId)
         {
             lock (cacheLock)
             {
-                return this.tokenCacheDictionary.Where(
+                return tokenCacheDictionary.Where(
                     p =>
                         (string.IsNullOrWhiteSpace(authority) || p.Key.Authority == authority)
                         && (string.IsNullOrWhiteSpace(clientId) || p.Key.ClientIdEquals(clientId))

@@ -42,13 +42,13 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
         internal UserInfo(UserInfo other)
         {
-            this.UniqueId = other.UniqueId;
-            this.DisplayableId = other.DisplayableId;
-            this.GivenName = other.GivenName;
-            this.FamilyName = other.FamilyName;
-            this.IdentityProvider = other.IdentityProvider;
-            this.PasswordChangeUrl = other.PasswordChangeUrl;
-            this.PasswordExpiresOn = other.PasswordExpiresOn;
+            UniqueId = other.UniqueId;
+            DisplayableId = other.DisplayableId;
+            GivenName = other.GivenName;
+            FamilyName = other.FamilyName;
+            IdentityProvider = other.IdentityProvider;
+            PasswordChangeUrl = other.PasswordChangeUrl;
+            PasswordExpiresOn = other.PasswordExpiresOn;
         }
 
         /// <summary>

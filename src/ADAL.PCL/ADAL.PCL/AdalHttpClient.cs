@@ -49,9 +49,9 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
         internal string RequestUri { get; set; }
 
-        public IHttpClient Client { get; private set; }
+        public IHttpClient Client { get; set; }
 
-        public CallState CallState { get; private set; }
+        public CallState CallState { get; set; }
 
         public async Task<T> GetResponseAsync<T>(string endpointType)
         {
@@ -70,7 +70,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
                 if (PlatformPlugin.HttpClientFactory.AddAdditionalHeaders)
                 {
-                    Dictionary<string, string> clientMetricsHeaders = clientMetrics.GetPreviousRequestRecord(this.CallState);
+                    Dictionary<string, string> clientMetricsHeaders = clientMetrics.GetPreviousRequestRecord(CallState);
                     foreach (KeyValuePair<string, string> kvp in clientMetricsHeaders)
                     {
                         Client.Headers[kvp.Key] = kvp.Value;
@@ -85,7 +85,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
                 //add pkeyauth header
                 Client.Headers[DeviceAuthHeaderName] = DeviceAuthHeaderValue;
-                using (response = await this.Client.GetResponseAsync())
+                using (response = await Client.GetResponseAsync())
                 {
                     typedResponse = DeserializeResponse<T>(response.ResponseStream);
                     clientMetrics.SetLastError(null);
@@ -93,7 +93,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             }
             catch (HttpRequestWrapperException ex)
             {
-                if (!isDeviceAuthChallenge(endpointType, ex.WebResponse, respondToDeviceAuthChallenge))
+                if (!IsDeviceAuthChallenge(endpointType, ex.WebResponse, respondToDeviceAuthChallenge))
                 {
                     AdalServiceException serviceEx;
                     if (ex.WebResponse != null)
@@ -123,7 +123,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             }
 
             // Check for pkeyauth challenge
-            if (isDeviceAuthChallenge(endpointType, response, respondToDeviceAuthChallenge))
+            if (IsDeviceAuthChallenge(endpointType, response, respondToDeviceAuthChallenge))
             {
                 return await HandleDeviceAuthChallenge<T>(endpointType, response);
             }
@@ -131,7 +131,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             return typedResponse;
         }
 
-        bool isDeviceAuthChallenge(string endpointType, IHttpWebResponse response, bool respondToDeviceAuthChallenge)
+        bool IsDeviceAuthChallenge(string endpointType, IHttpWebResponse response, bool respondToDeviceAuthChallenge)
         {
             return PlatformPlugin.DeviceAuthHelper.CanHandleDeviceAuthChallenge &&
                    respondToDeviceAuthChallenge &&
@@ -167,7 +167,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
             string responseHeader = await PlatformPlugin.DeviceAuthHelper.CreateDeviceAuthChallengeResponse(responseDictionary);
             IRequestParameters rp = Client.BodyParameters;
-            Client = PlatformPlugin.HttpClientFactory.Create(CheckForExtraQueryParameter(responseDictionary["SubmitUrl"]), this.CallState);
+            Client = PlatformPlugin.HttpClientFactory.Create(CheckForExtraQueryParameter(responseDictionary["SubmitUrl"]), CallState);
             Client.BodyParameters = rp;
             Client.Headers["Authorization"] = responseHeader;
 

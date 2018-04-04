@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -61,7 +61,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
     internal class MexParser
     {
-        private const string WsTrustSoapTransport = "http://schemas.xmlsoap.org/soap/http";
+        const string WsTrustSoapTransport = "http://schemas.xmlsoap.org/soap/http";
 
         public static async Task<WsTrustAddress> FetchWsTrustAddressFromMexAsync(string federationMetadataUrl, UserAuthType userAuthType, CallState callState)
         {
@@ -192,7 +192,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             return policies;
         }
 
-        private static Dictionary<string, MexPolicy> ReadPolicyBindings(XContainer mexDocument, IReadOnlyDictionary<string, MexPolicy> policies)
+        static Dictionary<string, MexPolicy> ReadPolicyBindings(XContainer mexDocument, IReadOnlyDictionary<string, MexPolicy> policies)
         {
             var bindings = new Dictionary<string, MexPolicy>();
             IEnumerable<XElement> bindingElements = mexDocument.Elements().First().Elements(XmlNamespace.Wsdl + "binding");
@@ -255,7 +255,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             return bindings;
         }
 
-        private static void SetPolicyEndpointAddresses(XContainer mexDocument, IReadOnlyDictionary<string, MexPolicy> bindings)
+        static void SetPolicyEndpointAddresses(XContainer mexDocument, IReadOnlyDictionary<string, MexPolicy> bindings)
         {
             XElement serviceElement = mexDocument.Elements().First().Elements(XmlNamespace.Wsdl + "service").First();
             IEnumerable<XElement> portElements = serviceElement.Elements(XmlNamespace.Wsdl + "port");
@@ -288,7 +288,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             }
         }
 
-        private static void AddPolicy(IDictionary<string, MexPolicy> policies, XElement policy, UserAuthType policyAuthType)
+        static void AddPolicy(IDictionary<string, MexPolicy> policies, XElement policy, UserAuthType policyAuthType)
         {
             XElement binding = policy.Descendants(XmlNamespace.Sp + "TransportBinding").FirstOrDefault()
                           ?? policy.Descendants(XmlNamespace.Sp2005 + "TransportBinding").FirstOrDefault();

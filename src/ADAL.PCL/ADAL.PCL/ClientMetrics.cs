@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 // Copyright (c) Microsoft Corporation.
 // All rights reserved.
@@ -42,19 +42,19 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
     
     internal class ClientMetrics
     {
-        private const string ClientMetricsHeaderLastError = "x-client-last-error";
-        private const string ClientMetricsHeaderLastRequest = "x-client-last-request";
-        private const string ClientMetricsHeaderLastResponseTime = "x-client-last-response-time";
-        private const string ClientMetricsHeaderLastEndpoint = "x-client-last-endpoint";
+        const string ClientMetricsHeaderLastError = "x-client-last-error";
+        const string ClientMetricsHeaderLastRequest = "x-client-last-request";
+        const string ClientMetricsHeaderLastResponseTime = "x-client-last-response-time";
+        const string ClientMetricsHeaderLastEndpoint = "x-client-last-endpoint";
 
-        private static ClientMetrics pendingClientMetrics;
-        private static readonly object PendingClientMetricsLock = new object();
+        static ClientMetrics pendingClientMetrics;
+        static readonly object PendingClientMetricsLock = new object();
 
-        private Stopwatch metricsTimer;
-        private string lastError;
-        private Guid lastCorrelationId;
-        private long lastResponseTime;
-        private string lastEndpoint;
+        Stopwatch metricsTimer;
+        string lastError;
+        Guid lastCorrelationId;
+        long lastResponseTime;
+        string lastEndpoint;
 
         public void BeginClientMetricsRecord(CallState callState)
         {
@@ -102,7 +102,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
             lastError = (errorCodes != null) ? string.Join(",", errorCodes) : null;
         }
 
-        private static Dictionary<string, string> GetClientMetricsParameters()
+        static Dictionary<string, string> GetClientMetricsParameters()
         {
             var parameters = new Dictionary<string, string>();
             lock (PendingClientMetricsLock)

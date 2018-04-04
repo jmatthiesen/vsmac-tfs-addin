@@ -56,7 +56,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         {
             get
             {
-                return (!string.IsNullOrWhiteSpace(this.RefreshToken) && !string.IsNullOrWhiteSpace(this.ResourceInResponse));
+                return (!string.IsNullOrWhiteSpace(RefreshToken) && !string.IsNullOrWhiteSpace(ResourceInResponse));
             }            
         }
 

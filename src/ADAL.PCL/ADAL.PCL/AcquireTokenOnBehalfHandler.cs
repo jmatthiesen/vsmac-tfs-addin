@@ -34,41 +34,36 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 {
     internal class AcquireTokenOnBehalfHandler : AcquireTokenHandlerBase
     {
-        private readonly UserAssertion userAssertion;
+        readonly UserAssertion _userAssertion;
 
         public AcquireTokenOnBehalfHandler(Authenticator authenticator, TokenCache tokenCache, string resource, ClientKey clientKey, UserAssertion userAssertion)
             : base(authenticator, tokenCache, resource, clientKey, TokenSubjectType.UserPlusClient)
         {
-            if (userAssertion == null)
-            {
-                throw new ArgumentNullException("userAssertion");
-            }
-
-            this.userAssertion = userAssertion;
-            this.DisplayableId = userAssertion.UserName;
+            _userAssertion = userAssertion ?? throw new ArgumentNullException("userAssertion");
+            DisplayableId = userAssertion.UserName;
             CacheQueryData.AssertionHash = PlatformPlugin.CryptographyHelper.CreateSha256Hash(userAssertion.Assertion);
 
-            this.SupportADFS = true;
+            SupportADFS = true;
         }
 
         protected override void ValidateResult()
         {
             // cache lookup returned a token. no username provided in the assertion. 
             // cannot deterministicly identify the user. fallback to compare hash. 
-            if (this.ResultEx != null && string.IsNullOrEmpty(userAssertion.UserName))
+            if (ResultEx != null && string.IsNullOrEmpty(_userAssertion.UserName))
             {
                 //if cache result does not contain hash then return null
-                if (!string.IsNullOrEmpty(this.ResultEx.UserAssertionHash))
+                if (!string.IsNullOrEmpty(ResultEx.UserAssertionHash))
                 {
                     //if user assertion hash does not match then return null
-                    if (!this.ResultEx.UserAssertionHash.Equals(CacheQueryData.AssertionHash))
+                    if (!ResultEx.UserAssertionHash.Equals(CacheQueryData.AssertionHash))
                     {
-                        this.ResultEx = null;
+                        ResultEx = null;
                     }
                 }
                 else
                 {
-                    this.ResultEx = null;
+                    ResultEx = null;
                 }
             }
 
@@ -91,7 +86,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
         protected override void AddAditionalRequestParameters(DictionaryRequestParameters requestParameters)
         {
             requestParameters[OAuthParameter.GrantType] = OAuthGrantType.JwtBearer;
-            requestParameters[OAuthParameter.Assertion] = this.userAssertion.Assertion;
+            requestParameters[OAuthParameter.Assertion] = _userAssertion.Assertion;
             requestParameters[OAuthParameter.RequestedTokenUse] = OAuthRequestedTokenUse.OnBehalfOf;
 
             // To request id_token in response
