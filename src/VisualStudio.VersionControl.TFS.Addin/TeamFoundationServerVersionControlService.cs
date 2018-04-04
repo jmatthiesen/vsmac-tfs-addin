@@ -156,19 +156,25 @@ namespace MonoDevelop.VersionControl.TFS
                                         DateTime.UtcNow + TimeSpan.FromMinutes(ExpirationMarginInMinutes));
 
                 if (tokenNearExpiry)
-                {      
-                    var tokenCache = AdalCacheHelper.GetAdalFileCacheInstance();
-                    var context = new AuthenticationContext(OAuthConstants.Authority, true, tokenCache);
+                {
+                    var tokenCache = AdalCacheHelper.GetAdalFileCacheInstance(server.Uri.Host);
 
-                    var result = await context.AcquireTokenSilentAsync(OAuthConstants.Resource, OAuthConstants.ClientId);
+                    var items = tokenCache.ReadItems();
 
-                    auth.OauthToken = result.AccessToken;
-                    auth.ExpiresOn = result.ExpiresOn;
+                    if (items.Any())
+                    {
+                        var context = new AuthenticationContext(OAuthConstants.Authority, true, tokenCache);
 
-                    server.Authorization = auth;
+                        var result = await context.AcquireTokenSilentAsync(OAuthConstants.Resource, OAuthConstants.ClientId);
 
-                    AddServer(server);
-                    AdalCacheHelper.PersistTokenCache(tokenCache);
+                        auth.OauthToken = result.AccessToken;
+                        auth.ExpiresOn = result.ExpiresOn;
+
+                        server.Authorization = auth;
+
+                        AddServer(server);
+                        AdalCacheHelper.PersistTokenCache(server.Uri.Host, tokenCache);
+                    }
                 }
             }
         }

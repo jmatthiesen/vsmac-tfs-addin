@@ -27,38 +27,38 @@
 
 using System;
 using System.IO;
-using System.Text;
 using Microsoft.IdentityService.Clients.ActiveDirectory;
 
 namespace MonoDevelop.VersionControl.TFS.Helpers
 {
     public class AdalCacheHelper
     {
-        static readonly string TokenCachePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "MonoDevelop.VersionControl.TFS.TokenCache.txt");
+        static readonly string TokenCachePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        static readonly string TokenCacheExtension = ".txt";
 
-        public static TokenCache GetAdalFileCacheInstance()
+        public static TokenCache GetAdalFileCacheInstance(string cacheId)
         {
             var cache = new TokenCache();
 
-            LoadCacheFromFile(cache);
+            LoadCacheFromFile(cacheId, cache);
 
             return cache;
         }
 
-        public static void PersistTokenCache(TokenCache cache)
+        public static void PersistTokenCache(string cacheId, TokenCache cache)
         {
-            PersistCacheToFile(cache);
+            PersistCacheToFile(cacheId, cache);
         }
 
-        static void PersistCacheToFile(TokenCache cache)
+        static void PersistCacheToFile(string cacheId, TokenCache cache)
         {
             var bytes = cache.Serialize();
-            File.WriteAllBytes(TokenCachePath, bytes);
+            File.WriteAllBytes(Path.Combine(TokenCachePath, cacheId + TokenCacheExtension), bytes);
         }
 
-        static void LoadCacheFromFile(TokenCache cache)
+        static void LoadCacheFromFile(string cacheId, TokenCache cache)
         {
-            var file = TokenCachePath;
+            var file = Path.Combine(TokenCachePath, cacheId + TokenCacheExtension);
 
             if (File.Exists(file))
             {

@@ -31,7 +31,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.IdentityService.Clients.ActiveDirectory
 {
-    internal enum AuthorityValidationType
+    enum AuthorityValidationType
     {
         True,
         False,

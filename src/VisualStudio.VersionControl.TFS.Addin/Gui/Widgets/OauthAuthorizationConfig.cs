@@ -37,7 +37,8 @@ using Xwt;
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
     sealed class OauthAuthorizationConfig : UserPasswordAuthorizationConfig, IOAuthAuthorizationConfig
-    {     
+    {
+        Uri _serverUri;
         AuthenticationContext _context;
 
         Button _webViewButton;
@@ -45,7 +46,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
         public OauthAuthorizationConfig(Uri serverUri)
             : base(serverUri)
         {
-            Init();
+            Init(serverUri);
             BuildGui();
             AttachEvents();
         }
@@ -53,8 +54,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
         public string OauthToken { get; set; }
         public DateTimeOffset ExpiresOn { get; set; }
 
-        void Init()
+        void Init(Uri serverUri)
         {
+            _serverUri = serverUri;
+
             UserPasswordContainer.Visible = false;
 
             _webViewButton = new Button(GettextCatalog.GetString("Sign in"));
@@ -74,7 +77,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
         {
             try
             {
-                var tokenCache = AdalCacheHelper.GetAdalFileCacheInstance();
+                var tokenCache = AdalCacheHelper.GetAdalFileCacheInstance(_serverUri.Host);
 
                 _context = new AuthenticationContext(OAuthConstants.Authority, true, tokenCache);
 
@@ -87,7 +90,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
                 OauthToken = authenticationResult.AccessToken;
                 ExpiresOn = authenticationResult.ExpiresOn;
 
-                AdalCacheHelper.PersistTokenCache(tokenCache);
+                AdalCacheHelper.PersistTokenCache(_serverUri.Host, tokenCache);
             }
             catch (Exception ex)
             {
