@@ -4,6 +4,7 @@ using Autofac;
 using MonoDevelop.Components;
 using MonoDevelop.Components.Docking;
 using MonoDevelop.Core;
+using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.VersionControl.TFS.Gui.Dialogs;
 using MonoDevelop.VersionControl.TFS.Gui.Views;
@@ -35,6 +36,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
         DataField<object> _item;
 
         TeamFoundationServerVersionControlService _service;
+
+        System.Action OnServersChanged;
 
         public override Control Control { get { return new XwtControl(_content); } }
 
@@ -70,10 +73,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
             _treeView.Columns.Add(new ListViewColumn(string.Empty, new TextCellView(_name)));
             _treeView.DataSource = _treeStore;
             _content.PackStart(_treeView, true, true);
-
-            _treeView.RowActivated += OnRowClicked;
      
             _service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
+
+            OnServersChanged = UpdateData;
         }
 
         void AddButtons(IPadWindow window)
@@ -86,6 +89,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
         void AttachEvents()
         {
             _addbutton.Clicked += OnConnectToServer;
+            _treeView.RowActivated += OnRowClicked;
+
+            _service.OnServersChange += OnServersChanged;
         }
 
         void UpdateData()
