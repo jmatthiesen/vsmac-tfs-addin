@@ -41,6 +41,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         ListView _serverList;
         ListStore _serverStore;
         Notebook _notebook;
+        Button _removeButton;
 
         readonly DataField<string> _nameField = new DataField<string>();
         readonly DataField<string> _urlField = new DataField<string>();
@@ -53,6 +54,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Init();
             BuildGui();
             UpdateServers();
+            UpdateDeleteServer();
         }
 
         void Init()
@@ -77,6 +79,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _serverList.Columns.Add(new ListViewColumn("Name", new TextCellView(_nameField) { Editable = false }));
             _serverList.Columns.Add(new ListViewColumn("Url", new TextCellView(_urlField) { Editable = false }));
             _serverList.DataSource = _serverStore;
+            _serverList.SelectionChanged += (sender, args) => UpdateDeleteServer();
             _serverList.RowActivated += OnServerClicked;
             table.Add(_serverList, 0, 1);
 
@@ -86,13 +89,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             addButton.MinWidth = GuiSettings.ButtonWidth;
             buttonBox.PackStart(addButton);
 
-            var removeButton = new Button(GettextCatalog.GetString("Remove"))
+            _removeButton = new Button(GettextCatalog.GetString("Remove"))
             {
                 MinWidth = GuiSettings.ButtonWidth
             };
 
-            removeButton.Clicked += OnRemoveServer;
-            buttonBox.PackStart(removeButton);
+            _removeButton.Clicked += OnRemoveServer;
+            buttonBox.PackStart(_removeButton);
 
             var closeButton = new Button(GettextCatalog.GetString("Close"))
             {
@@ -110,7 +113,18 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void OnServerClicked(object sender, ListViewRowEventArgs e)
         {
-  
+            var serverConfig = _serverStore.GetValue(e.RowIndex, _serverField);
+        
+            using (var projectsDialog = new ChooseProjectsDialog(serverConfig))
+            {
+                if (projectsDialog.Run(this) == Command.Ok 
+                    && projectsDialog.SelectedProjectColletions.Any())
+                {
+                    serverConfig.ProjectCollections.Clear();
+                    serverConfig.ProjectCollections.AddRange(projectsDialog.SelectedProjectColletions);
+                    _service.ServersChange();
+                }
+            }
         }
 
         void OnAddServer(object sender, EventArgs e)
@@ -185,6 +199,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 _serverStore.SetValue(row, _urlField, server.Uri.ToString());
                 _serverStore.SetValue(row, _serverField, server);
             }
+        }
+
+        void UpdateDeleteServer()
+        {
+            _removeButton.Sensitive = _serverList.SelectedRow != -1;
         }
     }
 }

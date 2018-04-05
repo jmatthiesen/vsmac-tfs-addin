@@ -850,12 +850,19 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                     var itemsToLock = items;
                     var lockLevel = LockLevel.CheckOut;
 
-                    using (var progress = new MessageDialogProgressMonitor(true, false, true))
+                    if (itemsToLock.Count > 1)
                     {
-                        progress.BeginTask("Lock Files", itemsToLock.Count);
-                        _currentWorkspace.LockItems(itemsToLock.Select(i => i.ServerPath), lockLevel);
-                        progress.EndTask();
-                        progress.ReportSuccess("Finish locking.");
+                        using (var dialog = new LockDialog(itemsToLock))
+                        {
+                            if (dialog.Run() == Command.Ok)
+                            {
+                                Lock(itemsToLock, lockLevel);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Lock(itemsToLock, lockLevel);
                     }
 
                     FireFilesChanged(lockItems);
@@ -976,6 +983,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 };
 
                 yield return undoItem;
+            }
+        }
+
+        void Lock(List<ExtendedItem> itemsTolock, LockLevel lockLevel)
+        {
+            using (var progress = new MessageDialogProgressMonitor(true, false, true))
+            {
+                progress.BeginTask("Lock Files", itemsTolock.Count);
+                _currentWorkspace.LockItems(itemsTolock.Select(i => i.ServerPath), lockLevel);
+                progress.EndTask();
+                progress.ReportSuccess("Finish locking.");
             }
         }
 

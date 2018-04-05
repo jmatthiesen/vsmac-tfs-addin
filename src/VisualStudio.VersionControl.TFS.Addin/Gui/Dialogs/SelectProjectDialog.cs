@@ -78,7 +78,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
           
             VBox content = new VBox();
             content.PackStart(new Label(GettextCatalog.GetString("Team Foundation Server") + ":"));
-            content.PackStart(new TextEntry { Text = _projectCollection.Server.Name + " - " + _projectCollection.Name, Sensitive = false, MinWidth = 300 });
+            content.PackStart(new TextEntry
+            { 
+                Text = _projectCollection.Server.Name + " - " + _projectCollection.Name, 
+                Sensitive = false,
+                MinWidth = 300
+            });
 
             content.PackStart(new Label(GettextCatalog.GetString("Folders") + ":"));
 
