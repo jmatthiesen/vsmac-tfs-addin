@@ -856,7 +856,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                         {
                             if (dialog.Run() == Command.Ok)
                             {
-                                Lock(itemsToLock, lockLevel);
+                                Lock(dialog.SelectedItems, dialog.LockLevel);
                             }
                         }
                     }

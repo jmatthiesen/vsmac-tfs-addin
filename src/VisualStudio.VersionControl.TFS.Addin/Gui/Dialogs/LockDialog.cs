@@ -27,8 +27,10 @@
 // THE SOFTWARE.
 
 using System.Collections.Generic;
+using Autofac;
 using MonoDevelop.Core;
 using MonoDevelop.VersionControl.TFS.Models;
+using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
@@ -41,7 +43,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<string> _folderField;
         DataField<ExtendedItem> _itemField;
         ListStore _fileStore;
-  
+        ComboBox _lockLevelBox;
+
         public LockDialog(List<ExtendedItem> items)
         {
             Init();
@@ -69,6 +72,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        internal LockLevel LockLevel
+        {
+            get
+            {
+                return (LockLevel)_lockLevelBox.SelectedItem;
+            }
+        }
+
         void Init()
         {
             _fileView = new ListView();
@@ -77,6 +88,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _folderField = new DataField<string>();
             _itemField = new DataField<ExtendedItem>();
             _fileStore = new ListStore(_isCheckedField, _nameField, _folderField, _itemField);
+            _lockLevelBox = BuildLockLevelComboBox();
         }
 
         void BuildGui()
@@ -94,10 +106,33 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _fileView.DataSource = _fileStore;
             content.PackStart(_fileView, true, true);
 
+            var lockBox = new HBox();
+            lockBox.PackStart(new Label(GettextCatalog.GetString("Select lock level") + ":"));
+            lockBox.PackStart(_lockLevelBox, true, true);
+            content.PackStart(lockBox);
+
             Buttons.Add(Command.Ok, Command.Cancel);
 
             Content = content;
             Resizable = false;
+        }
+
+        ComboBox BuildLockLevelComboBox()
+        {
+            ComboBox lockLevelBox = new ComboBox { WidthRequest = 150 };
+
+            lockLevelBox.Items.Add(LockLevel.Unchanged, "Unchanged - Keep any existing lock.");
+            lockLevelBox.Items.Add(LockLevel.CheckOut, "Check Out - Prevent other users from checking out and checking in");
+            lockLevelBox.Items.Add(LockLevel.Checkin, "Check In - Prevent other users from checking in but allow checking out");
+         
+            var service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
+         
+            if (service.CheckOutLockLevel == LockLevel.Unchanged)
+                lockLevelBox.SelectedItem = LockLevel.CheckOut;
+            else
+                lockLevelBox.SelectedItem = service.CheckOutLockLevel;
+     
+            return lockLevelBox;
         }
 
         void GetData(List<ExtendedItem> items)
