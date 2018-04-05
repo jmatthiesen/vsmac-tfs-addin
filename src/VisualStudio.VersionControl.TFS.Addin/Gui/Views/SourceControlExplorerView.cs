@@ -790,7 +790,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                         if (dialog.Run() == Command.Ok)
                         {
                             var itemsToCheckOut = dialog.SelectedItems;
-                            CheckOut(itemsToCheckOut);
+                            CheckOut(itemsToCheckOut, dialog.LockLevel);
                         }
                     }
 
@@ -997,7 +997,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             }
         }
 
-        void CheckOut(List<ExtendedItem> itemsToCheckOut)
+        void CheckOut(List<ExtendedItem> itemsToCheckOut, LockLevel lockLevel)
         {
             using (var progress = VersionControlService.GetProgressMonitor("Check Out", VersionControlOperationType.Pull))
             {
@@ -1010,7 +1010,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                     progress.Log.WriteLine("Check out item: " + item.ServerPath);
 
                     ICollection<Failure> failures;
-                    _currentWorkspace.PendEdit(path.ToEnumerable(), RecursionType.Full, LockLevel.CheckOut, out failures);
+                    _currentWorkspace.PendEdit(path.ToEnumerable(), RecursionType.Full, lockLevel, out failures);
 
                     if (failures != null && failures.Any())
                     {
