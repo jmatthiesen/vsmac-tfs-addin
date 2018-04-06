@@ -38,39 +38,29 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
     {
         readonly Uri _serverUri;
         VBox _typeContainer;
-        ComboBox _comboBox;
+        ServerAuthorizationType _serverAuthType;
         IServerAuthorizationConfig _currentConfig;
 
-        public CredentialsDialog(Uri serverUri)
+        public CredentialsDialog(Uri serverUri, CellProjectType serverType)
         {
             _serverUri = serverUri;
           
             Init();
-            BuildGui();
+            BuildGui(serverType);
         }
 
         void Init()
         {
             _typeContainer = new VBox();
-            _comboBox = new ComboBox();
         }
 
-        void BuildGui()
+        void BuildGui(CellProjectType serverType)
         {
             Title = GettextCatalog.GetString("Credentials");
 
             VBox container = new VBox();
-            container.PackStart(new Label(GettextCatalog.GetString("Select authorization type") + ":"));
 
-            foreach (var type in Enum.GetValues(typeof(ServerAuthorizationType)))
-            {
-                _comboBox.Items.Add(type, Enum.GetName(typeof(ServerAuthorizationType), type));
-            }
-
-            container.PackStart(_comboBox);
-            _comboBox.SelectionChanged += (sender, args) => SetTypeConfig();
-            _comboBox.SelectedIndex = 0;
-            SetTypeConfig();
+            SetTypeConfig(serverType);
 
             container.PackStart(_typeContainer);
 
@@ -79,10 +69,20 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         }
 
 
-        void SetTypeConfig()
+        void SetTypeConfig(CellProjectType serverType)
         {
-            var type = (ServerAuthorizationType)_comboBox.SelectedItem;
-            _currentConfig = ServerAuthorizationFactory.GetServerAuthorizationConfig(type, _serverUri);
+            switch(serverType.ServerType)
+            {
+                case ServerType.VSTS:
+                    _serverAuthType = ServerAuthorizationType.Oauth;
+                    break;
+                case ServerType.TFS:
+                    _serverAuthType = ServerAuthorizationType.Basic;
+                    break;
+            }
+
+
+            _currentConfig = ServerAuthorizationFactory.GetServerAuthorizationConfig(_serverAuthType, _serverUri);
             _typeContainer.Clear();
             _typeContainer.PackStart(_currentConfig.Widget, true, true);
         }
@@ -91,7 +91,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             get
             {
-                var type = (ServerAuthorizationType)_comboBox.SelectedItem;
+                var type = _serverAuthType;
                 return ServerAuthorizationFactory.GetServerAuthorization(type, _currentConfig);
             }
         }

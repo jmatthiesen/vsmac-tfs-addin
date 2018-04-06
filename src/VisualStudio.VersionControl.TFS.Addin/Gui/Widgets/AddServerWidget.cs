@@ -67,12 +67,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 
         void BuildGui()
         {
-            Margin = new WidgetSpacing(5, 5, 5, 5);
+            Margin = new WidgetSpacing(6);
+
             PackStart(new Label(GettextCatalog.GetString("Name of connection")));
             _nameEntry.Changed += (sender, e) => _hostEntry.Text = _nameEntry.Text;
             PackStart(_nameEntry);
 
-            PackStart(new Label(GettextCatalog.GetString("Host or URL of Team Foundation Server")));
+            PackStart(new Label(GettextCatalog.GetString("Host or URL of the Server")));
 
             _hostEntry.Text = "";
             _hostEntry.Changed += OnUrlChanged;
@@ -116,6 +117,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
                 {
                     _portEntry.Value = 443;
                 }
+
                 BuildUrl();
             };
 
@@ -127,7 +129,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
             previewBox.PackStart(new Label(GettextCatalog.GetString("Preview") + ":"));
             previewBox.Sensitive = false;
             _previewEntry.BackgroundColor = Xwt.Drawing.Colors.LightGray;
-            _previewEntry.MinWidth = 400;
+            _previewEntry.MinWidth = 500;
 
             previewBox.PackStart(_previewEntry, true, true);
             PackStart(previewBox);

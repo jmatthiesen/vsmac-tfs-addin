@@ -67,6 +67,7 @@
     <Folder Include="Services\ClientService\" />
     <Folder Include="Services\ProgressDisplayService\" />
     <Folder Include="Services\TFSService\" />
+    <Folder Include="Gui\Cells\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Models\ServerAuthentication.cs" />
@@ -83,11 +84,15 @@
     <None Remove="VersionControl\.DS_Store" />
     <None Remove="VersionControl\Enums\.DS_Store" />
     <None Remove="VersionControl\Models\.DS_Store" />
+    <None Remove="Icons\VSTS.png" />
+    <None Remove="Icons\TFS.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icons\project-16.png" />
     <EmbeddedResource Include="Icons\folder-16.png" />
     <EmbeddedResource Include="Icons\file-16.png" />
+    <EmbeddedResource Include="Icons\VSTS.png" />
+    <EmbeddedResource Include="Icons\TFS.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ADAL.PCL\ADAL.PCL.Mac\ADAL.PCL.Mac.csproj" />

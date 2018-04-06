@@ -49,8 +49,34 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void BuildGui()
         {
-            Title = GettextCatalog.GetString("Add Team Foundation Server");
-            Buttons.Add(Command.Ok, Command.Cancel);
+            Title = GettextCatalog.GetString("Add Server");
+           
+            HBox buttonBox = new HBox
+            {
+                Margin = new WidgetSpacing(0, 12, 0, 12)
+            };
+
+            buttonBox.VerticalPlacement = WidgetPlacement.End;
+
+            var cancelButton = new Button(GettextCatalog.GetString("Cancel"))
+            {
+                MinWidth = GuiSettings.ButtonWidth
+            };
+
+            cancelButton.HorizontalPlacement = WidgetPlacement.Start;
+            cancelButton.Clicked += (sender, e) => Respond(Command.Close);
+            buttonBox.PackStart(cancelButton);
+
+            _addServerWidget.PackStart(buttonBox);
+
+            var acceptButton = new Button(GettextCatalog.GetString("Continue"))
+            {
+                MinWidth = GuiSettings.ButtonWidth
+            };
+            acceptButton.HorizontalPlacement = WidgetPlacement.End;
+            acceptButton.Clicked += (sender, e) => Respond(Command.Ok);
+            buttonBox.PackEnd(acceptButton);
+
             Content = _addServerWidget;
             Resizable = false;
         }

@@ -26,105 +26,152 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using MonoDevelop.Core;
+using MonoDevelop.VersionControl.TFS.Gui.Cells;
 using Xwt;
+using Xwt.Drawing;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+    public enum ServerType
+    {
+        VSTS,
+        TFS
+    }
+
+    public class CellProjectType
+    {
+        public Image Icon { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public ServerType ServerType { get; set; }
+    }
+
     public class ChooseVersionControlDialog : Dialog
     {
-        RadioButton _vstsRadioButton;
-        RadioButton _tfsRadioButton;
+        Label _title;
+        VBox _listBox;
+        ListView _listView;
+        ListStore _store;
+        DataField<CellProjectType> _serverType;
+
+        CellProjectType _server;
 
         public ChooseVersionControlDialog()
         {
             Init();
-            BuildGui();   
+            BuildGui();
+            AttachEvents();
+            GetData();
         }
           
+        internal CellProjectType Server
+        {
+            get { return _server; }
+            set { _server = value; }
+        }
+
         void Init()
         {
-            _vstsRadioButton = new RadioButton();
-            _vstsRadioButton.ActiveChanged += ChangeVSTSServerType;
-            _vstsRadioButton.Active = true;
- 
-            _tfsRadioButton = new RadioButton();
-            _tfsRadioButton.ActiveChanged += ChangeTFSServerType; 
-            _tfsRadioButton.Active = false;     
+            _title = new Label(GettextCatalog.GetString("Where is your project hosted?"));
+         
+            _listBox = new VBox
+            {
+                MinHeight = 250
+            };
+
+            _listView = new ListView
+            {
+                Margin = new WidgetSpacing(24, 12, 24, 12),
+                MinHeight = 96,
+                BorderVisible = false,
+                HeadersVisible = false,
+                GridLinesVisible = GridLines.None
+            };
+
+            _serverType = new DataField<CellProjectType>();
+            _store = new ListStore(_serverType);
+            _listView.Columns.Add("", new ServerTypeCellView { CellProjectType = _serverType });
+            _listView.DataSource = _store;
         }
 
         void BuildGui()
         {
-            Title = GettextCatalog.GetString("Version Control");
+            Title = GettextCatalog.GetString("Open from Source Control");
 
-            var content = new VBox();
-            content.WidthRequest = 500;
+            var content = new VBox
+            {
+                WidthRequest = 600
+            };
 
-            Label titleLabel = new Label(GettextCatalog.GetString("Where is your project hosted?"));          
-            content.PackStart(titleLabel);
-     
-            HBox vstsBox = new HBox();
-            vstsBox.PackStart(_vstsRadioButton);
+            _listBox.PackStart(_listView);
+            content.PackStart(_title);
+            content.PackStart(_listBox);
 
-            Label vstsTitleLabel = new Label(GettextCatalog.GetString("Visual Studio Team Services"));
-            vstsBox.PackStart(vstsTitleLabel);
+            HBox buttonBox = new HBox
+            {
+                Margin = new WidgetSpacing(0, 0, 0, 12)
+            };
 
-            content.PackStart(vstsBox);
-
-            Label vstsDescriptionLabel = new Label(GettextCatalog.GetString("A cloud service for code development collaboration by Microsoft"));
-            vstsDescriptionLabel.Wrap = WrapMode.Word;
-            content.PackStart(vstsDescriptionLabel);
-
-            HBox tfsBox = new HBox();
-            tfsBox.PackStart(_tfsRadioButton);
-            Label tfsTitleLabel = new Label(GettextCatalog.GetString("Team Foundation Version Control"));
-            tfsBox.PackStart(tfsTitleLabel);
-
-            content.PackStart(tfsBox);
-
-            Label tfsDescriptionLabel = new Label(GettextCatalog.GetString("Centralized Version Control system by Microsoft storing any type of artifac within its repository"));
-            tfsDescriptionLabel.Wrap = WrapMode.Word;
-            content.PackStart(tfsDescriptionLabel);
-
-            HBox buttonBox = new HBox();
-            buttonBox.HorizontalPlacement = WidgetPlacement.End;
-
-            var acceptButton = new Button(GettextCatalog.GetString("Select"))
+            var cancelButton = new Button(GettextCatalog.GetString("Cancel"))
             {
                 MinWidth = GuiSettings.ButtonWidth
             };
 
-            acceptButton.Clicked += (sender, e) => Respond(Command.Ok);
-            buttonBox.PackStart(acceptButton);
-
-            var closeButton = new Button(GettextCatalog.GetString("Cancel"))
-            {
-                MinWidth = GuiSettings.ButtonWidth
-            };
-
-            closeButton.Clicked += (sender, e) => Respond(Command.Close);
-            buttonBox.PackStart(closeButton);
+            cancelButton.HorizontalPlacement = WidgetPlacement.Start;
+            cancelButton.Clicked += (sender, e) => Respond(Command.Close);
+            buttonBox.PackStart(cancelButton);
 
             content.PackStart(buttonBox);
+
+            var acceptButton = new Button(GettextCatalog.GetString("Continue"))
+            {
+                MinWidth = GuiSettings.ButtonWidth
+            };
+            acceptButton.HorizontalPlacement = WidgetPlacement.End;
+            acceptButton.Clicked += (sender, e) => Respond(Command.Ok);
+            buttonBox.PackEnd(acceptButton);
 
             Content = content;
             Resizable = false;
         }
 
-        void ChangeVSTSServerType(object sender, EventArgs args)
+        void AttachEvents()
         {
-            if(_vstsRadioButton.Active)
+            _listView.SelectionChanged += OnSelectServer;
+        }
+
+        void GetData()
+        {
+            _store.Clear();
+
+            foreach (var item in GetServers())
             {
-                _tfsRadioButton.Active = false;
+                var row = _store.AddRow();
+                _store.SetValue(row, _serverType, item);
             }
         }
 
-        void ChangeTFSServerType(object sender, EventArgs args)
+        List<CellProjectType> GetServers()
         {
-            if (_tfsRadioButton.Active)
+            return new List<CellProjectType>
             {
-                _vstsRadioButton.Active = false;
-            }
+                new CellProjectType { ServerType = ServerType.VSTS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.VSTS.png"), Title = "VSTS", Description = "A cloud service for code development collaboration by Microsoft" },
+                new CellProjectType { ServerType = ServerType.TFS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.TFS.png"), Title = "TFVC", Description = "Centralized Version Control by Microsoft" }
+            };
+        }
+
+        void OnSelectServer(object sender, EventArgs args)
+        {
+            var row = _listView.SelectedRow;
+
+            var serverType = _store.GetValue(row, _serverType);
+
+            if (serverType != null)
+            {
+                Server = serverType;
+            }        
         }
     }
 }
