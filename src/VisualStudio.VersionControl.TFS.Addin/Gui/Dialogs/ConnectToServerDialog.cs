@@ -130,62 +130,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void OnAddServer(object sender, EventArgs e)
         {
-            using (var addServerDialog = new AddServerDialog())
-            {
-                if (addServerDialog.Run(this) == Command.Ok)
-                {
-                    var addServerResult = addServerDialog.Result;
-
-                    if (_service.HasServer(addServerResult.Url))
-                    {
-                        MessageService.ShowError("Server already exists!");
-                        return;
-                    }
-
-                    addServerDialog.Close();
-
-                    using (var chooseVersionControlDialog = new ChooseVersionControlDialog())
-                    {
-                        if (chooseVersionControlDialog.Run(this) == Command.Ok)
-                        {
-                            var serverType = chooseVersionControlDialog.Server;
-
-                            using (var credentialsDialog = new CredentialsDialog(addServerResult.Url, serverType))
-                            {
-                                if (credentialsDialog.Run(this) == Command.Ok)
-                                {
-                                    var serverAuthorization = credentialsDialog.Result;
-                                    var userPasswordAuthorization = serverAuthorization as UserPasswordAuthorization;
-
-                                    if (userPasswordAuthorization != null && userPasswordAuthorization.ClearSavePassword)
-                                    {
-                                        MessageService.ShowWarning("No keyring service found!\nPassword will be saved as plain text.");
-                                    }
-
-                                    var server = TeamFoundationServer.FromAddServerDialog(addServerResult, serverAuthorization);
-
-                                    using (var projectsDialog = new ChooseProjectsDialog(server))
-                                    {
-                                        if (projectsDialog.Run(this) == Command.Ok && projectsDialog.SelectedProjectColletions.Any())
-                                        {
-                                            // Server has all project collections and projects, filter only sected.
-                                            server.ProjectCollections.RemoveAll(pc => projectsDialog.SelectedProjectColletions.All(spc => spc != pc));
-                                            foreach (var projectCollection in server.ProjectCollections)
-                                            {
-                                                var selectedProjectCollection = projectsDialog.SelectedProjectColletions.Single(spc => spc == projectCollection);
-                                                projectCollection.Projects.RemoveAll(p => selectedProjectCollection.Projects.All(sp => sp != p));
-                                            }
-
-                                            _service.AddServer(server);
-                                            UpdateServers();
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            AddServer();
         }
 
         void OnRemoveServer(object sender, EventArgs e)
@@ -195,6 +140,64 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 var serverUrl = _serverStore.GetValue(_serverList.SelectedRow, _urlField);
                 _service.RemoveServer(new Uri(serverUrl));
                 UpdateServers();
+            }
+        }
+
+        void AddServer()
+        {
+            try
+            {
+                using (var chooseVersionControlDialog = new ChooseVersionControlDialog())
+                {
+                    if (chooseVersionControlDialog.Run(this) == Command.Ok)
+                    {
+                        chooseVersionControlDialog.Close();
+
+                        var serverType = chooseVersionControlDialog.Server;
+
+                        using (var credentialsDialog = new CredentialsDialog(serverType))
+                        {
+                            if (credentialsDialog.Run(this) == Command.Ok)
+                            {
+                                var serverAuthorization = credentialsDialog.ServerAuthorization;
+
+                                if (serverAuthorization is UserPasswordAuthorization userPasswordAuthorization && userPasswordAuthorization.ClearSavePassword)
+                                {
+                                    MessageService.ShowWarning("No keyring service found!\nPassword will be saved as plain text.");
+                                }
+
+                                if (_service.HasServer(credentialsDialog.ServerUri))
+                                {
+                                    MessageService.ShowError("Server already exists!");
+                                    return;
+                                }
+
+                                var server = TeamFoundationServer.FromAddServerDialog(credentialsDialog.AddServerResult, serverAuthorization);
+
+                                using (var projectsDialog = new ChooseProjectsDialog(server))
+                                {
+                                    if (projectsDialog.Run(this) == Command.Ok && projectsDialog.SelectedProjectColletions.Any())
+                                    {
+                                        // Server has all project collections and projects, filter only sected.
+                                        server.ProjectCollections.RemoveAll(pc => projectsDialog.SelectedProjectColletions.All(spc => spc != pc));
+                                        foreach (var projectCollection in server.ProjectCollections)
+                                        {
+                                            var selectedProjectCollection = projectsDialog.SelectedProjectColletions.Single(spc => spc == projectCollection);
+                                            projectCollection.Projects.RemoveAll(p => selectedProjectCollection.Projects.All(sp => sp != p));
+                                        }
+
+                                        _service.AddServer(server);
+                                        UpdateServers();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                MessageService.ShowError("An error has occurred adding the server. Please try again later.");
             }
         }
 

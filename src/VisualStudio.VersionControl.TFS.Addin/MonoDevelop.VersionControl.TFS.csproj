@@ -75,6 +75,7 @@
     <Compile Remove="Helpers\TeamFoundationServerFileHelper.cs" />
     <Compile Remove="Gui\Widgets\AddVisualStudioTeamServicesWidget.cs" />
     <Compile Remove="Models\TeamFoundationServerRevision.cs" />
+    <Compile Remove="Gui\Widgets\AddServerWidget.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Icons\file-16.png" />

@@ -54,7 +54,11 @@ namespace MonoDevelop.VersionControl.TFS.Models
             }
             else
             {
-                Password = CredentialsManager.GetPassword(serverUri);
+                if (serverUri != null)
+                    Password = CredentialsManager.GetPassword(serverUri);
+                else
+                    Password = string.Empty;
+                
                 ClearSavePassword = false;
             }
         }

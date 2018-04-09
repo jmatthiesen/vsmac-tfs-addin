@@ -52,16 +52,16 @@ namespace MonoDevelop.VersionControl.TFS.Models
             }
         }
 
-        public static IServerAuthorizationConfig GetServerAuthorizationConfig(ServerAuthorizationType authorizationType, Uri serverUri)
+        public static IServerAuthorizationConfig GetServerAuthorizationConfig(ServerAuthorizationType authorizationType)
         {
             switch (authorizationType)
             {
                 case ServerAuthorizationType.Oauth:
-                    return new OauthAuthorizationConfig(serverUri);
+                    return new VSTSAuthorizationConfig();
                 case ServerAuthorizationType.Ntlm:
-                    return new NtlmAuthorizationConfig(serverUri);
+                    return new TFSAuthorizationConfig();
                 case ServerAuthorizationType.Basic:
-                    return new UserPasswordAuthorizationConfig(serverUri);
+                    return new TFSAuthorizationConfig();
                 default:
                     return new NoAuthorizationConfig();
             }

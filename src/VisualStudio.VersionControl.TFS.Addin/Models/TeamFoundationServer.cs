@@ -96,7 +96,8 @@ namespace MonoDevelop.VersionControl.TFS.Models
             return server;
         }
 
-        public static TeamFoundationServer FromAddServerDialog(AddServerResult addServerResult,
+        public static TeamFoundationServer FromAddServerDialog(
+            AddServerResult addServerResult,
             IServerAuthorization authorization)
         {
             var server = new TeamFoundationServer

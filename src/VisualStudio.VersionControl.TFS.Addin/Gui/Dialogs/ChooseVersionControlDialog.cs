@@ -40,7 +40,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         TFS
     }
 
-    public class CellProjectType
+    public class CellServerType
     {
         public Image Icon { get; set; }
         public string Title { get; set; }
@@ -54,9 +54,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         VBox _listBox;
         ListView _listView;
         ListStore _store;
-        DataField<CellProjectType> _serverType;
+        DataField<CellServerType> _serverType;
+        Button _cancelButton;
+        Button _acceptButton;
 
-        CellProjectType _server;
+        CellServerType _server;
 
         public ChooseVersionControlDialog()
         {
@@ -66,7 +68,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             GetData();
         }
           
-        internal CellProjectType Server
+        internal CellServerType Server
         {
             get { return _server; }
             set { _server = value; }
@@ -90,10 +92,20 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 GridLinesVisible = GridLines.None
             };
 
-            _serverType = new DataField<CellProjectType>();
+            _serverType = new DataField<CellServerType>();
             _store = new ListStore(_serverType);
-            _listView.Columns.Add("", new ServerTypeCellView { CellProjectType = _serverType });
+            _listView.Columns.Add("", new ServerTypeCellView { CellServerType = _serverType });
             _listView.DataSource = _store;
+
+            _cancelButton = new Button(GettextCatalog.GetString("Cancel"))
+            {
+                MinWidth = GuiSettings.ButtonWidth
+            };
+            _acceptButton = new Button(GettextCatalog.GetString("Continue"))
+            {
+                BackgroundColor = Colors.SkyBlue,
+                MinWidth = GuiSettings.ButtonWidth
+            };
         }
 
         void BuildGui()
@@ -113,25 +125,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             {
                 Margin = new WidgetSpacing(0, 0, 0, 12)
             };
-
-            var cancelButton = new Button(GettextCatalog.GetString("Cancel"))
-            {
-                MinWidth = GuiSettings.ButtonWidth
-            };
-
-            cancelButton.HorizontalPlacement = WidgetPlacement.Start;
-            cancelButton.Clicked += (sender, e) => Respond(Command.Close);
-            buttonBox.PackStart(cancelButton);
+                     
+            _cancelButton.HorizontalPlacement = WidgetPlacement.Start;
+            _cancelButton.Clicked += (sender, e) => Respond(Command.Close);
+            buttonBox.PackStart(_cancelButton);
 
             content.PackStart(buttonBox);
 
-            var acceptButton = new Button(GettextCatalog.GetString("Continue"))
-            {
-                MinWidth = GuiSettings.ButtonWidth
-            };
-            acceptButton.HorizontalPlacement = WidgetPlacement.End;
-            acceptButton.Clicked += (sender, e) => Respond(Command.Ok);
-            buttonBox.PackEnd(acceptButton);
+            _acceptButton.HorizontalPlacement = WidgetPlacement.End;
+            _acceptButton.Clicked += (sender, e) => Respond(Command.Ok);
+            buttonBox.PackEnd(_acceptButton);
 
             Content = content;
             Resizable = false;
@@ -153,12 +156,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
-        List<CellProjectType> GetServers()
+        List<CellServerType> GetServers()
         {
-            return new List<CellProjectType>
+            return new List<CellServerType>
             {
-                new CellProjectType { ServerType = ServerType.VSTS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.VSTS.png"), Title = "VSTS", Description = "A cloud service for code development collaboration by Microsoft" },
-                new CellProjectType { ServerType = ServerType.TFS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.TFS.png"), Title = "TFVC", Description = "Centralized Version Control by Microsoft" }
+                new CellServerType { ServerType = ServerType.VSTS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.VSTS.png"), Title = "VSTS", Description = "A cloud service for code development collaboration by Microsoft" },
+                new CellServerType { ServerType = ServerType.TFS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.TFS.png"), Title = "TFVC", Description = "Centralized Version Control by Microsoft" }
             };
         }
 

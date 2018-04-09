@@ -1,12 +1,11 @@
-﻿// NtlmAuthorizationConfig.cs
+﻿// VSTSAuthorizationConfig.cs
 // 
-// Authors:
-//       Ventsislav Mladenov
+// Author:
 //       Javier Suárez Ruiz
 // 
 // The MIT License (MIT)
 // 
-// Copyright (c) 2013-2018 Ventsislav Mladenov, Javier Suárez Ruiz
+// Copyright (c) 2018 Javier Suárez Ruiz
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,37 +26,23 @@
 // THE SOFTWARE.
 
 using System;
-using MonoDevelop.Core;
 using MonoDevelop.VersionControl.TFS.Models;
-using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
-    sealed class NtlmAuthorizationConfig : UserPasswordAuthorizationConfig, INtlmAuthorizationConfig
+    sealed class VSTSAuthorizationConfig : TFSAuthorizationConfig, IOAuthAuthorizationConfig
     {
-        TextEntry _domainEntry;
-
-        public NtlmAuthorizationConfig(Uri serverUri)
-            : base(serverUri)
+        public VSTSAuthorizationConfig()
         {
             Init();
-            BuildGui();
         }
+
+        public string OauthToken { get; set; }
+        public DateTimeOffset ExpiresOn { get; set; }
 
         void Init()
         {
-            _domainEntry = new TextEntry();
-        }
-
-        void BuildGui()
-        {
-            _container.PackStart(new Label(GettextCatalog.GetString("Domain") + ":"));
-            _container.PackStart(_domainEntry);
-        }
-
-        public string Domain
-        {
-            get { return _domainEntry.Text; }
+            TFSContainer.Visible = false;
         }
     }
 }

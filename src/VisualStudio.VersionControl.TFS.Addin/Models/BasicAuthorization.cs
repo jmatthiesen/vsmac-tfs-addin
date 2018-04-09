@@ -69,6 +69,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             var element = new XElement("Basic",
                             new XAttribute("UserName", UserName));
+            
             if (ClearSavePassword)
             {
                 element.Add(new XAttribute("Password", Password));

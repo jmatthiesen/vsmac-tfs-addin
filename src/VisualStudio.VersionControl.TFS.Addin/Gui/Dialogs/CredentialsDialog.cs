@@ -27,8 +27,12 @@
 // THE SOFTWARE.
 
 using System;
+using System.Diagnostics;
+using Microsoft.IdentityService.Clients.ActiveDirectory;
 using MonoDevelop.Core;
+using MonoDevelop.Ide;
 using MonoDevelop.VersionControl.TFS.Gui.Widgets;
+using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 
@@ -36,17 +40,58 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
     public class CredentialsDialog : Dialog
     {
-        readonly Uri _serverUri;
         VBox _typeContainer;
         ServerAuthorizationType _serverAuthType;
         IServerAuthorizationConfig _currentConfig;
+        AuthenticationContext _context;
+        readonly CellServerType _serverType;
 
-        public CredentialsDialog(Uri serverUri, CellProjectType serverType)
+        public CredentialsDialog(CellServerType serverType)
         {
-            _serverUri = serverUri;
-          
+            _serverType = serverType;
+
             Init();
-            BuildGui(serverType);
+            BuildGui();
+        }
+
+        internal IServerAuthorization ServerAuthorization
+        {
+            get
+            {
+                if (_currentConfig is VSTSAuthorizationConfig)
+                {
+                    var domain = ((VSTSAuthorizationConfig)_currentConfig).Domain;
+
+                    if (!string.IsNullOrEmpty(domain))
+                    {
+                        _serverAuthType = ServerAuthorizationType.Ntlm;
+                    }
+                }
+
+                return ServerAuthorizationFactory.GetServerAuthorization(_serverAuthType, _currentConfig);
+            }
+        }
+
+        internal AddServerResult AddServerResult
+        {
+            get
+            {
+                if (_currentConfig is VSTSAuthorizationConfig)
+                    return ((VSTSAuthorizationConfig)_currentConfig).Result;
+                
+                return ((TFSAuthorizationConfig)_currentConfig).Result;
+            }
+        }
+
+        internal Uri ServerUri
+        {
+            get
+            {
+                if (_currentConfig is VSTSAuthorizationConfig)
+                    return ((VSTSAuthorizationConfig)_currentConfig).Result.Url;
+                
+                return ((TFSAuthorizationConfig)_currentConfig).Result.Url;
+            }
         }
 
         void Init()
@@ -54,24 +99,60 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _typeContainer = new VBox();
         }
 
-        void BuildGui(CellProjectType serverType)
+        void BuildGui()
         {
-            Title = GettextCatalog.GetString("Credentials");
+            Title = GettextCatalog.GetString("Log In");
 
-            VBox container = new VBox();
+            VBox container = new VBox
+            {
+                MinWidth = 600
+            };
 
-            SetTypeConfig(serverType);
+            SetTypeConfig();
 
             container.PackStart(_typeContainer);
 
-            Buttons.Add(Command.Ok, Command.Cancel);
+            HBox buttonBox = new HBox
+            {
+                Margin = new WidgetSpacing(0, 12, 0, 12)
+            };
+
+            var cancelButton = new Button(GettextCatalog.GetString("Cancel"))
+            {
+                MinWidth = GuiSettings.ButtonWidth
+            };
+
+            cancelButton.HorizontalPlacement = WidgetPlacement.Start;
+            cancelButton.Clicked += (sender, e) => Respond(Command.Cancel);
+            buttonBox.PackStart(cancelButton);
+
+            container.PackStart(buttonBox);
+
+            var logInButton = new Button(GettextCatalog.GetString("Log in"))
+            {
+                BackgroundColor = Xwt.Drawing.Colors.SkyBlue,
+                MinWidth = GuiSettings.ButtonWidth
+            };
+
+            logInButton.HorizontalPlacement = WidgetPlacement.End;
+            logInButton.Clicked += OnLogIn;
+            buttonBox.PackEnd(logInButton);
+
+            var backButton = new Button(GettextCatalog.GetString("Back"))
+            {
+                MinWidth = GuiSettings.ButtonWidth
+            };
+
+            backButton.HorizontalPlacement = WidgetPlacement.End;
+            backButton.Clicked += (sender, e) => Respond(Command.Close);
+            buttonBox.PackEnd(backButton);
+
             Content = container;
         }
 
-
-        void SetTypeConfig(CellProjectType serverType)
+        void SetTypeConfig()
         {
-            switch(serverType.ServerType)
+            switch(_serverType.ServerType)
             {
                 case ServerType.VSTS:
                     _serverAuthType = ServerAuthorizationType.Oauth;
@@ -81,19 +162,43 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                     break;
             }
 
+            _currentConfig = ServerAuthorizationFactory.GetServerAuthorizationConfig(_serverAuthType);
 
-            _currentConfig = ServerAuthorizationFactory.GetServerAuthorizationConfig(_serverAuthType, _serverUri);
             _typeContainer.Clear();
             _typeContainer.PackStart(_currentConfig.Widget, true, true);
         }
 
-        internal IServerAuthorization Result
+        async void OnLogIn(object sender, EventArgs args)
         {
-            get
+            if(_serverType.ServerType == ServerType.VSTS)
             {
-                var type = _serverAuthType;
-                return ServerAuthorizationFactory.GetServerAuthorization(type, _currentConfig);
+                try
+                {
+                    TokenCache.DefaultShared.Clear();
+
+                    var serverResult = ((VSTSAuthorizationConfig)_currentConfig).Result;
+                    var tokenCache = AdalCacheHelper.GetAdalFileCacheInstance(serverResult.Url.Host);
+
+                    _context = new AuthenticationContext(OAuthConstants.Authority, true, tokenCache);
+
+                    var rootWindow = MessageService.RootWindow;
+                    var nsWindow = Components.Mac.GtkMacInterop.GetNSWindow(rootWindow);
+                    var platformParameter = new PlatformParameters(nsWindow);
+
+                    var authenticationResult = await _context.AcquireTokenAsync(OAuthConstants.Resource, OAuthConstants.ClientId, new Uri(OAuthConstants.RedirectUri), platformParameter, UserIdentifier.AnyUser);
+
+                    ((VSTSAuthorizationConfig)_currentConfig).OauthToken = authenticationResult.AccessToken;
+                    ((VSTSAuthorizationConfig)_currentConfig).ExpiresOn = authenticationResult.ExpiresOn;
+
+                    AdalCacheHelper.PersistTokenCache(serverResult.Url.Host, tokenCache);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
             }
+
+            Respond(Command.Ok);
         }
     }
 }

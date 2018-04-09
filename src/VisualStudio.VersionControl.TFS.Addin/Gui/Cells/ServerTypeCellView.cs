@@ -7,6 +7,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Cells
     public class ServerTypeCellView : CanvasCellView
     {
         const int ImagePadding = 2;
+        const int CellMargin = 6;
         const int ListViewMargin = 24;
         int TitleFontSize = 12;
         int DescriptionFontSize = 10;
@@ -21,7 +22,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Cells
             BackgroundColor = Ide.Gui.Styles.BackgroundColor;
             CellBorderColor = Colors.LightGray;
             CellBackgroundColor = Colors.White;
-            CellSelectionColor = Colors.LightBlue;
+            CellSelectionColor = Colors.SkyBlue;
             CellTextColor = Ide.Gui.Styles.BaseForegroundColor;
             CellTextSelectionColor = new Color(140, 140, 140);
         }
@@ -35,7 +36,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Cells
         public Color CellTextColor { get; internal set; }
         public Color CellTextSelectionColor { get; internal set; }
 
-        public IDataField<CellProjectType> CellProjectType { get; set; }
+        public IDataField<CellServerType> CellServerType { get; set; }
 
         protected override Size OnGetRequiredSize()
         {
@@ -59,27 +60,27 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Cells
             // Text color
             FillCellTextColor(ctx, isSelected);
 
-            var cellProjectType = GetValue(CellProjectType);
+            var cellServerType = GetValue(CellServerType);
 
             _imageSide = (int)cellArea.Height - (2 * ImagePadding);
 
-            ctx.DrawImage(cellProjectType.Icon, cellArea.Left + ImagePadding, cellArea.Top + ImagePadding, _imageSide, _imageSide);
+            ctx.DrawImage(cellServerType.Icon, cellArea.Left + ImagePadding, cellArea.Top + ImagePadding, _imageSide, _imageSide);
        
-            int imageX = _imageSide + ImagePadding + 6;
+            int imageX = _imageSide + ImagePadding + CellMargin;
 
             var titleTextLayout = new TextLayout();
             titleTextLayout.Font = titleTextLayout.Font.WithSize(TitleFontSize);
             titleTextLayout.Width = cellArea.Width - imageX;
             titleTextLayout.Height = cellArea.Height;
-            titleTextLayout.Text = cellProjectType.Title;
+            titleTextLayout.Text = cellServerType.Title;
             ctx.DrawTextLayout(titleTextLayout, cellArea.Left + imageX, cellArea.Top + _fontRequiredSize.Height * .5);
 
             var descriptionTextLayout = new TextLayout();
             descriptionTextLayout.Font = descriptionTextLayout.Font.WithSize(DescriptionFontSize);
             descriptionTextLayout.Width = cellArea.Width - imageX;
             descriptionTextLayout.Height = cellArea.Height;
-            descriptionTextLayout.Text = cellProjectType.Description;
-            ctx.DrawTextLayout(descriptionTextLayout, cellArea.Left + imageX, cellArea.Top + _fontRequiredSize.Height + 6);
+            descriptionTextLayout.Text = cellServerType.Description;
+            ctx.DrawTextLayout(descriptionTextLayout, cellArea.Left + imageX, cellArea.Top + _fontRequiredSize.Height + (CellMargin * 2));
         }
 
         void FillCellBackground(Context ctx, bool isSelected, double radius)
