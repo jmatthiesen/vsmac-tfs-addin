@@ -45,13 +45,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         #region implemented abstract members of TfsService
 
-        public override System.Xml.Linq.XNamespace MessageNs
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public override System.Xml.Linq.XNamespace MessageNs => throw new NotImplementedException();
 
         public IServiceResolver ServiceResolver
         {
@@ -65,7 +59,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         readonly Random random = new Random();
 
-        private LocalPath GetTempFileName(string extension)
+        LocalPath GetTempFileName(string extension)
         {
             var num = random.Next();
             var tempDir = Path.Combine(Path.GetTempPath(), "TfSAddinDownload");
@@ -73,7 +67,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             if (!Directory.Exists(tempDir))
                 Directory.CreateDirectory(tempDir);
      
-            return Path.Combine(tempDir, "tfsTemp" + num.ToString("X") + extension);// Files are gzipped
+            return Path.Combine(tempDir, "tfsTemp" + num.ToString("X") + extension);    // Files are gzipped
         }
 
         public LocalPath DownloadToTemp(string artifactUri)
@@ -81,7 +75,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             try
             {
                 var client = new WebClient();
-                this.Server.Authorization.Authorize(client);
+                Server.Authorization.Authorize(client);
                 var tempFileName = GetTempFileName(".gz");
                 var bulder = new UriBuilder(Url) { Query = artifactUri };
                 client.DownloadFile(bulder.Uri, tempFileName);
@@ -101,13 +95,12 @@ namespace MonoDevelop.VersionControl.TFS.Services
                         inStream.Close();
                     }
 
-                    tempFileName.Delete(); //Delete zipped tmp.
+                    tempFileName.Delete(); // Delete zipped tmp.
+                 
                     return newTempFileName;
                 }
-                else
-                {
-                    return tempFileName;
-                }
+                    
+                return tempFileName;
             }
             catch
             {

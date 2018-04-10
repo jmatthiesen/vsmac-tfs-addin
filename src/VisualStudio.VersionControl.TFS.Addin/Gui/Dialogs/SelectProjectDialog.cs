@@ -103,13 +103,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             HBox buttonBox = new HBox();
 
-            Button nextButton = new Button(GettextCatalog.GetString("OK"));
-            nextButton.MinWidth = GuiSettings.ButtonWidth;
+            Button nextButton = new Button(GettextCatalog.GetString("OK"))
+            {
+                MinWidth = GuiSettings.ButtonWidth
+            };
             nextButton.Clicked += (sender, e) => Respond(Command.Ok);
             buttonBox.PackStart(nextButton);
 
-            Button cancelButton = new Button(GettextCatalog.GetString("Cancel"));
-            cancelButton.MinWidth = GuiSettings.ButtonWidth;
+            Button cancelButton = new Button(GettextCatalog.GetString("Cancel"))
+            {
+                MinWidth = GuiSettings.ButtonWidth
+            };
             cancelButton.Clicked += (sender, e) => Respond(Command.Cancel);
             buttonBox.PackEnd(cancelButton);
 

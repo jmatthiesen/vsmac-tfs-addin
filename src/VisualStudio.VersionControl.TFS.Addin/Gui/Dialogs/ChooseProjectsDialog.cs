@@ -42,8 +42,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<ProjectCollection> _collectionItem;
         DataField<string> _collectionName;
         DataField<bool> _isProjectSelected;
+        DataField<Xwt.Drawing.Image> _projectType;
         DataField<string> _projectName;
         DataField<ProjectInfo> _projectItem;
+        CheckBoxCellView _checkView;
 
         internal List<ProjectCollection> SelectedProjectColletions { get; set; }
 
@@ -62,16 +64,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _collectionItem = new DataField<ProjectCollection>();
             _collectionName = new DataField<string>();
             _isProjectSelected = new DataField<bool>();
+            _projectType = new DataField<Xwt.Drawing.Image>();
             _projectName = new DataField<string>();
             _projectItem = new DataField<ProjectInfo>();
 
             _collectionStore = new ListStore(_collectionName, _collectionItem);
-            _projectsStore = new TreeStore(_isProjectSelected, _projectName, _projectItem);
+            _projectsStore = new TreeStore(_isProjectSelected, _projectType, _projectName, _projectItem);
         }
 
         void BuildGui(TeamFoundationServer server)
         {
-            Title = "Select Projects";
+            Title = "Choose Projects";
             Resizable = false;
 
             var vBox = new VBox();
@@ -83,21 +86,22 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             hbox.PackStart(_collectionsList);
 
             _projectsList.DataSource = _projectsStore;
-            _projectsList.MinWidth = 200;
+            _projectsList.MinWidth = 300;
             _projectsList.MinHeight = 300;
 
-            var checkView = new CheckBoxCellView(_isProjectSelected) { Editable = true };
+            _checkView = new CheckBoxCellView(_isProjectSelected) { Editable = true };
 
-            checkView.Toggled += (sender, e) =>
+            _checkView.Toggled += (sender, e) =>
             {
                 var row = _projectsList.CurrentEventRow;
                 var node = _projectsStore.GetNavigatorAt(row);
-                var isSelected = !node.GetValue(_isProjectSelected); //Xwt gives previous value
+                var isSelected = !node.GetValue(_isProjectSelected); // Xwt gives previous value
                 var project = node.GetValue(_projectItem);
 
-                if (isSelected) //Should add the project
+                if (isSelected) // Should add the project
                 {
                     var collection = SelectedProjectColletions.SingleOrDefault(col => col == project.Collection);
+                   
                     if (collection == null)
                     {
                         collection = project.Collection.Copy();
@@ -106,15 +110,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                     }
                     else
                     {
-                        //Should not exists because now is selected
+                        // Should not exists because now is selected
                         collection.Projects.Add(project);
                     }
                 }
                 else
                 {
-                    //Should exists because the project has been checked
+                    // Should exists because the project has been checked
                     var collection = SelectedProjectColletions.Single(pc => pc == project.Collection);
                     collection.Projects.Remove(project);
+                 
                     if (!collection.Projects.Any())
                     {
                         SelectedProjectColletions.Remove(collection);
@@ -122,23 +127,26 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 }
             };
 
-            _projectsList.Columns.Add(new ListViewColumn("", checkView));
+            _projectsList.Columns.Add(new ListViewColumn("", _checkView));
+            var projectTypeColumn = new ListViewColumn("Type");
+            projectTypeColumn.Views.Add(new ImageCellView(_projectType));
+            _projectsList.Columns.Add(projectTypeColumn);
             _projectsList.Columns.Add(new ListViewColumn("Name", new TextCellView(_projectName)));
             hbox.PackEnd(_projectsList);
 
             vBox.PackStart(hbox);
 
-            Button ok = new Button(GettextCatalog.GetString("OK"));
-            ok.Clicked += (sender, e) => Respond(Command.Ok);
+            Button okButton = new Button(GettextCatalog.GetString("OK"));
+            okButton.Clicked += (sender, e) => Respond(Command.Ok);
 
-            Button cancel = new Button(GettextCatalog.GetString("Cancel"));
-            cancel.Clicked += (sender, e) => Respond(Command.Cancel);
+            Button cancelButton = new Button(GettextCatalog.GetString("Cancel"));
+            cancelButton.Clicked += (sender, e) => Respond(Command.Cancel);
 
-            ok.MinWidth = cancel.MinWidth = GuiSettings.ButtonWidth;
+            okButton.MinWidth = cancelButton.MinWidth = GuiSettings.ButtonWidth;
 
             var buttonBox = new HBox();
-            buttonBox.PackEnd(ok);
-            buttonBox.PackEnd(cancel);
+            buttonBox.PackEnd(okButton);
+            buttonBox.PackEnd(cancelButton);
             vBox.PackStart(buttonBox);
 
             Content = vBox;
@@ -172,9 +180,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                     foreach (var project in collection.Projects)
                     {
                         var node = _projectsStore.AddNode();
-                        var project1 = project;
-                        var isSelected = selectedColletion != null && selectedColletion.Projects.Any(p => p == project1);
+                        var projectCopy = project;
+        
+                        var isSelected = selectedColletion != null && selectedColletion.Projects.Any(p => p == projectCopy);                      
                         node.SetValue(_isProjectSelected, isSelected);
+                        node.SetValue(_projectType, GetProjectTypeImage(project.ProjectDetails));
                         node.SetValue(_projectName, project.Name);
                         node.SetValue(_projectItem, project);
                     }
@@ -183,6 +193,26 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             if (server.ProjectCollections.Any())
                 _collectionsList.SelectRow(0);
+        }
+
+        bool IsSourceControlGitEnabled(ProjectDetails projectDetails)
+        {
+            if (projectDetails.Details.Any(p => p.Name == "System.SourceControlGitEnabled"))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        Xwt.Drawing.Image GetProjectTypeImage(ProjectDetails projectDetails)
+        {
+            if(IsSourceControlGitEnabled(projectDetails))
+            {
+               return Xwt.Drawing.Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.Git.png").WithSize(16, 16);
+            }
+
+            return Xwt.Drawing.Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.VSTS.png").WithSize(16, 16);
         }
     }
 }

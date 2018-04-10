@@ -204,8 +204,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             rightBox.PackStart(headerRightBox, false, false, 0);
             headerRightBox.PackStart(_localFolder, false, false, 0);
 
-            var itemNameColumn = new TreeViewColumn();
-            itemNameColumn.Title = "Name";
+            var itemNameColumn = new TreeViewColumn
+            {
+                Title = "Name"
+            };
             var itemIconRenderer = new CellRendererPixbuf();
             itemNameColumn.PackStart(itemIconRenderer, false);
             itemNameColumn.SetAttributes(itemIconRenderer, "pixbuf", 1);
@@ -337,7 +339,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             var serverName = string.Equals(_projectCollection.Server.Name, _projectCollection.Server.Uri.OriginalString, StringComparison.OrdinalIgnoreCase)
                 ? _projectCollection.Server.Uri.Host
                 : _projectCollection.Server.Name;
-            
+
             var rootName = string.Format("{0}\\{1}", serverName, _projectCollection.Name);
             _treeStore.SetValues(node, root.Item, ImageHelper.GetRepositoryImage(), rootName);
             AddChilds(node, root.Children);
@@ -356,19 +358,22 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         void AddChilds(TreeIter node, List<HierarchyItem> children)
         {
             _treeLevel++;
+
             foreach (var child in children)
             {
                 var childNode = _treeStore.AppendNode(node);
+
                 _treeStore.SetValue(childNode, 0, child.Item);
                 _treeStore.SetValue(childNode, 2, child.Name);
-               
+
                 if (_treeLevel == 1)
                     _treeStore.SetValue(childNode, 1, ImageHelper.GetRepositoryImage());
                 else
                     _treeStore.SetValue(childNode, 1, ImageHelper.GetItemImage(ItemType.Folder));
-               
+
                 AddChilds(childNode, child.Children);
             }
+
             _treeLevel--;
         }
 

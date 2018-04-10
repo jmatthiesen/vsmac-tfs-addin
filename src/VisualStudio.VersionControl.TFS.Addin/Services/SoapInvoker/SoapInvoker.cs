@@ -131,7 +131,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                             {
                                 var resultDocument = XDocument.Parse(responseTxt);
                                 logBuilder.AppendLine(resultDocument.ToString());
-                                return resultDocument.Root.Element(soapNs + "Body").Element(this.messagegNs + (this.methodName + "Response"));
+                                return resultDocument.Root.Element(soapNs + "Body").Element(messagegNs + (methodName + "Response"));
                             }
                         }
                     }

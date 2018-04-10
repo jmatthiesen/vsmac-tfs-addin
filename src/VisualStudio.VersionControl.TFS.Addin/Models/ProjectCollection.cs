@@ -28,10 +28,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Xml.Linq;
+using MonoDevelop.VersionControl.TFS.Extensions;
 using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Services;
+using Newtonsoft.Json;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
@@ -66,8 +71,81 @@ namespace MonoDevelop.VersionControl.TFS.Models
         List<ProjectInfo> FetchProjects()
         {
             var projectConfigs = commonStructureService.Value.ListAllProjects(this);
+
+            foreach(var projectConfig in projectConfigs)
+            {
+                var projectDetails = FetchProjectDetail(commonStructureService.Value.Server, projectConfig.Id.ToString());
+                projectConfig.ProjectDetails = projectDetails;
+            }
+
             return projectConfigs;
         }
+
+        public ProjectDetails FetchProjectDetail(TeamFoundationServer server, string projectId)
+        {
+            var logBuilder = new StringBuilder();
+            logBuilder.AppendLine("Date: " + DateTime.Now.ToString("s"));
+            logBuilder.AppendLine("Request:");
+            logBuilder.AppendLine(this.ToString());
+
+            try
+            {
+                UriBuilder builder = new UriBuilder(server.Uri.OriginalString);
+                builder.AppendToPath($"DefaultCollection/_apis/projects/{projectId}/properties");
+                builder.Query = $"version=2.0";
+
+                var url = builder.ToString();
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                server.Authorization.Authorize(request);
+                request.AllowWriteStreamBuffering = true;
+
+                using (var response = (HttpWebResponse)request.GetResponse())
+                {
+                    using (var responseStream = response.GetResponseStream())
+                    {
+                        using (StreamReader sr = new StreamReader(responseStream, Encoding.UTF8))
+                        {
+                            var responseTxt = sr.ReadToEnd();
+                            logBuilder.AppendLine("Response:");
+
+                            if (response.StatusCode != HttpStatusCode.OK)
+                            {
+                                logBuilder.AppendLine(responseTxt);
+                                throw new Exception("Error!!!\n" + responseTxt);
+                            }
+
+                            var result = JsonConvert.DeserializeObject<ProjectDetails>(responseTxt);
+                            logBuilder.AppendLine(result.ToString());
+
+                            return result;
+                        }
+                    }
+                }
+            }
+            catch (WebException wex)
+            {
+                if (wex.Response != null && wex.Response.ContentType.IndexOf("xml", StringComparison.OrdinalIgnoreCase) > -1)
+                {
+                    XDocument doc = XDocument.Load(wex.Response.GetResponseStream());
+                    logBuilder.AppendLine(doc.ToString());
+                    throw new Exception(doc.ToString());
+                }
+
+                logBuilder.AppendLine(wex.Message);
+                logBuilder.AppendLine(wex.StackTrace);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                logBuilder.AppendLine(ex.Message);
+                logBuilder.AppendLine(ex.StackTrace);
+                throw;
+            }
+        }
+
+
+
+
 
         public void LoadProjects()
         {
@@ -87,6 +165,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         public void LoadProjects(List<string> names)
         {
             Projects.Clear();
+          
             Projects.AddRange(from pc in FetchProjects()  
                               where names.Any(n => string.Equals(pc.Name, n, StringComparison.OrdinalIgnoreCase))
                               orderby pc.Name

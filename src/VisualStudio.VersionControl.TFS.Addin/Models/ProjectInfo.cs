@@ -27,12 +27,28 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.Xml.Linq;
 using MonoDevelop.VersionControl.TFS.Helpers;
+using Newtonsoft.Json;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
-    public sealed class ProjectInfo: IEquatable<ProjectInfo>, IComparable<ProjectInfo>
+    public class ProjectDetails
+    {
+        public int Count { get; set; }
+
+        [JsonProperty("value")]
+        public IList<ProjectDetail> Details { get; set; }
+    }
+
+    public class ProjectDetail
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+    }
+
+    public sealed class ProjectInfo : IEquatable<ProjectInfo>, IComparable<ProjectInfo>
     {
         ProjectInfo(ProjectCollection collection)
         {
@@ -48,22 +64,26 @@ namespace MonoDevelop.VersionControl.TFS.Models
         public Guid Id { get; private set; }
 
         public ProjectCollection Collection { get; private set; }
+   
+        public ProjectDetails ProjectDetails { get; set; }
 
         #region Serialization
 
         public XElement ToConfigXml()
         {
             return new XElement("Project",
-                        new XAttribute("Name", Name),
-                        new XAttribute("Status", State),
-                        new XAttribute("Uri", Uri));
+                                new XAttribute("Name", Name),
+                                new XAttribute("Status", State),
+                                new XAttribute("Uri", Uri));
         }
 
         public static ProjectInfo FromServerXml(XElement element, ProjectCollection collection)
         {
-            var projectInfo = new ProjectInfo(collection);
-            projectInfo.Name = element.GetElement("Name").Value;
-            projectInfo.Uri = new Uri(element.GetElement("Uri").Value);
+            var projectInfo = new ProjectInfo(collection)
+            {
+                Name = element.GetElement("Name").Value,
+                Uri = new Uri(element.GetElement("Uri").Value)
+            };
             projectInfo.Id = Guid.Parse(projectInfo.Uri.OriginalString.Remove(0, 36));
             projectInfo.State = (ProjectState)Enum.Parse(typeof(ProjectState), element.GetElement("Status").Value);
            
@@ -75,15 +95,16 @@ namespace MonoDevelop.VersionControl.TFS.Models
             if (!string.Equals(element.Name.LocalName, "Project", StringComparison.OrdinalIgnoreCase))
                 throw new Exception("Invalid xml element");
 
-            var projectInfo = new ProjectInfo(collection);
-            projectInfo.Name = element.Attribute("Name").Value;
-            projectInfo.Uri = new Uri(element.Attribute("Uri").Value);
+            var projectInfo = new ProjectInfo(collection)
+            {
+                Name = element.Attribute("Name").Value,
+                Uri = new Uri(element.Attribute("Uri").Value)
+            };
             projectInfo.Id = Guid.Parse(projectInfo.Uri.OriginalString.Remove(0, 36));
             projectInfo.State = (ProjectState)Enum.Parse(typeof(ProjectState), element.Attribute("Status").Value);
          
             return projectInfo;
         }
-
 
         #endregion
 
@@ -93,7 +114,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         public int CompareTo(ProjectInfo other)
         {
-            return Name.CompareTo(other.Name);
+            return string.Compare(Name, other.Name, StringComparison.Ordinal);
         }
 
         #endregion
@@ -136,7 +157,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         public static bool operator ==(ProjectInfo left, ProjectInfo right)
         {
-            return ReferenceEquals(null, left) ? ReferenceEquals(null, right) : left.Equals(right);
+            return left is null ? right is null : left.Equals(right);
         }
 
         public static bool operator !=(ProjectInfo left, ProjectInfo right)

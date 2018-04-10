@@ -99,8 +99,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             content.PackStart(new Label(GettextCatalog.GetString("Files") + ":"));
             _fileView.WidthRequest = 500;
             _fileView.HeightRequest = 150;
-            var checkView = new CheckBoxCellView(_isCheckedField);
-            checkView.Editable = true;
+            var checkView = new CheckBoxCellView(_isCheckedField)
+            {
+                Editable = true
+            };
             _fileView.Columns.Add("Name", checkView, new TextCellView(_nameField));
             _fileView.Columns.Add("Folder", _folderField);
             _fileView.DataSource = _fileStore;

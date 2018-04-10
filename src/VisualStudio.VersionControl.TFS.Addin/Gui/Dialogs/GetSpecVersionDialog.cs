@@ -156,7 +156,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                         // Force Get 
                         _workspace.ResetDownloadStatus(item.ItemId);
                     }
-
                 }
             }
 

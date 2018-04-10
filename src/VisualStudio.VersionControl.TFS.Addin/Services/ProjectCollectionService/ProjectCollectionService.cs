@@ -75,6 +75,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
         public List<ProjectCollection> GetProjectCollections(TeamFoundationServer server)
         {
             var collection = new List<ProjectCollection>();
+
             foreach (var catalogResource in GetXmlCollections())
             {
                 collection.Add(ProjectCollection.FromServerXml(catalogResource, server));
@@ -84,4 +85,3 @@ namespace MonoDevelop.VersionControl.TFS.Services
         }
     }
 }
-

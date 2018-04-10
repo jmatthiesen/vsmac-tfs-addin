@@ -132,8 +132,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             var checkInTab = new VBox();
             _filesView.WidthRequest = 600;
             _filesView.HeightRequest = 150;
-            var checkView = new CheckBoxCellView(_isCheckedField);
-            checkView.Editable = true;
+            var checkView = new CheckBoxCellView(_isCheckedField)
+            {
+                Editable = true
+            };
             _filesView.Columns.Add("Name", checkView, new TextCellView(_nameField));
             _filesView.Columns.Add("Changes", _changesField);
             _filesView.Columns.Add("Folder", _folderField);
@@ -172,16 +174,22 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             _notebook.Add(workItemsTab, GettextCatalog.GetString("Work Items"));
 
-            HBox buttonBox = new HBox();
-            buttonBox.HorizontalPlacement = WidgetPlacement.End;
+            HBox buttonBox = new HBox
+            {
+                HorizontalPlacement = WidgetPlacement.End
+            };
 
-            Button okButton = new Button(GettextCatalog.GetString("OK"));
-            okButton.MinWidth = GuiSettings.ButtonWidth;
+            Button okButton = new Button(GettextCatalog.GetString("OK"))
+            {
+                MinWidth = GuiSettings.ButtonWidth
+            };
             okButton.Clicked += OnCheckIn;
             buttonBox.PackStart(okButton);
 
-            Button cancelButton = new Button(GettextCatalog.GetString("Cancel"));
-            cancelButton.MinWidth = GuiSettings.ButtonWidth;
+            Button cancelButton = new Button(GettextCatalog.GetString("Cancel"))
+            {
+                MinWidth = GuiSettings.ButtonWidth
+            };
             cancelButton.Clicked += (sender, e) => Respond(Command.Cancel);
             buttonBox.PackStart(cancelButton);
 

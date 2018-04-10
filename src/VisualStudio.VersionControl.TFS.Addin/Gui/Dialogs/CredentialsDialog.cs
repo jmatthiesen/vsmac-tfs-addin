@@ -94,7 +94,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
-        void Init()
+		void Init()
         {
             _typeContainer = new VBox();
         }
@@ -170,6 +170,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         async void OnLogIn(object sender, EventArgs args)
         {
+            if(!IsValid(AddServerResult))
+            {
+                MessageService.ShowWarning("Some mandatory fields are missing.");
+                return;
+            }
+
             if(_serverType.ServerType == ServerType.VSTS)
             {
                 try
@@ -199,6 +205,23 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
 
             Respond(Command.Ok);
+        }
+
+        bool IsValid(AddServerResult addServerResult)
+        {
+            if(addServerResult == null)
+            {
+                return false;
+            }
+
+            if(string.IsNullOrEmpty(addServerResult.Name) ||
+               string.IsNullOrEmpty(addServerResult.UserName) ||
+               addServerResult.Url == null)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -83,7 +83,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
             else
             {
-                Title = "Add Workspace" + " - " + _projectCollection.Server.Name + " - " + _projectCollection.Name;
+                Title = "Create new Workspace" + " - " + _projectCollection.Server.Name + " - " + _projectCollection.Name;
             }
 
             VBox content = new VBox();
@@ -116,16 +116,22 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             HBox buttonBox = new HBox();
 
-            Button addButton = new Button(GettextCatalog.GetString("Add Working Folder"));
-            addButton.MinWidth = GuiSettings.ButtonWidth;
+            Button addButton = new Button(GettextCatalog.GetString("Add Working Folder"))
+            {
+                MinWidth = GuiSettings.ButtonWidth
+            };
             addButton.Clicked += OnAddWorkingFolder;
 
-            Button okButton = new Button(GettextCatalog.GetString("OK"));
-            okButton.MinWidth = GuiSettings.ButtonWidth;
+            Button okButton = new Button(GettextCatalog.GetString("OK"))
+            {
+                MinWidth = GuiSettings.ButtonWidth
+            };
             okButton.Clicked += OnAddWorkspace;
 
-            Button cancelButton = new Button(GettextCatalog.GetString("Cancel"));
-            cancelButton.MinWidth = GuiSettings.ButtonWidth;
+            Button cancelButton = new Button(GettextCatalog.GetString("Cancel"))
+            {
+                MinWidth = GuiSettings.ButtonWidth
+            };
             cancelButton.Clicked += (sender, e) => Respond(Command.Cancel);
 
             buttonBox.PackStart(addButton);
@@ -148,6 +154,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                     {
                         folderSelect.Multiselect = false;
                         folderSelect.CanCreateFolders = true;
+
                         if (folderSelect.Run(this))
                         {
                             var row = _foldersStore.AddRow();
@@ -163,10 +170,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             try
             {
-                WorkspaceData workspaceData = new WorkspaceData();
-                workspaceData.Name = _nameEntry.Text;
-                workspaceData.Owner = _ownerEntry.Text;
-                workspaceData.Computer = _computerEntry.Text;
+                WorkspaceData workspaceData = new WorkspaceData
+                {
+                    Name = _nameEntry.Text,
+                    Owner = _ownerEntry.Text,
+                    Computer = _computerEntry.Text
+                };
 
                 for (int i = 0; i < _foldersStore.RowCount; i++)
                 {
