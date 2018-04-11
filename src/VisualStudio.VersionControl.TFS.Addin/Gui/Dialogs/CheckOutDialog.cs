@@ -96,7 +96,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void BuildGui()
         {
-            Title = GettextCatalog.GetString("Check Out");
+            Title = GettextCatalog.GetString("Checkout");
 
             var content = new VBox();
 
@@ -104,8 +104,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _filesView.WidthRequest = 600;
             _filesView.HeightRequest = 200;
 
-            var checkView = new CheckBoxCellView(_isCheckedField);
-            checkView.Editable = true;
+            var checkView = new CheckBoxCellView(_isCheckedField)
+            {
+                Editable = true
+            };
             _filesView.Columns.Add("Name", checkView, new TextCellView(_nameField));
             _filesView.Columns.Add("Folder", _folderField);
             _filesView.DataSource = _fileStore;

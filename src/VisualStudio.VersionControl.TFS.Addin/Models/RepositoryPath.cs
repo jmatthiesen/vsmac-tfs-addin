@@ -88,10 +88,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             }
         }
 
-        public override bool IsDirectory
-        {
-            get { return this.Path.EndsWith(Separator.ToString()); }
-        }
+        public override bool IsDirectory => this.Path.EndsWith(Separator.ToString(), StringComparison.Ordinal);
 
         public static bool IsServerItem(string path)
         {
@@ -180,10 +177,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             return Equals(cast);
         }
 
-        public override int GetHashCode()
-        {
-            return Path.GetHashCode();
-        }
+        public override int GetHashCode() => Path.GetHashCode();
 
         public static bool operator ==(RepositoryPath left, RepositoryPath right)
         {

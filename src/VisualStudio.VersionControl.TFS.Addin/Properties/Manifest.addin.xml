@@ -31,7 +31,11 @@
             <Command 
                 id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.Checkout"
                 _label = "_Checkout" 
-                description = "Check Out." />
+                description = "Checkout." />           
+            <Command id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.CheckoutMenu"
+                _label = "_Checkout"
+                defaultHandler = "MonoDevelop.VersionControl.TFS.Commands.CheckoutHandler"
+                description = "Checkout."/>
             <Command 
                 id = "MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.LocateInSourceExplorer"
                 _label = "_Locate in Source Explorer"  
@@ -51,6 +55,7 @@
         <SeparatorItem insertafter="MonoDevelop.VersionControl.Commands.Annotate"/>
         <ItemSet id = "TeamFoundationServer" _label = "Team Foundation Server" autohide="true">
             <CommandItem id="MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.ConnectToServer" />  
+            <CommandItem id="MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.CheckoutMenu" />
             <CommandItem id="MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.TeamExplorer" />
             <CommandItem id="MonoDevelop.VersionControl.TFS.Commands.TeamExplorerCommands.SourceControlExplorer" />
             <SeparatorItem/>

@@ -6,6 +6,7 @@
         TeamExplorer,
         SourceControlExplorer,
         Checkout,
+        CheckoutMenu,
         LocateInSourceExplorer,
         ResolveConflicts,
         ResolveConflictsMenu

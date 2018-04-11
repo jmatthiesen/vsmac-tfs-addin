@@ -38,8 +38,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         ProjectCollection _projectCollection;
         TreeView _treeView;
         TreeStore _treeStore;
-        DataField<string> _name = new DataField<string>();
-        DataField<string> _path = new DataField<string>();
+        DataField<string> _name;
+        DataField<string> _path;
 
         internal SelectProjectDialog(ProjectCollection projectCollection)
         {
