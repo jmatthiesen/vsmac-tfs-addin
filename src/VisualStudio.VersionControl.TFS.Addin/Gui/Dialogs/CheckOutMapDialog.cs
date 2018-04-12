@@ -27,6 +27,8 @@
 
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.ProgressMonitoring;
 using MonoDevelop.VersionControl.TFS.Models;
@@ -36,17 +38,18 @@ using Xwt.Drawing;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
-    public class CheckOutMapDialog : Dialog
+	public class CheckOutMapDialog : Dialog
     {
         Label _titleLabel;   
         ComboBox _accountComboBox;
         ComboBox _projectCollectionComboBox;
-        TreeView _projectsTreeView;
+        ListView _projectsListView;
         DataField<Image> _projectType;
         DataField<string> _projectName;
         DataField<ProjectInfo> _projectItem;
-        TreeStore _projectsStore; 
+        ListStore _projectsStore; 
         TreeView _filesView;
+		Xwt.Spinner _projectsSpinner;
         DataField<bool> _isCheckedField;
         DataField<string> _fileName;
         DataField<BaseItem> _baseItem;
@@ -55,9 +58,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         ComboBox _workspaceComboBox;
         TextEntry _localPathEntry;
         Button _browseButton;
+        Button _checkoutButton;
 
         TeamFoundationServer _server;
         ProjectCollection _projectCollection;
+        Task _worker;
+        CancellationTokenSource _workerCancel;
 
         IWorkspaceService _currentWorkspace;
         TeamFoundationServerVersionControlService _versionControlService;
@@ -80,28 +86,49 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
-        void Init(TeamFoundationServerVersionControlService versionControlService)
+		protected override void OnClosed()
+		{
+            _workerCancel?.Cancel();
+
+			base.OnClosed();
+		}
+
+		void Init(TeamFoundationServerVersionControlService versionControlService)
         {
             _versionControlService = versionControlService;
+
+            _workerCancel = new CancellationTokenSource();
 
             _titleLabel = new Label(GettextCatalog.GetString("Your Hosted Repositories"))
             {
                 Margin = new WidgetSpacing(0, 0, 0, 12)
             };
+
             _accountComboBox = new ComboBox
             {
-                MinWidth = 500
+                MinWidth = 620
             };
+
             _projectCollectionComboBox = new ComboBox
             {
-                MinWidth = 500
+                MinWidth = 620
             };
-            _projectsTreeView = new TreeView();
+
+            _projectsListView = new ListView();
             _projectType = new DataField<Image>();
             _projectName = new DataField<string>();
             _projectItem = new DataField<ProjectInfo>();
-            _projectsStore = new TreeStore(_projectType, _projectName, _projectItem);
+            _projectsStore = new ListStore(_projectType, _projectName, _projectItem);
 
+			_projectsSpinner = new Spinner
+			{
+				HeightRequest = 24,
+				WidthRequest = 24,
+				Animate = true,
+				HorizontalPlacement = WidgetPlacement.Center,
+				VerticalPlacement = WidgetPlacement.Center
+			};
+           
             _filesView = new TreeView
             {
                 ExpandHorizontal = true,
@@ -114,17 +141,22 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _filesStore = new TreeStore(_isCheckedField, _fileName, _baseItem);
 
             _refreshButton = new Button(GettextCatalog.GetString("Refresh"));
-            _workspaceComboBox = new ComboBox
+         
+			_workspaceComboBox = new ComboBox
             {
                 MinWidth = 150
             };
+
             _localPathEntry = new TextEntry
             { 
+				VerticalPlacement = WidgetPlacement.Center,
                 ReadOnly = true,
-                MinWidth = 350
+                MinWidth = 400
             };
+			_localPathEntry.Font = _localPathEntry.Font.WithScaledSize(1.0);
             _localPathEntry.Text = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            _browseButton = new Button(GettextCatalog.GetString("Browse..."))
+          
+			_browseButton = new Button(GettextCatalog.GetString("Browse..."))
             {
                 HorizontalPlacement = WidgetPlacement.End
             };
@@ -136,7 +168,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             VBox content = new VBox
             {
-                Margin = 12,
+				Margin = new WidgetSpacing(12, 12, 12, 0),
+				HeightRequest = 500,
                 MinWidth = 700
             };
 
@@ -145,23 +178,27 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             VBox selectorBox = new VBox();
 
             HBox accountBox = new HBox();
-            Label accountLabel = new Label(GettextCatalog.GetString("Account:"))
+          
+			Label accountLabel = new Label(GettextCatalog.GetString("Account:"))
             {
                 WidthRequest = 60,
                 HorizontalPlacement = WidgetPlacement.End,
-                Margin = new WidgetSpacing(240, 0, 0, 0)
+                Margin = new WidgetSpacing(230, 0, 0, 0)
             };
+
             accountBox.PackStart(accountLabel);
             accountBox.PackEnd(_accountComboBox);
             selectorBox.PackStart(accountBox);
 
             HBox collectionBox = new HBox();
-            Label collectionLabel = new Label(GettextCatalog.GetString("Collection:"))
+          
+			Label collectionLabel = new Label(GettextCatalog.GetString("Collection:"))
             {
                 WidthRequest = 60,
                 HorizontalPlacement = WidgetPlacement.End,
-                Margin = new WidgetSpacing(240, 0, 0, 0)
+                Margin = new WidgetSpacing(230, 0, 0, 0)
             };
+
             collectionBox.PackStart(collectionLabel);
             collectionBox.PackEnd(_projectCollectionComboBox);
 
@@ -169,40 +206,103 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             content.PackStart(selectorBox);
 
             HBox mainBox = new HBox();
-            VBox listViewBox = new VBox
+
+            FrameBox listViewFrame = new FrameBox
             {
+                BorderColor = Colors.LightGray,
+                BorderWidthTop = 1,   
+                BorderWidthLeft = 1,
+                BorderWidthRight = 1,
                 WidthRequest = 300
             };
-            listViewBox.PackStart(new Label(GettextCatalog.GetString("Team Project")));
-            _projectsTreeView.HeadersVisible = false;
-            _projectsTreeView.MinHeight = 300;
+
+            VBox listViewBox = new VBox
+            {
+                BackgroundColor = Colors.White
+            };
+
+            FrameBox listViewHeaderFrame = new FrameBox
+            {
+                BorderColor = Colors.LightGray,
+                BorderWidthBottom = 1,
+                WidthRequest = 300
+            };
+
+            listViewHeaderFrame.Content = new Label(GettextCatalog.GetString("Team Project")) { HeightRequest = 24, Margin = new WidgetSpacing(6) };
+            listViewBox.PackStart(listViewHeaderFrame);
+			listViewBox.PackStart(_projectsSpinner);
+            _projectsListView.HeadersVisible = false;
+            _projectsListView.BorderVisible = false;
+            _projectsListView.MinHeight = 300;
+            _projectsListView.VerticalPlacement = WidgetPlacement.Fill;
+            _projectsListView.Margin = new WidgetSpacing(0);
             var projectTypeColumn = new ListViewColumn("Type");
             projectTypeColumn.Views.Add(new ImageCellView(_projectType));
-            _projectsTreeView.Columns.Add(projectTypeColumn);
-            _projectsTreeView.Columns.Add("Name", _projectName);
-            _projectsTreeView.DataSource = _projectsStore;
-            listViewBox.PackStart(_projectsTreeView);
-            mainBox.PackStart(listViewBox);
+            _projectsListView.Columns.Add(projectTypeColumn);
+            _projectsListView.Columns.Add("Name", _projectName);
+            _projectsListView.DataSource = _projectsStore;
+            listViewBox.PackStart(_projectsListView);
+            listViewFrame.Content = listViewBox;
+            mainBox.PackStart(listViewFrame);
 
-            VBox treeViewBox = new VBox();
+            FrameBox treeViewFrame = new FrameBox
+            {
+                BorderColor = Colors.LightGray,
+                BorderWidthTop = 1,
+                BorderWidthRight = 1,
+                Margin = new WidgetSpacing(-6, 0, 0, 0)
+            };
+
+            VBox treeViewBox = new VBox
+            {
+                BackgroundColor = Colors.White,
+                Margin = 0
+            };
+
             _filesView.HeadersVisible = false;
             _filesView.MinHeight = 300;
-            _filesView.WidthRequest = 500;
-            treeViewBox.PackStart(new Label(GettextCatalog.GetString("Directory for Mapping")));
+            _filesView.WidthRequest = 620;
+            _filesView.BorderVisible = false;
+            _filesView.UseAlternatingRowColors = true;
+            _filesView.GridLinesVisible = GridLines.None;
+            _filesView.VerticalPlacement = WidgetPlacement.Fill;
+            _filesView.Margin = new WidgetSpacing(0);
+
+            FrameBox treeViewHeaderFrame = new FrameBox
+            {
+                BorderColor = Colors.LightGray,
+                BorderWidthBottom = 1
+            };
+
+            treeViewHeaderFrame.Content = new Label(GettextCatalog.GetString("Directory for Mapping")) { HeightRequest = 24, Margin = new WidgetSpacing(6) };
+            treeViewBox.PackStart(treeViewHeaderFrame);
+                      
             var checkView = new CheckBoxCellView(_isCheckedField)
             {
                 Editable = true
             };
+
             _filesView.Columns.Add("", checkView);
             _filesView.Columns.Add("Name", _fileName);
             _filesView.DataSource =_filesStore;
             treeViewBox.PackStart(_filesView);
-            mainBox.PackStart(treeViewBox);
+
+            treeViewFrame.Content = treeViewBox;
+            mainBox.PackStart(treeViewFrame);
 
             content.PackStart(mainBox);
 
-            FrameBox refreshBox = new FrameBox();
+            FrameBox refreshBox = new FrameBox
+            {
+                BorderColor = Colors.LightGray,
+                BorderWidth = 1,
+                Margin = new WidgetSpacing(0, -6, 0, 0)
+            };
+
+            _refreshButton.BackgroundColor = Colors.White;
             _refreshButton.HorizontalPlacement = WidgetPlacement.End;
+            _refreshButton.Style = ButtonStyle.Flat;
+            _refreshButton.WidthRequest = 60;
             refreshBox.Content = _refreshButton;
             content.PackStart(refreshBox);
 
@@ -223,18 +323,19 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             {
                 MinWidth = GuiSettings.ButtonWidth
             };
+
             cancelButton.HorizontalPlacement = WidgetPlacement.Start;
             cancelButton.Clicked += (sender, e) => Respond(Command.Cancel);
 
-            Button checkoutButton = new Button(GettextCatalog.GetString("Checkout"))
+            _checkoutButton = new Button(GettextCatalog.GetString("Checkout"))
             {
-                BackgroundColor = Colors.SkyBlue,
                 MinWidth = GuiSettings.ButtonWidth
             };
-            checkoutButton.HorizontalPlacement = WidgetPlacement.End;
+
+            _checkoutButton.HorizontalPlacement = WidgetPlacement.End;
 
             buttonBox.PackStart(cancelButton);
-            buttonBox.PackEnd(checkoutButton);
+            buttonBox.PackEnd(_checkoutButton);
 
             content.PackStart(buttonBox);
 
@@ -247,19 +348,33 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _accountComboBox.SelectionChanged += OnChangeAccount;
             _projectCollectionComboBox.SelectionChanged += OnChangeProjectCollection;
             _workspaceComboBox.SelectionChanged += OnChangeWorkspace;
-            _projectsTreeView.SelectionChanged += OnChangeProject;
+            _projectsListView.SelectionChanged += OnChangeProject;
             _browseButton.Clicked += OnBrowse;
             _refreshButton.Clicked += OnRefresh;
+            _checkoutButton.Clicked += OnCheckout;
         }
 
         void OnChangeAccount(object sender, EventArgs args)
         {
-            _server = (TeamFoundationServer)_accountComboBox.SelectedItem;
+            if (_accountComboBox.SelectedItem is int)
+            {
+                using (var dialog = new ConnectToServerDialog())
+                {
+                    dialog.Run(MessageDialog.RootWindow);
+                }
+            }
+            else
+            {
+                _server = (TeamFoundationServer)_accountComboBox.SelectedItem;
+            }
         }
 
         void OnChangeProjectCollection(object sender, EventArgs args)
         {
-            _projectCollection = (ProjectCollection)_projectCollectionComboBox.SelectedItem;
+            if (_projectCollectionComboBox.SelectedItem != null)
+            {
+                _projectCollection = (ProjectCollection)_projectCollectionComboBox.SelectedItem;
+            }
         }
 
         void OnChangeWorkspace(object sender, EventArgs args)
@@ -303,7 +418,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                     if (_currentWorkspace.Data.WorkingFolders.Any())
                     {
                         var localItem = _currentWorkspace.Data.WorkingFolders.FirstOrDefault().LocalItem;
-                        _localPathEntry.Text = localItem.GetDirectory().ToString();
+                        var localPath = localItem.ToString();
+                        _localPathEntry.Text = localPath;
                     }
                 }
             }
@@ -311,14 +427,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void OnChangeProject(object sender, EventArgs args)
         {
-            var iterPos = _projectsTreeView.SelectedRow;
-            var navigator = _projectsStore.GetNavigatorAt(iterPos);
+            var row = _projectsListView.SelectedRow;
 
-            var projectItem = navigator.GetValue(_projectItem);
-
-            if (projectItem != null)
+            if (row != -1)
             {
-                LoadFolders(string.Format("$/{0}", projectItem.Name));
+                var projectItem = _projectsStore.GetValue(row, _projectItem);
+
+                if (projectItem != null)
+                {
+                    LoadFolders(string.Format("$/{0}", projectItem.Name));
+                }
             }
         }
 
@@ -347,6 +465,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        void OnCheckout(object sender, EventArgs args)
+        {
+            if (_currentWorkspace == null)
+                return;
+
+            Respond(Command.Ok);
+        }
+
         void LoadAccounts()
         {
             var servers = _versionControlService.Servers;
@@ -358,6 +484,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 {
                     _accountComboBox.Items.Add(server, server.UserName);
                 }
+                _accountComboBox.Items.Add(ItemSeparator.Instance);
+                _accountComboBox.Items.Add(2, "Manage Accounts...");
 
                 _accountComboBox.SelectedItem = servers.FirstOrDefault();
             }
@@ -366,7 +494,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         void LoadWorkspaces()
         {
             if (_projectCollection != null)
-            {
+            {    
                 var localWorkspaces = _projectCollection.GetLocalWorkspaces();
 
                 _workspaceComboBox.Items.Clear();
@@ -375,6 +503,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                     _workspaceComboBox.Items.Add(workspace, string.Format("{0} {1}", workspace.Name, workspace.WorkingFolders.FirstOrDefault().ServerItem.ItemName));
                 }
 
+                _workspaceComboBox.Items.Add(ItemSeparator.Instance);
                 _workspaceComboBox.Items.Add(1, "Create Workspace...");
                 _workspaceComboBox.Items.Add(2, "Manage Workspaces...");
 
@@ -382,7 +511,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 {
                     _workspaceComboBox.SelectedItem = localWorkspaces.First(w => w.Name == _projectCollection.ActiveWorkspaceName);
                 }
-
+                else
+                {
+                    _workspaceComboBox.SelectedItem = localWorkspaces.FirstOrDefault();
+                }
+                      
                 LoadCurrentWorkspace();
             }
         }
@@ -412,39 +545,50 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void LoadProjects()
         {
-            _server.LoadStructure();
-            var selectedColletion = _server.ProjectCollections.FirstOrDefault();
+			_projectsSpinner.Visible = true;
 
-            _projectsStore.Clear();
-
-            int count = 0;
-            foreach (var project in selectedColletion.Projects.Where(p => !IsSourceControlGitEnabled(p.ProjectDetails)))
+            _worker = Task.Factory.StartNew(delegate
             {
-                var node = _projectsStore.AddNode();
-                node.SetValue(_projectType, GetProjectTypeImage(project.ProjectDetails));
-                node.SetValue(_projectName, project.Name);
-                node.SetValue(_projectItem, project);
-
-                if (count == 0)
+                if (!_workerCancel.Token.IsCancellationRequested)
                 {
-                    _projectsTreeView.SelectRow(node.CurrentPosition);
-                }
+                    _server.LoadStructure();
+                    var selectedColletion = _server.ProjectCollections.FirstOrDefault();
 
-                count++;
-            }
+                    Application.Invoke(() =>
+                    {
+                        _projectsStore.Clear();
+
+                        int count = 0;
+                        foreach (var project in selectedColletion.Projects.Where(p => !IsSourceControlGitEnabled(p.ProjectDetails)))
+                        {
+                            var row = _projectsStore.AddRow();
+                            _projectsStore.SetValue(row, _projectType, GetProjectTypeImage(project.ProjectDetails));
+                            _projectsStore.SetValue(row, _projectName, project.Name);
+                            _projectsStore.SetValue(row, _projectItem, project);
+
+                            if (selectedColletion.Projects.Any())
+                            {
+                                _projectsListView.SelectRow(0);
+                            }
+
+                            count++;
+                        }
+
+						_projectsSpinner.Visible = false;
+                    });
+                }
+            }, _workerCancel.Token, TaskCreationOptions.LongRunning);
         }
 
-        void LoadFolders(string path = "")
+        void LoadFolders(string path)
         {
             _filesStore.Clear();
 
             if (_currentWorkspace == null)
                 return;
 
-            if(string.IsNullOrEmpty(path))
-            {
-                path = RepositoryPath.RootPath;
-            }
+            if (string.IsNullOrEmpty(path))
+                return;
 
             var items = _currentWorkspace.GetItems(new[] { new ItemSpec(path, RecursionType.Full) },                                              
                                                    VersionSpec.Latest, DeletedState.NonDeleted, ItemType.Folder, false);

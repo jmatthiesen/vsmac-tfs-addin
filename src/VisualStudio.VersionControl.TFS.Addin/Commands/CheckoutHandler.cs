@@ -11,10 +11,13 @@ namespace MonoDevelop.VersionControl.TFS.Commands
         {
             var service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
 
-            using (var checkOutMapDialog = new CheckOutMapDialog(service))
+            Xwt.Toolkit.NativeEngine.Invoke(() =>
             {
-                checkOutMapDialog.Run(Xwt.MessageDialog.RootWindow);
-            }
+                using (var checkOutMapDialog = new CheckOutMapDialog(service))
+                {
+                    checkOutMapDialog.Run(Xwt.MessageDialog.RootWindow);
+                }
+            });
         }
 
         protected override void Update(CommandInfo info)

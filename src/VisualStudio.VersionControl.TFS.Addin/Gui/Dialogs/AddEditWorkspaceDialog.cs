@@ -104,8 +104,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _foldersView.DataSource = _foldersStore;
             _foldersView.MinHeight = 150;
 
-            var tfsFolderView = new TextCellView(_tfsFolder);
-            tfsFolderView.Editable = true;
+            var tfsFolderView = new TextCellView(_tfsFolder)
+            {
+                Editable = true
+            };
 
             var localFolderView = new TextCellView(_localFolder);
 
