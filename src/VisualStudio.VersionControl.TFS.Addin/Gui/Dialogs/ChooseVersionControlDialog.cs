@@ -25,22 +25,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using MonoDevelop.Core;
-using MonoDevelop.VersionControl.TFS.Gui.Cells;
+using MonoDevelop.VersionControl.TFS.Gui.Widgets;
 using Xwt;
 using Xwt.Drawing;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
-    public enum ServerType
+	public enum ServerType
     {
         VSTS,
         TFS
     }
 
-    public class CellServerType
+    public class ServerTypeInfo
     {
         public Image Icon { get; set; }
         public string Title { get; set; }
@@ -48,27 +48,25 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         public ServerType ServerType { get; set; }
     }
 
-    public class ChooseVersionControlDialog : Dialog
+    public class ChooseVersionControlDialog : Xwt.Dialog
     {
         Label _title;
         VBox _listBox;
-        ListView _listView;
-        ListStore _store;
-        DataField<CellServerType> _serverType;
+		ProjectTypeWidget _vstsProjectTypeWidget;
+		ProjectTypeWidget _tfsProjectTypeWidget;
         Button _cancelButton;
         Button _acceptButton;
 
-        CellServerType _server;
+		ServerTypeInfo _server;
 
         public ChooseVersionControlDialog()
         {
             Init();
             BuildGui();
-            AttachEvents();
             GetData();
         }
           
-        internal CellServerType Server
+		internal ServerTypeInfo Server
         {
             get { return _server; }
             set { _server = value; }
@@ -77,33 +75,23 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         void Init()
         {
             _title = new Label(GettextCatalog.GetString("Where is your project hosted?"));
-         
+                     
             _listBox = new VBox
             {
-                MinHeight = 250
+				Margin = new WidgetSpacing(24, 24, 24, 0),
+                MinHeight = 200
             };
 
-            _listView = new ListView
-            {
-                Margin = new WidgetSpacing(24, 12, 24, 12),
-                MinHeight = 96,
-                BorderVisible = false,
-                HeadersVisible = false,
-                GridLinesVisible = GridLines.None
-            };
-
-            _serverType = new DataField<CellServerType>();
-            _store = new ListStore(_serverType);
-            _listView.Columns.Add("", new ServerTypeCellView { CellServerType = _serverType });
-            _listView.DataSource = _store;
+			_vstsProjectTypeWidget = new ProjectTypeWidget();
+			_tfsProjectTypeWidget = new ProjectTypeWidget();
 
             _cancelButton = new Button(GettextCatalog.GetString("Cancel"))
             {
                 MinWidth = GuiSettings.ButtonWidth
             };
+
             _acceptButton = new Button(GettextCatalog.GetString("Continue"))
             {
-                BackgroundColor = Colors.SkyBlue,
                 MinWidth = GuiSettings.ButtonWidth
             };
         }
@@ -116,15 +104,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             {
                 WidthRequest = 600
             };
+      
+            content.PackStart(_title);   
+			_listBox.PackStart(_vstsProjectTypeWidget);        
+			_listBox.PackStart(_tfsProjectTypeWidget);
+			content.PackStart(_listBox);   
 
-            _listBox.PackStart(_listView);
-            content.PackStart(_title);
-            content.PackStart(_listBox);
-
-            HBox buttonBox = new HBox
-            {
-                Margin = new WidgetSpacing(0, 0, 0, 12)
-            };
+			HBox buttonBox = new HBox
+			{
+				Margin = new WidgetSpacing(0, 12, 0, 0)
+			};
                      
             _cancelButton.HorizontalPlacement = WidgetPlacement.Start;
             _cancelButton.Clicked += (sender, e) => Respond(Command.Close);
@@ -140,41 +129,28 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false;
         }
 
-        void AttachEvents()
-        {
-            _listView.SelectionChanged += OnSelectServer;
-        }
-
         void GetData()
         {
-            _store.Clear();
+			var servers = GetServers();
 
-            foreach (var item in GetServers())
-            {
-                var row = _store.AddRow();
-                _store.SetValue(row, _serverType, item);
-            }
+			var vstsServer = servers.First(s => s.ServerType == ServerType.VSTS);
+			_vstsProjectTypeWidget.Icon = vstsServer.Icon;
+			_vstsProjectTypeWidget.Title = vstsServer.Title;
+			_vstsProjectTypeWidget.Description = vstsServer.Description;
+
+			var tfsServer = servers.First(s => s.ServerType == ServerType.TFS);
+			_tfsProjectTypeWidget.Icon = tfsServer.Icon;
+			_tfsProjectTypeWidget.Title = tfsServer.Title;
+			_tfsProjectTypeWidget.Description = tfsServer.Description;
         }
 
-        List<CellServerType> GetServers()
+		List<ServerTypeInfo> GetServers()
         {
-            return new List<CellServerType>
+			return new List<ServerTypeInfo>
             {
-                new CellServerType { ServerType = ServerType.VSTS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.VSTS.png"), Title = "VSTS", Description = "A cloud service for code development collaboration by Microsoft" },
-                new CellServerType { ServerType = ServerType.TFS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.TFS.png"), Title = "TFVC", Description = "Centralized Version Control by Microsoft" }
+				new ServerTypeInfo { ServerType = ServerType.VSTS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.VSTS.png"), Title = "VSTS", Description = "A cloud service for code development collaboration by Microsoft" },
+				new ServerTypeInfo { ServerType = ServerType.TFS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.TFS.png"), Title = "TFVC", Description = "Centralized Version Control by Microsoft" }
             };
-        }
-
-        void OnSelectServer(object sender, EventArgs args)
-        {
-            var row = _listView.SelectedRow;
-
-            var serverType = _store.GetValue(row, _serverType);
-
-            if (serverType != null)
-            {
-                Server = serverType;
-            }        
         }
     }
 }

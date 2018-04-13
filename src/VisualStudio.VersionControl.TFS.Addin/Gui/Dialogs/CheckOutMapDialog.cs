@@ -26,11 +26,13 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.ProgressMonitoring;
+using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Models;
 using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
@@ -64,10 +66,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         ProjectCollection _projectCollection;
         Task _worker;
         CancellationTokenSource _workerCancel;
+		List<BaseItem> _items;
 
         IWorkspaceService _currentWorkspace;
         TeamFoundationServerVersionControlService _versionControlService;
-
+       
         internal CheckOutMapDialog(TeamFoundationServerVersionControlService versionControlService)
         {
             Init(versionControlService);
@@ -98,6 +101,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _versionControlService = versionControlService;
 
             _workerCancel = new CancellationTokenSource();
+			_items = new List<BaseItem>();
 
             _titleLabel = new Label(GettextCatalog.GetString("Your Hosted Repositories"))
             {
@@ -280,6 +284,22 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             var checkView = new CheckBoxCellView(_isCheckedField)
             {
                 Editable = true
+            };
+
+			checkView.Toggled += (sender, e) =>
+            {
+				var astore = (TreeStore)_filesView.DataSource;
+				var node = astore.GetNavigatorAt(_filesView.CurrentEventRow);
+				var baseItem = node.GetValue(_baseItem);
+
+                if (!node.GetValue(_isCheckedField))
+                {
+					_items?.Add(baseItem);
+                }
+                else
+                {
+					_items?.Remove(baseItem);
+                }
             };
 
             _filesView.Columns.Add("", checkView);
@@ -469,6 +489,48 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             if (_currentWorkspace == null)
                 return;
+
+            // Map
+			foreach (var item in _items)
+            {
+                _currentWorkspace.Map(item.ServerPath, _localPathEntry.Text);
+            }          
+
+            // Checkout
+			using (var progress = VersionControlService.GetProgressMonitor("Check Out", VersionControlOperationType.Pull))
+            {
+                progress.BeginTask("Check Out", _items.Count);
+
+                foreach (var item in _items)
+                {
+                    var path = _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
+                    _currentWorkspace.Get(new GetRequest(item.ServerPath, RecursionType.Full, VersionSpec.Latest), GetOptions.None);
+                    progress.Log.WriteLine("Check out item: " + item.ServerPath);
+
+					_currentWorkspace.PendEdit(path.ToEnumerable(), RecursionType.Full, LockLevel.CheckOut, out ICollection<Failure> failures);
+
+					if (failures != null && failures.Any())
+                    {
+                        if (failures.Any(f => f.SeverityType == SeverityType.Error))
+                        {
+                            foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
+                            {
+                                progress.ReportError(failure.Code, new Exception(failure.Message));
+                            }
+
+                            break;
+                        }
+
+                        foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Warning))
+                        {
+                            progress.ReportWarning(failure.Message);
+                        }
+                    }
+                }
+
+                progress.EndTask();
+                progress.ReportSuccess("Finish Check Out.");
+            }
 
             Respond(Command.Ok);
         }

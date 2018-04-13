@@ -44,9 +44,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         ServerAuthorizationType _serverAuthType;
         IServerAuthorizationConfig _currentConfig;
         AuthenticationContext _context;
-        readonly CellServerType _serverType;
+		readonly ServerTypeInfo _serverType;
 
-        public CredentialsDialog(CellServerType serverType)
+		public CredentialsDialog(ServerTypeInfo serverType)
         {
             _serverType = serverType;
 
