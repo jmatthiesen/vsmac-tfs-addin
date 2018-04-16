@@ -41,7 +41,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 
 			_titleLabel = new Label();
 			_descriptionLabel = new Label();
-			_descriptionLabel.Font = _descriptionLabel.Font.WithScaledSize(0.85);
+			_descriptionLabel.Font = _descriptionLabel.Font.WithScaledSize(0.95);
 			_descriptionLabel.TextColor = Ide.Gui.Styles.SecondaryTextColor;
 			_textBox.PackStart(_titleLabel);
 			_textBox.PackEnd(_descriptionLabel);
@@ -121,7 +121,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
                 return;
             }
 
-			_imageView.Image = _image;
+			_imageView.Image = _image.WithSize(36, 36);
         }
 
 		void UpdateTitle()
@@ -149,10 +149,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 			if (IsSelected)
 			{
 				InnerBackgroundColor = Ide.Gui.Styles.BaseSelectionBackgroundColor;
+				_titleLabel.TextColor = Ide.Gui.Styles.BaseSelectionTextColor;
+                _descriptionLabel.TextColor = Ide.Gui.Styles.BaseSelectionTextColor;
 			}
 			else
 			{
 				InnerBackgroundColor = Ide.Gui.Styles.BaseBackgroundColor;
+				_titleLabel.TextColor = Ide.Gui.Styles.BaseForegroundColor;
+				_descriptionLabel.TextColor = Ide.Gui.Styles.SecondaryTextColor;
 			}
 		}
 	}

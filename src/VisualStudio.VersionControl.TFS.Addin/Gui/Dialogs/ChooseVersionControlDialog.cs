@@ -48,7 +48,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         public ServerType ServerType { get; set; }
     }
 
-    public class ChooseVersionControlDialog : Xwt.Dialog
+    public class ChooseVersionControlDialog : Dialog
     {
         Label _title;
         VBox _listBox;
@@ -63,6 +63,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             Init();
             BuildGui();
+			AttachEvents();
             GetData();
         }
           
@@ -82,10 +83,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 MinHeight = 200
             };
 
-			_vstsProjectTypeWidget = new ProjectTypeWidget();
-			_tfsProjectTypeWidget = new ProjectTypeWidget();
+			_vstsProjectTypeWidget = new ProjectTypeWidget
+			{
+				IsSelected = true
+			};
 
-            _cancelButton = new Button(GettextCatalog.GetString("Cancel"))
+			_tfsProjectTypeWidget = new ProjectTypeWidget
+			{
+				IsSelected = false
+			};
+
+			_cancelButton = new Button(GettextCatalog.GetString("Cancel"))
             {
                 MinWidth = GuiSettings.ButtonWidth
             };
@@ -129,8 +137,31 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false;
         }
 
-        void GetData()
+		void AttachEvents()
         {
+			_vstsProjectTypeWidget.ButtonPressed += OnServerTypeChange;
+			_tfsProjectTypeWidget.ButtonPressed += OnServerTypeChange;
+		}
+
+		private void OnServerTypeChange(object sender, ButtonEventArgs e)
+		{
+			_vstsProjectTypeWidget.IsSelected = !_vstsProjectTypeWidget.IsSelected;
+			_tfsProjectTypeWidget.IsSelected = !_tfsProjectTypeWidget.IsSelected;
+
+			var servers = GetServers();
+
+			if(_vstsProjectTypeWidget.IsSelected)
+			{
+				Server = servers.FirstOrDefault(s => s.ServerType == ServerType.VSTS);
+			}
+			else
+			{
+				Server = servers.FirstOrDefault(s => s.ServerType == ServerType.TFS);
+			}
+		}
+
+		void GetData()
+		{
 			var servers = GetServers();
 
 			var vstsServer = servers.First(s => s.ServerType == ServerType.VSTS);
@@ -142,7 +173,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 			_tfsProjectTypeWidget.Icon = tfsServer.Icon;
 			_tfsProjectTypeWidget.Title = tfsServer.Title;
 			_tfsProjectTypeWidget.Description = tfsServer.Description;
-        }
+		}
 
 		List<ServerTypeInfo> GetServers()
         {

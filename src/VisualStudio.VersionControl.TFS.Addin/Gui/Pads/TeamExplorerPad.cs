@@ -4,6 +4,7 @@ using Autofac;
 using MonoDevelop.Components;
 using MonoDevelop.Components.Docking;
 using MonoDevelop.Core;
+using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.VersionControl.TFS.Gui.Dialogs;
 using MonoDevelop.VersionControl.TFS.Gui.Views;
@@ -26,6 +27,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
             WorkItemQuery
         }
 
+		DockItemToolbar _toolbar;
         VBox _content;
         Button _addbutton;
         TreeView _treeView;
@@ -33,7 +35,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
         DataField<string> _name;
         DataField<TeamExplorerNodeType> _type;
         DataField<object> _item;
-
+      
         TeamFoundationServerVersionControlService _service;
 
         System.Action OnServersChanged;
@@ -62,34 +64,45 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
         void Init()
         {
             _content = new VBox();
-            _treeView = new TreeView();
+		
+			_treeView = new TreeView
+			{
+				BorderVisible = false,
+				HeadersVisible = false
+			};
 
-            _name = new DataField<string>();
-            _type = new DataField<TeamExplorerNodeType>();
-            _item = new DataField<object>();
-            _treeStore = new TreeStore(_name, _type, _item);
+			_name = new DataField<string>();
+			_type = new DataField<TeamExplorerNodeType>();
+			_item = new DataField<object>();
+			_treeStore = new TreeStore(_name, _type, _item);
 
-            _treeView.Columns.Add(new ListViewColumn(string.Empty, new TextCellView(_name)));
-            _treeView.DataSource = _treeStore;
-            _content.PackStart(_treeView, true, true);
-     
-            _service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
+			_treeView.Columns.Add(new ListViewColumn(string.Empty, new TextCellView(_name)) { Expands = true });
+			_treeView.DataSource = _treeStore;
+			_content.PackStart(_treeView, true, true);
+
+			_service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
 
             OnServersChanged = UpdateData;
         }
 
-        void AddButtons(IPadWindow window)
+		void AddButtons(IPadWindow window)
         {
-            DockItemToolbar toolbar = window.GetToolbar(DockPositionType.Top);
-            _addbutton = new Button(GettextCatalog.GetString("Add"));
-            toolbar.Add(new XwtControl(_addbutton)); 
+            _toolbar = window.GetToolbar(DockPositionType.Top);
+
+			_addbutton = new Button(GettextCatalog.GetString("Add Server"))
+			{
+				Image = ImageService.GetIcon(Stock.Add)
+			};
+
+			_toolbar.Add(new XwtControl(_addbutton));
+
+			_toolbar.ShowAll();
         }
 
         void AttachEvents()
         {
             _addbutton.Clicked += OnConnectToServer;
             _treeView.RowActivated += OnRowClicked;
-
             _service.OnServersChange += OnServersChanged;
         }
 
@@ -153,7 +166,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
             if (node.CurrentPosition == null)
                 return;
             
-            _treeView.ExpandRow(node.CurrentPosition, false);
+            _treeView.ExpandRow(node.CurrentPosition, true);
 
             while (node.MoveNext())
             {
