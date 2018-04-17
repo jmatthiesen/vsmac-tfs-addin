@@ -14,7 +14,7 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 {
-    public class TeamExplorerPad : PadContent
+	public class TeamExplorerPad : PadContent
     {
         public enum TeamExplorerNodeType
         {

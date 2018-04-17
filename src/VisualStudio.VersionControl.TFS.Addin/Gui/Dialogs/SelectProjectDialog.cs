@@ -95,10 +95,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             content.PackStart(new Label(GettextCatalog.GetString("Folder path") + ":"));
 
-            TextEntry folderPathEntry = new TextEntry();
-            folderPathEntry.Sensitive = false;
+			TextEntry folderPathEntry = new TextEntry
+			{
+				Sensitive = false
+			};
 
-            _treeView.SelectionChanged += (sender, e) => folderPathEntry.Text = SelectedPath;
+			_treeView.SelectionChanged += (sender, e) => folderPathEntry.Text = SelectedPath;
             content.PackStart(folderPathEntry);
 
             HBox buttonBox = new HBox();

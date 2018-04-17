@@ -59,11 +59,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void Init()
         {
-            _listView = new ListView();
-            _listView.MinHeight = 150;
-            _listView.MinWidth = 600;
+			_listView = new ListView
+			{
+				MinHeight = 150,
+				MinWidth = 600
+			};
 
-            _name = new DataField<string>();
+			_name = new DataField<string>();
             _computer = new DataField<string>();
             _owner = new DataField<string>();
 
