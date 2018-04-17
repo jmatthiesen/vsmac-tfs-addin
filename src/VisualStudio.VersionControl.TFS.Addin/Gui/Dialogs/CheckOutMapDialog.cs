@@ -51,7 +51,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<ProjectInfo> _projectItem;
         ListStore _projectsStore; 
         TreeView _filesView;
-		Xwt.Spinner _projectsSpinner;
+        Spinner _projectsSpinner;
         DataField<bool> _isCheckedField;
         DataField<string> _fileName;
         DataField<BaseItem> _baseItem;
@@ -64,9 +64,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         TeamFoundationServer _server;
         ProjectCollection _projectCollection;
+		List<BaseItem> _items;
         Task _worker;
         CancellationTokenSource _workerCancel;
-		List<BaseItem> _items;
 
         IWorkspaceService _currentWorkspace;
         TeamFoundationServerVersionControlService _versionControlService;
@@ -105,6 +105,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             _titleLabel = new Label(GettextCatalog.GetString("Your Hosted Repositories"))
             {
+				MinHeight = 24,
                 Margin = new WidgetSpacing(0, 0, 0, 12)
             };
 

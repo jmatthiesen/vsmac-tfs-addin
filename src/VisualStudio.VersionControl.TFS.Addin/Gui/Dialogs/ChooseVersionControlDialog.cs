@@ -52,12 +52,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
     {
         Label _title;
         VBox _listBox;
-		ProjectTypeWidget _vstsProjectTypeWidget;
-		ProjectTypeWidget _tfsProjectTypeWidget;
+		ServerTypeWidget _vstsProjectTypeWidget;
+		ServerTypeWidget _tfsProjectTypeWidget;
         Button _cancelButton;
         Button _acceptButton;
 
 		ServerTypeInfo _server;
+		List<ServerTypeInfo> _servers;
 
         public ChooseVersionControlDialog()
         {
@@ -83,12 +84,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 MinHeight = 200
             };
 
-			_vstsProjectTypeWidget = new ProjectTypeWidget
+			_vstsProjectTypeWidget = new ServerTypeWidget
 			{
 				IsSelected = true
 			};
 
-			_tfsProjectTypeWidget = new ProjectTypeWidget
+			_tfsProjectTypeWidget = new ServerTypeWidget
 			{
 				IsSelected = false
 			};
@@ -147,29 +148,27 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 		{
 			_vstsProjectTypeWidget.IsSelected = !_vstsProjectTypeWidget.IsSelected;
 			_tfsProjectTypeWidget.IsSelected = !_tfsProjectTypeWidget.IsSelected;
-
-			var servers = GetServers();
-
+         
 			if(_vstsProjectTypeWidget.IsSelected)
 			{
-				Server = servers.FirstOrDefault(s => s.ServerType == ServerType.VSTS);
+				Server = _servers.FirstOrDefault(s => s.ServerType == ServerType.VSTS);
 			}
 			else
 			{
-				Server = servers.FirstOrDefault(s => s.ServerType == ServerType.TFS);
+				Server = _servers.FirstOrDefault(s => s.ServerType == ServerType.TFS);
 			}
 		}
 
 		void GetData()
 		{
-			var servers = GetServers();
+			_servers = GetServers();
 
-			var vstsServer = servers.First(s => s.ServerType == ServerType.VSTS);
+			var vstsServer = _servers.First(s => s.ServerType == ServerType.VSTS);
 			_vstsProjectTypeWidget.Icon = vstsServer.Icon;
 			_vstsProjectTypeWidget.Title = vstsServer.Title;
 			_vstsProjectTypeWidget.Description = vstsServer.Description;
 
-			var tfsServer = servers.First(s => s.ServerType == ServerType.TFS);
+			var tfsServer = _servers.First(s => s.ServerType == ServerType.TFS);
 			_tfsProjectTypeWidget.Icon = tfsServer.Icon;
 			_tfsProjectTypeWidget.Title = tfsServer.Title;
 			_tfsProjectTypeWidget.Description = tfsServer.Description;

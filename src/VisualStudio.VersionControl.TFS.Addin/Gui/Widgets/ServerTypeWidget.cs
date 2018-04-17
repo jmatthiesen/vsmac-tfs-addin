@@ -3,7 +3,7 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
-	public class ProjectTypeWidget : Components.RoundedFrameBox
+	public class ServerTypeWidget : Components.RoundedFrameBox
 	{
 		HBox _contentBox;
 		ImageView _imageView;
@@ -16,7 +16,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 		string _description;
 		bool _isSelected;
 
-		public ProjectTypeWidget()
+		public ServerTypeWidget()
 		{
 			InnerBackgroundColor = Ide.Gui.Styles.BaseBackgroundColor;
 			BorderWidth = 1;

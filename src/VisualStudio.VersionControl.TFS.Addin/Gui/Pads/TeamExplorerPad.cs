@@ -196,8 +196,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 
         void OnConnectToServer(object sender, EventArgs e)
         {
-            var connectToServerDialog = new ConnectToServerDialog();
-            connectToServerDialog.Run();
+			using (var dialog = new ConnectToServerDialog())
+            {
+                dialog.Run(MessageDialog.RootWindow);
+            }
         }
     }
 }

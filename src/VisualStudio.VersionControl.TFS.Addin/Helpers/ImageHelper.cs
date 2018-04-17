@@ -26,25 +26,26 @@
 // THE SOFTWARE.
 
 using MonoDevelop.VersionControl.TFS.Models;
+using Xwt.Drawing;
 
 namespace MonoDevelop.VersionControl.TFS.Helpers
 {
-    public static class ImageHelper
+	public static class ImageHelper
     {
-        public static Gdk.Pixbuf GetRepositoryImage()
+		public static Image GetRepositoryImage()
         {
-            return new Gdk.Pixbuf(System.Reflection.Assembly.GetCallingAssembly(), "MonoDevelop.VersionControl.TFS.Icons.project-16.png", 16, 16);
+			return Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.project-16.png").WithSize(16, 16);
         }
 
-        public static Gdk.Pixbuf GetItemImage(ItemType itemType)
+		public static Image GetItemImage(ItemType itemType)
         {
             if (itemType == ItemType.File)
             {
-                return new Gdk.Pixbuf(System.Reflection.Assembly.GetCallingAssembly(), "MonoDevelop.VersionControl.TFS.Icons.file-16.png");
+				return Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.file-16.png");
             }
             else
             {
-                return new Gdk.Pixbuf(System.Reflection.Assembly.GetCallingAssembly(), "MonoDevelop.VersionControl.TFS.Icons.folder-16.png");
+				return Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.folder-16.png");
             }
         }
     }

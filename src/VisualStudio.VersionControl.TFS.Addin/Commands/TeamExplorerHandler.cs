@@ -10,34 +10,31 @@ namespace MonoDevelop.VersionControl.TFS.Commands
     {
         protected override void Run ()
         {
-			Xwt.Toolkit.NativeEngine.Invoke(() =>
+			Pad pad = null;
+
+			var pads = IdeApp.Workbench.Pads;
+
+			foreach (var p in IdeApp.Workbench.Pads)
 			{
-				Pad pad = null;
-
-				var pads = IdeApp.Workbench.Pads;
-
-				foreach (var p in IdeApp.Workbench.Pads)
+				if (string.Equals(p.Id, "MonoDevelop.MonoDevelop.TFS.TeamExplorerPad", System.StringComparison.OrdinalIgnoreCase))
 				{
-					if (string.Equals(p.Id, "MonoDevelop.MonoDevelop.TFS.TeamExplorerPad", System.StringComparison.OrdinalIgnoreCase))
-					{
-						pad = p;
-					}
+					pad = p;
 				}
+			}
+
+			if (pad == null)
+			{
+				var content = new Gui.Pads.TeamExplorerPad();
+
+				pad = IdeApp.Workbench.ShowPad(content, "MonoDevelop.MonoDevelop.TFS.TeamExplorerPad", "Team Explorer", "Right", null);
 
 				if (pad == null)
-				{
-					var content = new Gui.Pads.TeamExplorerPad();
+					return;
+			}
 
-					pad = IdeApp.Workbench.ShowPad(content, "MonoDevelop.MonoDevelop.TFS.TeamExplorerPad", "Team Explorer", "Right", null);
-
-					if (pad == null)
-						return;
-				}
-
-				pad.Sticky = true;
-				pad.AutoHide = false;
-				pad.BringToFront();
-			});
+			pad.Sticky = true;
+			pad.AutoHide = false;
+			pad.BringToFront();
         }
 
         protected override void Update (CommandInfo info)
