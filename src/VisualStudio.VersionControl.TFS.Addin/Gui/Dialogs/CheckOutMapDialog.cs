@@ -1,4 +1,4 @@
-﻿// CheckOutDialog.cs
+﻿// CheckOutMapDialog.cs
 // 
 // Author:
 //       Javier Suárez Ruiz
@@ -58,6 +58,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         TreeStore _filesStore;
         Button _refreshButton;
         ComboBox _workspaceComboBox;
+		DataField<string> _workspaceNameField;
+        DataField<string> _workspacePathField;
+        DataField<object> _workspaceObjectField;
+        ListStore _workspaceStore;
         TextEntry _localPathEntry;
         Button _browseButton;
         Button _checkoutButton;
@@ -65,6 +69,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         TeamFoundationServer _server;
         ProjectCollection _projectCollection;
 		List<BaseItem> _items;
+		List<WorkspaceData> _workspaces;
         Task _worker;
         CancellationTokenSource _workerCancel;
 
@@ -102,6 +107,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             _workerCancel = new CancellationTokenSource();
 			_items = new List<BaseItem>();
+			_workspaces = new List<WorkspaceData>();
 
             _titleLabel = new Label(GettextCatalog.GetString("Your Hosted Repositories"))
             {
@@ -152,6 +158,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 MinWidth = 150
             };
 
+            _workspaceComboBox.RowSeparatorCheck = WorkspaceRowSeparatorCheck;
+
+			_workspaceNameField = new DataField<string>();
+            _workspacePathField = new DataField<string>();
+            _workspaceObjectField = new DataField<object>();
+
+            _workspaceStore = new ListStore(_workspaceNameField, _workspacePathField, _workspaceObjectField);
+            _workspaceComboBox.ItemsSource = _workspaceStore;
+
             _localPathEntry = new TextEntry
             { 
 				VerticalPlacement = WidgetPlacement.Center,
@@ -170,6 +185,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Checkout from VSTS or TFS Repository");
+
+			_workspaceComboBox.Views.Add(new TextCellView(_workspaceNameField));
+            _workspaceComboBox.Views.Add(new TextCellView { MarkupField = _workspacePathField });
 
             VBox content = new VBox
             {
@@ -375,6 +393,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _checkoutButton.Clicked += OnCheckout;
         }
 
+		bool WorkspaceRowSeparatorCheck(int i)
+        {
+            var separator = _workspaces.Count + 1;
+
+            if (i + 1 == separator)
+                return true;
+
+            return false;
+        }
+
         void OnChangeAccount(object sender, EventArgs args)
         {
             if (_accountComboBox.SelectedItem is int)
@@ -400,8 +428,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void OnChangeWorkspace(object sender, EventArgs args)
         {
-            var selectedItem = _workspaceComboBox.SelectedItem;
+			var row = _workspaceComboBox.SelectedIndex;
 
+            if (row == -1)
+                return;
+
+            var selectedItem = _workspaceStore.GetValue(row, _workspaceObjectField);
+            
             if (selectedItem is int)
             {
                 var menuOption = Convert.ToInt32(selectedItem);
@@ -430,7 +463,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
             else
             {
-                var workspaceData = (WorkspaceData)_workspaceComboBox.SelectedItem;
+				var workspaceData = selectedItem as WorkspaceData;
 
                 if (workspaceData != null)
                 {
@@ -558,28 +591,53 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             if (_projectCollection != null)
             {    
-                var localWorkspaces = _projectCollection.GetLocalWorkspaces();
+				var workspaces = _projectCollection.GetLocalWorkspaces();
 
-                _workspaceComboBox.Items.Clear();
-                foreach (var workspace in localWorkspaces)
-                {
-                    _workspaceComboBox.Items.Add(workspace, string.Format("{0} {1}", workspace.Name, workspace.WorkingFolders.FirstOrDefault().ServerItem.ItemName));
-                }
+                _workspaces.Clear();
+                _workspaceStore.Clear();
+				_workspaceComboBox.SelectionChanged -= OnChangeWorkspace;
 
-                _workspaceComboBox.Items.Add(ItemSeparator.Instance);
-                _workspaceComboBox.Items.Add(1, "Create Workspace...");
-                _workspaceComboBox.Items.Add(2, "Manage Workspaces...");
+                _workspaces.AddRange(workspaces);
 
-                if (localWorkspaces.Any(w => w.Name == _projectCollection.ActiveWorkspaceName))
+				int i = 0;
+                int activeWorkspaceRow = 0;
+
+				foreach (var workspace in _workspaces)
                 {
-                    _workspaceComboBox.SelectedItem = localWorkspaces.First(w => w.Name == _projectCollection.ActiveWorkspaceName);
-                }
-                else
-                {
-                    _workspaceComboBox.SelectedItem = localWorkspaces.FirstOrDefault();
-                }
-                      
-                LoadCurrentWorkspace();
+					var workspaceRow = _workspaceStore.AddRow();
+                    _workspaceStore.SetValue(workspaceRow, _workspacePathField, string.Format("     <span color='#cccccc'>{0}</span>", workspace.WorkingFolders.FirstOrDefault()?.ServerItem.ItemName));
+                    _workspaceStore.SetValue(workspaceRow, _workspaceNameField, workspace.Name);
+                    _workspaceStore.SetValue(workspaceRow, _workspaceObjectField, workspace);
+
+					if (string.Equals(workspace.Name, _projectCollection.ActiveWorkspaceName, StringComparison.Ordinal))
+                    {
+                        activeWorkspaceRow = i;
+                    }
+
+                    i++;
+				}
+
+				var customWorkspaceRow = _workspaceStore.AddRow();  // Separator
+
+                customWorkspaceRow = _workspaceStore.AddRow();
+                _workspaceStore.SetValue(customWorkspaceRow, _workspaceNameField, "Create Workspace...");
+                _workspaceStore.SetValue(customWorkspaceRow, _workspaceObjectField, 1);
+
+                customWorkspaceRow = _workspaceStore.AddRow();
+                _workspaceStore.SetValue(customWorkspaceRow, _workspaceNameField, "Manage Workspaces...");
+                _workspaceStore.SetValue(customWorkspaceRow, _workspaceObjectField, 2);
+
+				_workspaceComboBox.SelectionChanged += OnChangeWorkspace;
+
+				if (_workspaces.Count > 0)
+				{
+					if (!activeWorkspaceRow.Equals(0))
+						_workspaceComboBox.SelectedIndex = activeWorkspaceRow;
+					else
+						_workspaceComboBox.SelectedIndex = 0;
+
+					LoadCurrentWorkspace();
+				}
             }
         }
 
@@ -602,9 +660,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void LoadCurrentWorkspace()
         {
-            var workspaceData = (WorkspaceData)_workspaceComboBox.SelectedItem;
-            _currentWorkspace = DependencyContainer.GetWorkspace(workspaceData, _projectCollection);
-        }
+			var row = _workspaceComboBox.SelectedIndex;
+
+            if (row == -1)
+                return;
+
+            var selectedItem = _workspaceStore.GetValue(row, _workspaceObjectField);
+            
+			if (selectedItem is WorkspaceData workspaceData)
+				_currentWorkspace = DependencyContainer.GetWorkspace(workspaceData, _projectCollection);
+		}
 
         void LoadProjects()
         {

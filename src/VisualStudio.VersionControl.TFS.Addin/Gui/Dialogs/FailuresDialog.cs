@@ -32,10 +32,14 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
-    public class FailuresDialog : Gtk.Dialog
+    public class FailuresDialog : Dialog
     {
-        Gtk.TreeView _failuresView;
-        Gtk.ListStore _failuresStore;
+		VBox _view;
+		ListView _failuresView;
+		DataField<string> _typeField;
+		DataField<string> _messageField;
+		DataField<Failure> _failureField;
+        ListStore _failuresStore;
 
         public FailuresDialog(IEnumerable<Failure> failures)
         {
@@ -46,30 +50,42 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void Init()
         {
-            _failuresView = new Gtk.TreeView();
-            _failuresStore = new Gtk.ListStore(typeof(string), typeof(string), typeof(Failure));     }
+			_view = new VBox();
+			_failuresView = new ListView();
+			_typeField = new DataField<string>();
+			_messageField = new DataField<string>();
+			_failureField = new DataField<Failure>();
+			_failuresStore = new ListStore(_typeField, _messageField, _failureField);   
+		}
 
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Failures");
-
-            var lbl = new Gtk.Label(Title + ":");
-            var align = new Gtk.Alignment(0, 0, 0, 0);
-            lbl.Justify = Gtk.Justification.Left;
-            align.Add(lbl);
-
-            VBox.PackStart(align, false, false, 0);
-            _failuresView.WidthRequest = 300;
+            
+            var titleLabel = new Label(Title + ":");
+            
+			_view.PackStart(titleLabel, false, false);
+            _failuresView.WidthRequest = 800;
             _failuresView.HeightRequest = 200;
-            _failuresView.AppendColumn("Type", new Gtk.CellRendererText(), "text", 0);
-            _failuresView.AppendColumn("Message", new Gtk.CellRendererText(), "text", 1);
-            _failuresView.HasTooltip = true;
-            _failuresView.Model = _failuresStore;
+			_failuresView.Columns.Add(new ListViewColumn("Type", new TextCellView(_typeField) { Editable = false }));
+			_failuresView.Columns.Add(new ListViewColumn("Message", new TextCellView(_messageField) { Editable = false }));           
+			_failuresView.DataSource = _failuresStore;
 
-            VBox.PackStart(_failuresView, true, true, 0);
-            AddButton(Gtk.Stock.Ok, Gtk.ResponseType.Ok);
+			_view.PackStart(_failuresView, true, true);
+            
+			HBox buttonBox = new HBox();
 
-            ShowAll();
+            var closeButton = new Button(GettextCatalog.GetString("Close"))
+            {
+				HorizontalPlacement = WidgetPlacement.End,
+                MinWidth = GuiSettings.ButtonWidth
+            };
+            closeButton.Clicked += (sender, e) => Respond(Command.Close);
+			buttonBox.PackEnd(closeButton);
+
+			_view.PackEnd(buttonBox);
+			Content = _view;
+			Resizable = false;
         }
 
         void GetData(IEnumerable<Failure> failures)
@@ -78,7 +94,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             foreach (var item in failures)
             {
-                _failuresStore.AppendValues(item.SeverityType.ToString(), item.Message, item);
+				var row = _failuresStore.AddRow();
+				_failuresStore.SetValue(row, _typeField, item.SeverityType.ToString());
+				_failuresStore.SetValue(row, _messageField, item.Message);
+				_failuresStore.SetValue(row, _failureField, item);
             }
         }
     }
