@@ -88,6 +88,7 @@
     <None Remove="Icons\VSTS.png" />
     <None Remove="Icons\TFS.png" />
     <None Remove="Icons\Git.png" />
+    <None Remove="Icons\microsoft.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icons\project-16.png" />
@@ -96,6 +97,7 @@
     <EmbeddedResource Include="Icons\VSTS.png" />
     <EmbeddedResource Include="Icons\TFS.png" />
     <EmbeddedResource Include="Icons\Git.png" />
+    <EmbeddedResource Include="Icons\microsoft.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ADAL.PCL\ADAL.PCL.Mac\ADAL.PCL.Mac.csproj" />

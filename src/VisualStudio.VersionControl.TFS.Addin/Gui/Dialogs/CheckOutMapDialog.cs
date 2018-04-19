@@ -28,6 +28,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
 using MonoDevelop.Core;
@@ -44,6 +45,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
     {
         Label _titleLabel;   
         ComboBox _accountComboBox;
+		DataField<Image> _accountIconField;
+		DataField<string> _accountNameField;
+        DataField<object> _accountObjectField;
+        ListStore _accountStore;
         ComboBox _projectCollectionComboBox;
         ListView _projectsListView;
         DataField<Image> _projectType;
@@ -65,8 +70,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         TextEntry _localPathEntry;
         Button _browseButton;
         Button _checkoutButton;
-
+        
         TeamFoundationServer _server;
+		List<TeamFoundationServer> _accounts;
         ProjectCollection _projectCollection;
 		List<BaseItem> _items;
 		List<WorkspaceData> _workspaces;
@@ -108,6 +114,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _workerCancel = new CancellationTokenSource();
 			_items = new List<BaseItem>();
 			_workspaces = new List<WorkspaceData>();
+			_accounts = new List<TeamFoundationServer>();
 
             _titleLabel = new Label(GettextCatalog.GetString("Your Hosted Repositories"))
             {
@@ -119,6 +126,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             {
                 MinWidth = 620
             };
+
+			_accountComboBox.RowSeparatorCheck = AccountRowSeparatorCheck;
+
+			_accountIconField = new DataField<Image>();
+			_accountNameField = new DataField<string>();
+			_accountObjectField = new DataField<object>();
+			_accountStore = new ListStore(_accountIconField, _accountNameField, _accountObjectField);
+
+			_accountComboBox.ItemsSource = _accountStore;
 
             _projectCollectionComboBox = new ComboBox
             {
@@ -173,7 +189,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 ReadOnly = true,
                 MinWidth = 400
             };
-			_localPathEntry.Font = _localPathEntry.Font.WithScaledSize(1.0);
+			_localPathEntry.Font = _localPathEntry.Font.WithScaledSize(1.2);
             _localPathEntry.Text = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
           
 			_browseButton = new Button(GettextCatalog.GetString("Browse..."))
@@ -185,14 +201,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Checkout from VSTS or TFS Repository");
-
-			_workspaceComboBox.Views.Add(new TextCellView(_workspaceNameField));
-            _workspaceComboBox.Views.Add(new TextCellView { MarkupField = _workspacePathField });
-
+           
             VBox content = new VBox
             {
 				Margin = new WidgetSpacing(12, 12, 12, 0),
-				HeightRequest = 500,
+				HeightRequest = 550,
                 MinWidth = 700
             };
 
@@ -210,6 +223,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             };
 
             accountBox.PackStart(accountLabel);
+            
+			_accountComboBox.Views.Add(new ImageCellView(_accountIconField));
+			_accountComboBox.Views.Add(new TextCellView(_accountNameField));
+
             accountBox.PackEnd(_accountComboBox);
             selectorBox.PackStart(accountBox);
 
@@ -347,6 +364,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             HBox workspaceBox = new HBox();
             workspaceBox.PackStart(new Label(GettextCatalog.GetString("Workspace:")));
+
+			_workspaceComboBox.Views.Add(new TextCellView(_workspaceNameField));
+            _workspaceComboBox.Views.Add(new TextCellView { MarkupField = _workspacePathField });
+
             workspaceBox.PackStart(_workspaceComboBox);
             workspaceBox.PackStart(new Label(GettextCatalog.GetString("Local Path:")) { Margin = new WidgetSpacing(12, 0, 0, 0 ) });
             workspaceBox.PackStart(_localPathEntry);
@@ -393,6 +414,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _checkoutButton.Clicked += OnCheckout;
         }
 
+		bool AccountRowSeparatorCheck(int i)
+        {
+			var separator = _accounts.Count;
+
+            if (i == separator)
+                return true;
+
+            return false;
+        }
+
 		bool WorkspaceRowSeparatorCheck(int i)
         {
             var separator = _workspaces.Count + 1;
@@ -405,7 +436,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void OnChangeAccount(object sender, EventArgs args)
         {
-            if (_accountComboBox.SelectedItem is int)
+			var row = _accountComboBox.SelectedIndex;
+
+            if (row == -1)
+                return;
+
+			var selectedItem = _accountStore.GetValue(row, _accountObjectField);
+            
+			if (selectedItem is int)
             {
                 using (var dialog = new ConnectToServerDialog())
                 {
@@ -414,7 +452,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
             else
             {
-                _server = (TeamFoundationServer)_accountComboBox.SelectedItem;
+				_server = (TeamFoundationServer)selectedItem;
             }
         }
 
@@ -463,20 +501,18 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
             else
             {
-				var workspaceData = selectedItem as WorkspaceData;
+				if (selectedItem is WorkspaceData workspaceData)
+				{
+					_currentWorkspace = DependencyContainer.GetWorkspace(workspaceData, _projectCollection);
 
-                if (workspaceData != null)
-                {
-                    _currentWorkspace = DependencyContainer.GetWorkspace(workspaceData, _projectCollection);
-
-                    if (_currentWorkspace.Data.WorkingFolders.Any())
-                    {
-                        var localItem = _currentWorkspace.Data.WorkingFolders.FirstOrDefault().LocalItem;
-                        var localPath = localItem.ToString();
-                        _localPathEntry.Text = localPath;
-                    }
-                }
-            }
+					if (_currentWorkspace.Data.WorkingFolders.Any())
+					{
+						var localItem = _currentWorkspace.Data.WorkingFolders.FirstOrDefault().LocalItem;
+						var localPath = localItem.ToString();
+						_localPathEntry.Text = localPath;
+					}
+				}
+			}
         }
 
         void OnChangeProject(object sender, EventArgs args)
@@ -571,21 +607,53 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void LoadAccounts()
         {
-            var servers = _versionControlService.Servers;
+			var accounts = _versionControlService.Servers;
 
-            if (servers.Any())
+			_accounts.Clear();
+            _accountStore.Clear();
+			_accountComboBox.SelectionChanged -= OnChangeAccount;
+
+			_accounts.AddRange(accounts);
+
+			if (_accounts.Any())
             {
-                _accountComboBox.Items.Clear();
-                foreach (var server in servers)
+				foreach (var server in _accounts)
                 {
-                    _accountComboBox.Items.Add(server, server.UserName);
-                }
-                _accountComboBox.Items.Add(ItemSeparator.Instance);
-                _accountComboBox.Items.Add(2, "Manage Accounts...");
+					var accountRow = _accountStore.AddRow();
+					_accountStore.SetValue(accountRow, _accountNameField, server.UserName);
 
-                _accountComboBox.SelectedItem = servers.FirstOrDefault();
+					var icon = GetAccountIcon(server.UserName);
+
+                    if(icon != null)
+						_accountStore.SetValue(accountRow, _accountIconField, icon.WithSize(16, 16));
+					
+					_accountStore.SetValue(accountRow, _accountObjectField, server);
+                }
+                            
+				var customAccountRow = _accountStore.AddRow();  // Separator
+               
+				customAccountRow = _accountStore.AddRow();
+				_accountStore.SetValue(customAccountRow, _accountNameField, "Manage Workspaces...");
+				_accountStore.SetValue(customAccountRow, _accountObjectField, 2);
+
+				_accountComboBox.SelectionChanged += OnChangeAccount;
+
+				_accountComboBox.SelectedIndex = 0;
             }
         }
+
+		Image GetAccountIcon(string username)
+		{
+			MailAddress address = new MailAddress(username);
+            string host = address.Host;
+            
+			if(host.Contains("microsoft") || host.Contains("hotmail"))
+			{
+				return Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.microsoft.png");
+			}
+
+			return null;
+		}
 
         void LoadWorkspaces()
         {
@@ -643,7 +711,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
         void LoadProjectCollection()
         {
-            _server = (TeamFoundationServer)_accountComboBox.SelectedItem;
+			var row = _accountComboBox.SelectedIndex;
+
+            if (row == -1)
+                return;
+
+			var selectedItem = _accountStore.GetValue(row, _accountObjectField);
+            
+
+            _server = (TeamFoundationServer)selectedItem;
             var projectCollections = _server.ProjectCollections;
 
             if (projectCollections.Any())

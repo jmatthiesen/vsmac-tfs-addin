@@ -16,7 +16,10 @@ namespace MonoDevelop.VersionControl.TFS.Commands
          
             if (project != null)
             {
-                SourceControlExplorerView.Show(project);
+				Xwt.Toolkit.NativeEngine.Invoke(() =>
+				{
+					SourceControlExplorerView.Show(project);
+				});
             }
         }
 
