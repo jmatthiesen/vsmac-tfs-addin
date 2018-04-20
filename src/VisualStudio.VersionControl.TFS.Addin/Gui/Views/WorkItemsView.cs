@@ -28,6 +28,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using MonoDevelop.Components;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
@@ -96,12 +97,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
             _refreshButton = new Button(GettextCatalog.GetString("Refresh"))
             {
-                Image = ImageService.GetIcon(Stock.StatusWorking)
+                Image = ImageService.GetIcon(Stock.StatusWorking),
+				WidthRequest = GuiSettings.ButtonWidth,
+				Margin = new WidgetSpacing(6, 0, 0, 0)
             };
 
 			_treeView = new TreeView
-            {
-                BorderVisible = false,
+			{
+				BorderVisible = false,
+				MinWidth = 200,
                 WidthRequest = 300
             };
 
@@ -116,7 +120,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             {
                 BorderVisible = false,
 				UseAlternatingRowColors = true,
-				GridLinesVisible = GridLines.None
+				GridLinesVisible = GridLines.None,
+				ExpandHorizontal = true,
+				MinWidth = 500
             };
 
             _workItemField = new DataField<WorkItem>();
@@ -127,8 +133,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			HBox headerBox = new HBox();
 			headerBox.PackStart(_refreshButton, false, false);
             _view.PackStart(headerBox, false, false);
-
+            
             HPaned mainBox = new HPaned();
+
+			mainBox.Panel1.Resize = false;
 
 			VBox treeViewBox = new VBox
 			{
@@ -138,7 +146,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			treeViewBox.PackStart(_treeView, true, true);
 			mainBox.Panel1.Content = treeViewBox;
 
-            VBox rightBox = new VBox();
+			VBox rightBox = new VBox
+			{
+				ExpandHorizontal = true
+			};
+
 			rightBox.PackStart(new XwtControl(_listView), true, true);
 			mainBox.Panel2.Content = rightBox;
 
@@ -148,6 +160,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         void AttachEvents()
         {
 			_refreshButton.Clicked += OnRefresh;
+			_listView.KeyPressed += OnWorkItemKeyPressed;
+			_listView.ButtonPressed += OnListViewMouseClick;
 			_treeView.SelectionChanged += OnWorkItemChanged;
             _treeView.RowActivated += OnTreeViewItemClicked;
         }
@@ -163,6 +177,36 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 progress.EndTask();
             }
 		}
+
+		void OnWorkItemKeyPressed(object sender, KeyEventArgs e)
+        {
+			if (e.Modifiers == ModifierKeys.Command && (e.Key == Key.c || e.Key == Key.C))
+            {
+				CopyWorkItemToClipboard();
+            }
+        }
+
+		void CopyWorkItemToClipboard()
+        {
+            var store = (TreeStore)_listView.DataSource;
+            StringBuilder builder = new StringBuilder();
+         
+			foreach (var row in _listView.SelectedRows)
+            {
+                List<string> rowValues = new List<string>();
+            
+				foreach (var column in _listView.Columns)
+                {
+                    var field = ((TextCellView)column.Views[0]).TextField as IDataField<object>;
+                    var val = Convert.ToString(store.GetNavigatorAt(row).GetValue(field));
+                    rowValues.Add(val);
+                }
+
+                builder.AppendLine(string.Join("\t", rowValues));
+            }
+
+            Clipboard.SetText(builder.ToString());
+        }
 
         void LoadWorkItems(ProjectInfo project)
         {
@@ -313,6 +357,53 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			{
 				_treeView.ExpandRow(rowPosition, false);
 			}
+        }
+
+		[GLib.ConnectBefore]
+		void OnListViewMouseClick(object o, ButtonEventArgs args)
+        {
+			if (args.Button == PointerButton.Right && _treeView.SelectedRows.Any())
+            {
+                var menu = BuildTreeViewPopupMenu();
+
+                if (menu.Items.Count > 0)
+                    menu.Popup();
+
+                args.Handled = true;
+            }
+        }
+
+		Menu BuildTreeViewPopupMenu()
+		{
+			Menu menu = new Menu();
+
+			var items = new List<WorkItem>();
+
+			foreach (var path in _listView.SelectedRows)
+            {
+				var node = _listStore.GetNavigatorAt(path);
+				var workItem = node.GetValue(_workItemField);
+				items.Add(workItem);
+            }
+
+			menu.Items.Add(CopyMenuItem(items));
+                       
+			return menu;
+		}
+
+		MenuItem CopyMenuItem(List<WorkItem> items)
+        {
+            MenuItem copy = new MenuItem(GettextCatalog.GetString("Copy to Clipboard"));
+
+			copy.Clicked += (sender, e) =>
+            {
+				if(items.Any())
+				{
+					CopyWorkItemToClipboard();
+				}
+            };
+
+			return copy;
         }
     }
 }
