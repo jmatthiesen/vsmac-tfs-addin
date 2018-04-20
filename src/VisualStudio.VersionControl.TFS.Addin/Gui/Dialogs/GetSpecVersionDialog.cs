@@ -91,17 +91,20 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             content.PackStart(new Label(GettextCatalog.GetString("Files") + ":"));
 
-            var checkSell = new CheckBoxCellView(_isSelectedField);
-            checkSell.Editable = true;
-            _listView.Columns.Add("Name", checkSell, new TextCellView(_nameField));
-            _listView.Columns.Add("Folder", new TextCellView(_pathField));
-            _listView.MinHeight = 150;
-            _listView.MinWidth = 500;
-            _listView.DataSource = _listStore;
+			var checkSell = new CheckBoxCellView(_isSelectedField)
+			{
+				Editable = true
+			};
 
-            content.PackStart(_listView);
+			_listView.Columns.Add("Name", checkSell, new TextCellView(_nameField));
+			_listView.Columns.Add("Folder", new TextCellView(_pathField));
+			_listView.MinHeight = 150;
+			_listView.MinWidth = 500;
+			_listView.DataSource = _listStore;
 
-            HBox typeBox = new HBox();
+			content.PackStart(_listView);
+
+			HBox typeBox = new HBox();
             typeBox.PackStart(new Label(GettextCatalog.GetString("Version") + ":"));
             _versionBox.Items.Add(0, "Changeset");
             _versionBox.Items.Add(1, "Latest Version");

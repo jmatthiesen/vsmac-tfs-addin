@@ -337,18 +337,21 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         void Refresh(BaseItem item, MenuType menuType)
         {
-            if (item != null)
-            {
-                switch (menuType)
-                {
-                    case MenuType.List:
-						GetFolderDetails(item.ServerPath.ParentPath);
-                        break;
-                    case MenuType.Tree:
-						GetFolderDetails(item.ServerPath);
-                        break;
-                }
-            }
+			if (item != null)
+			{
+				Xwt.Application.Invoke(() =>
+				{
+					switch (menuType)
+					{
+						case MenuType.List:
+							GetFolderDetails(item.ServerPath.ParentPath);
+							break;
+						case MenuType.Tree:
+							GetFolderDetails(item.ServerPath);
+							break;
+					}
+				});
+			}
         }
 
         void Refresh(IEnumerable<BaseItem> items)
@@ -812,7 +815,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 									}
 
 									progress.EndTask();
-									progress.ReportSuccess("Finish Check In");
+									progress.ReportSuccess("The check in has been completed successfully");
 								}
 							}
 						}
@@ -1013,12 +1016,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 						}
 
 						_currentWorkspace.Get(requests, option);
-						progress.ReportSuccess("Finish Downloading.");
+						Refresh(items);
+
+						progress.ReportSuccess("The download has been completed successfully");
 					}
 				}
-            }, _workerCancel.Token, TaskCreationOptions.LongRunning);
-
-            Refresh(items);
+            }, _workerCancel.Token, TaskCreationOptions.LongRunning);           
         }
 
         void ForceGetLatestVersion(List<ExtendedItem> items)
@@ -1045,17 +1048,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
               
 				checkOutItem.Clicked += (sender, e) =>
                 {
-                    using (var dialog = new CheckOutDialog(checkOutItems, _currentWorkspace))
-                    {
-                        if (dialog.Run() == Command.Ok)
-                        {
-                            var itemsToCheckOut = dialog.SelectedItems;
-                            CheckOut(itemsToCheckOut, dialog.LockLevel);
-                        }
-                    }
-
-                    FireFilesChanged(checkOutItems);
-                    Refresh(items);
+					using (var dialog = new CheckOutDialog(checkOutItems, _currentWorkspace))
+					{
+						if (dialog.Run() == Command.Ok)
+						{
+							var itemsToCheckOut = dialog.SelectedItems;
+							CheckOut(itemsToCheckOut, dialog.LockLevel);
+						}
+					}                   
                 };
 
                 yield return checkOutItem;
@@ -1086,7 +1086,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                                 }
 
                                 progress.EndTask();
-                                progress.ReportSuccess("Finish Check In");
+								progress.ReportSuccess("The checkin has been completed successfully");
                             }
                         }
                     }
@@ -1124,9 +1124,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                     {
                         Lock(itemsToLock, lockLevel);
                     }
-
-                    FireFilesChanged(lockItems);
-                    Refresh(items);
                 };
 
                 yield return lockItem;
@@ -1141,9 +1138,23 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
               
 				unLockItem.Clicked += (sender, e) =>
                 {
-                    _currentWorkspace.UnLockItems(unLockItems.Select(i => i.ServerPath));
-                    FireFilesChanged(unLockItems);
-                    Refresh(items);
+					_worker = Task.Factory.StartNew(delegate
+                    {
+                        if (!_workerCancel.Token.IsCancellationRequested)
+                        {
+                            using (var progress = VersionControlService.GetProgressMonitor("Unlock", VersionControlOperationType.Pull))
+                            {
+								progress.BeginTask("Unlocking files...", unLockItems.Count);
+
+								_currentWorkspace.UnLockItems(unLockItems.Select(i => i.ServerPath));
+                                FireFilesChanged(unLockItems);
+                                Refresh(items);
+
+                                progress.EndTask();
+								progress.ReportSuccess("The files have been unlocked successfully");
+                            }
+                        }
+                    }, _workerCancel.Token, TaskCreationOptions.LongRunning); 
                 };
 
                 yield return unLockItem;
@@ -1231,10 +1242,23 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                                 itemSpecs.Add(new ItemSpec(change.LocalItem, change.ItemType == ItemType.File ? RecursionType.None : RecursionType.Full));
                             }
 
-                            _currentWorkspace.Undo(itemSpecs);
+							_worker = Task.Factory.StartNew(delegate
+							{
+								if (!_workerCancel.Token.IsCancellationRequested)
+								{
+									using (var progress = VersionControlService.GetProgressMonitor("Undo", VersionControlOperationType.Pull))
+									{                    
+										progress.BeginTask("Undoing...", unLockItems.Count);
+										_currentWorkspace.Undo(itemSpecs);
+                                        									
+										FireFilesChanged(undoItems);
+                                        Refresh(items);
 
-                            FireFilesChanged(undoItems);
-                            Refresh(items);
+										progress.EndTask();
+										progress.ReportSuccess("The changes have been undone successfully");
+									}
+								}
+							}, _workerCancel.Token, TaskCreationOptions.LongRunning);
                         }
                     }
                 };
@@ -1245,51 +1269,71 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         void Lock(List<ExtendedItem> itemsTolock, LockLevel lockLevel)
         {
-            using (var progress = new MessageDialogProgressMonitor(true, false, true))
-            {
-                progress.BeginTask("Lock Files", itemsTolock.Count);
-                _currentWorkspace.LockItems(itemsTolock.Select(i => i.ServerPath), lockLevel);
-                progress.EndTask();
-                progress.ReportSuccess("Finish locking.");
-            }
+			_worker = Task.Factory.StartNew(delegate
+			{
+				if (!_workerCancel.Token.IsCancellationRequested)
+				{
+					using (var progress = VersionControlService.GetProgressMonitor("Lock", VersionControlOperationType.Pull))
+					{
+						progress.BeginTask("Locking files...", itemsTolock.Count);
+
+						_currentWorkspace.LockItems(itemsTolock.Select(i => i.ServerPath), lockLevel);
+
+						FireFilesChanged(itemsTolock);
+						Refresh(itemsTolock);
+
+						progress.EndTask();
+						progress.ReportSuccess("The files have been locked successfully");
+					}
+				}
+			}, _workerCancel.Token, TaskCreationOptions.LongRunning);
         }
 
         void CheckOut(List<ExtendedItem> itemsToCheckOut, LockLevel lockLevel)
         {
-            using (var progress = VersionControlService.GetProgressMonitor("Check Out", VersionControlOperationType.Pull))
-            {
-                progress.BeginTask("Check Out", itemsToCheckOut.Count);
+			_worker = Task.Factory.StartNew(delegate
+			{
+				if (!_workerCancel.Token.IsCancellationRequested)
+				{
+					using (var progress = VersionControlService.GetProgressMonitor("Check Out", VersionControlOperationType.Pull))
+					{
+						progress.BeginTask("Check Out", itemsToCheckOut.Count);
 
-                foreach (var item in itemsToCheckOut)
-                {
-                    var path = item.IsInWorkspace ? item.LocalPath : _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
-                    _currentWorkspace.Get(new GetRequest(item.ServerPath, RecursionType.Full, VersionSpec.Latest), GetOptions.None);
-                    progress.Log.WriteLine("Check out item: " + item.ServerPath);
+						foreach (var item in itemsToCheckOut)
+						{
+							var path = item.IsInWorkspace ? item.LocalPath : _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
+							_currentWorkspace.Get(new GetRequest(item.ServerPath, RecursionType.Full, VersionSpec.Latest), GetOptions.None);
+							progress.Log.WriteLine("Check out item: " + item.ServerPath);
 
-					_currentWorkspace.PendEdit(path.ToEnumerable(), RecursionType.Full, lockLevel, out ICollection<Failure> failures);
+							_currentWorkspace.PendEdit(path.ToEnumerable(), RecursionType.Full, lockLevel, out ICollection<Failure> failures);
 
-					if (failures != null && failures.Any())
-                    {
-                        if (failures.Any(f => f.SeverityType == SeverityType.Error))
-                        {
-                            foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
-                            {
-                                progress.ReportError(failure.Code, new Exception(failure.Message));
-                            }
+							if (failures != null && failures.Any())
+							{
+								if (failures.Any(f => f.SeverityType == SeverityType.Error))
+								{
+									foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
+									{
+										progress.ReportError(failure.Code, new Exception(failure.Message));
+									}
 
-                            break;
-                        }
+									break;
+								}
 
-                        foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Warning))
-                        {
-                            progress.ReportWarning(failure.Message);
-                        }
-                    }
-                }
+								foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Warning))
+								{
+									progress.ReportWarning(failure.Message);
+								}
+							}
+						}
 
-                progress.EndTask();
-                progress.ReportSuccess("Finish Check Out.");
-            }
+						FireFilesChanged(itemsToCheckOut);
+						Refresh(itemsToCheckOut);
+
+						progress.EndTask();
+						progress.ReportSuccess("The checkout have been completed successfully");
+					}
+				}
+			}, _workerCancel.Token, TaskCreationOptions.LongRunning);
         }
 
         IEnumerable<MenuItem> ForlderMenuItems(BaseItem item, MenuType menuType)
@@ -1358,7 +1402,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                                         }
 
                                         progress.EndTask();
-                                        progress.ReportSuccess("Finish Check In");
+										progress.ReportSuccess("The checkin have been completed successfully");
                                     }
                                 }
                             }
