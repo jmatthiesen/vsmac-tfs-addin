@@ -998,19 +998,25 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 requests.Add(new GetRequest(item.ServerPath, recursion, VersionSpec.Latest));
             }
 
-            using (var progress = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull))
+			_worker = Task.Factory.StartNew(delegate
             {
-                var option = GetOptions.None;
-                progress.Log.WriteLine("Start downloading items. GetOption: " + option);
+				if (!_workerCancel.Token.IsCancellationRequested)
+				{
+					using (var progress = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull))
+					{
+						var option = GetOptions.None;
+						progress.Log.WriteLine("Start downloading items. GetOption: " + option);
 
-                foreach (var request in requests)
-                {
-                    progress.Log.WriteLine(request);
-                }
+						foreach (var request in requests)
+						{
+							progress.Log.WriteLine(request);
+						}
 
-                _currentWorkspace.Get(requests, option);
-                progress.ReportSuccess("Finish Downloading.");
-            }
+						_currentWorkspace.Get(requests, option);
+						progress.ReportSuccess("Finish Downloading.");
+					}
+				}
+            }, _workerCancel.Token, TaskCreationOptions.LongRunning);
 
             Refresh(items);
         }
