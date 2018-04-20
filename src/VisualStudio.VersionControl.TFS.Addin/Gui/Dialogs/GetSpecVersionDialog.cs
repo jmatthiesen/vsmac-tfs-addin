@@ -27,6 +27,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using MonoDevelop.Core;
 using MonoDevelop.VersionControl.TFS.Models;
 using MonoDevelop.VersionControl.TFS.Services;
@@ -48,15 +50,27 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         SpinButton _changeSetNumber;
         CheckBox _forceGet;
 
+		Task _worker;
+        CancellationTokenSource _workerCancel;
+
         internal GetSpecVersionDialog(IWorkspaceService workspace)
         {
             Init(workspace);
             BuildGui();    
         }
 
-        void Init(IWorkspaceService workspace)
+		protected override void OnClosed()
+		{
+			_workerCancel?.Cancel();
+
+			base.OnClosed();
+		}
+
+		void Init(IWorkspaceService workspace)
         {
             _workspace = workspace;
+
+			_workerCancel = new CancellationTokenSource();
 
             _listView = new ListView();
             _itemField = new DataField<ExtendedItem>();
@@ -81,8 +95,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             checkSell.Editable = true;
             _listView.Columns.Add("Name", checkSell, new TextCellView(_nameField));
             _listView.Columns.Add("Folder", new TextCellView(_pathField));
-            _listView.MinHeight = 300;
-            _listView.MinWidth = 300;
+            _listView.MinHeight = 150;
+            _listView.MinWidth = 500;
             _listView.DataSource = _listStore;
 
             content.PackStart(_listView);
@@ -168,18 +182,24 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 option |= GetOptions.GetAll;
             }
 
-            using (var progress = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull))
-            {
-                progress.Log.WriteLine("Start downloading items. GetOption: " + option);
+			_worker = Task.Factory.StartNew(delegate
+			{
+				if (!_workerCancel.Token.IsCancellationRequested)
+				{
+					using (var progress = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull))
+					{
+						progress.Log.WriteLine("Start downloading items. GetOption: " + option);
 
-                foreach (var request in requests)
-                {
-                    progress.Log.WriteLine(request);
-                }
+						foreach (var request in requests)
+						{
+							progress.Log.WriteLine(request);
+						}
 
-                _workspace.Get(requests, option);
-                progress.ReportSuccess("Finish Downloading.");
-            }
+						_workspace.Get(requests, option);
+						progress.ReportSuccess("Finish Downloading.");
+					}
+				}         
+            }, _workerCancel.Token, TaskCreationOptions.LongRunning);
         }
     }
 }
