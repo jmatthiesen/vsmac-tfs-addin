@@ -130,6 +130,48 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return extractor.Extract();
         }
 
+		public List<int> GetWorkItemIds(StoredQuery query, WorkItemProject project)
+		{
+			WorkItemContext context = new WorkItemContext { ProjectId = query.ProjectId, Me = WorkItemsContext.WhoAmI };
+            
+            var invoker = GetSoapInvoker();
+            var envelope = invoker.CreateEnvelope("QueryWorkitems", headerName);         
+			envelope.Body.Add(query.GetWiqlXml(MessageNs, Url.ToString(), project.Name));
+			envelope.Body.Add(new XElement(MessageNs + "useMaster", "false"));
+            var response = invoker.InvokeResponse();
+
+            var queryIds = response.Element(MessageNs + "resultIds").Element("QueryIds");
+
+            if (queryIds == null)
+                return new List<int>();
+
+            var list = new List<int>();
+
+            foreach (var item in queryIds.Elements("id"))
+            {
+                var startId = item.Attribute("s");
+            
+				if (startId == null)
+                    continue;
+				
+                var s = Convert.ToInt32(startId.Value);
+                var endId = item.Attribute("e");
+
+                if (endId != null)
+                {
+                    var e = Convert.ToInt32(endId.Value);
+                    var range = Enumerable.Range(s, e - s + 1);
+                    list.AddRange(range);
+                }
+                else
+                {
+                    list.Add(s);
+                }
+            }
+
+            return list;
+		}
+
         public List<int> GetWorkItemIds(StoredQuery query, FieldList fields)
         {
             WorkItemContext context = new WorkItemContext { ProjectId = query.ProjectId, Me = WorkItemsContext.WhoAmI };
@@ -162,9 +204,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
             foreach (var item in queryIds.Elements("id"))
             {
                 var startId = item.Attribute("s");
-                if (startId == null)
+              
+				if (startId == null)
                     continue;
-                var s = Convert.ToInt32(startId.Value);
+            
+				var s = Convert.ToInt32(startId.Value);
                 var endId = item.Attribute("e");
 
                 if (endId != null)

@@ -219,7 +219,7 @@ namespace MonoDevelop.VersionControl.TFS
 
                 var statuses = _versionInfoResolver.GetFileStatus(localPaths);
                
-                //Remove files which are versioned and not added.
+                // Remove files which are versioned and not added.
                 var forRemove = statuses.Where(s => s.Value.IsVersioned &&
                                                     !s.Value.HasLocalChange(VersionStatus.ScheduledAdd)).Select(s => s.Key);
 
@@ -233,7 +233,7 @@ namespace MonoDevelop.VersionControl.TFS
                     }
                 }
 
-                //Revert added files.
+                // Revert added files.
                 var addedFiles = statuses.Where(s => s.Value.HasLocalChange(VersionStatus.ScheduledAdd)).Select(s => new FilePath(s.Key)).ToArray();
                 Revert(addedFiles, recursive, monitor);
 

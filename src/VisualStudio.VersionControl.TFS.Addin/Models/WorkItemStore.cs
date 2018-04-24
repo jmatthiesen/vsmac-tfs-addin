@@ -62,11 +62,18 @@ namespace MonoDevelop.VersionControl.TFS.Models
         }
 
         public List<WorkItem> LoadByPage(ProgressMonitor progress)
-        {
+		{         
             var ids = collection.GetWorkItemIds(query, CachedMetaData.Instance.Fields);
+
+			if(!ids.Any())
+			{
+				ids = collection.GetWorkItemIds(query, CachedMetaData.Instance.Projects.FirstOrDefault(p => p.Id == query.ProjectId));
+			}
+
             int pages = (int)Math.Ceiling((double)ids.Count / (double)50);
             var result = new List<WorkItem>();
             progress.BeginTask("Loading WorkItems", pages);
+
             for (int i = 0; i < pages; i++)
             {
                 var idList = new List<int>(ids.Skip(i * 50).Take(50));

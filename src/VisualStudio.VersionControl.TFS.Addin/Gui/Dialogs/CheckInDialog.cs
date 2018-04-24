@@ -114,9 +114,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _folderField = new DataField<string>();
             _changeField = new DataField<PendingChange>();
             _fileStore = new ListStore(_isCheckedField, _nameField, _changesField, _folderField, _changeField);
-            _commentEntry = new TextEntry();
-            _commentEntry.MultiLine = true;
-            _workItemsView = new ListView();
+
+			_commentEntry = new TextEntry
+			{
+				PlaceholderText = "Insert your comment...",
+				MultiLine = true,
+				Margin = new WidgetSpacing(12, 0, 12, 0)
+			};
+
+			_workItemsView = new ListView();
             _workItemField = new DataField<WorkItem>();
             _idField = new DataField<int>();
             _titleField = new DataField<string>();
@@ -143,7 +149,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             checkInTab.PackStart(new Label(GettextCatalog.GetString("Pending Changes") + ":"));
             checkInTab.PackStart(_filesView, true, true);
 
-            checkInTab.PackStart(new Label(GettextCatalog.GetString("Comment") + ":"));
+			checkInTab.PackStart(new Label(GettextCatalog.GetString("Comment") + ":") { Margin = new WidgetSpacing(12, 0, 0, 0) });
             _commentEntry.MultiLine = true;
             checkInTab.PackStart(_commentEntry);
                     
@@ -179,7 +185,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 HorizontalPlacement = WidgetPlacement.End
             };
 
-            Button okButton = new Button(GettextCatalog.GetString("OK"))
+            Button okButton = new Button(GettextCatalog.GetString("Check In"))
             {
                 MinWidth = GuiSettings.ButtonWidth
             };

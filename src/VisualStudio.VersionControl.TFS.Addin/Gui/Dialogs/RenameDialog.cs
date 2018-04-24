@@ -57,8 +57,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             _item = item;
 
-            _nameEntry = new TextEntry();
-        }
+			_nameEntry = new TextEntry
+			{
+				PlaceholderText = "New name"
+			};
+		}
 
         void BuildGui()
         {

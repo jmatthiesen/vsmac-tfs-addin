@@ -103,15 +103,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             BuildGui();
             AttachEvents();
 
-            using (var progress = new MessageDialogProgressMonitor(true, false, false))
-            {
-                progress.BeginTask("Loading...", 2);
-                GetWorkspaces();
-                progress.Step(1);
+			using (var progress = new MessageDialogProgressMonitor(true, false, false))
+			{
+				progress.BeginTask(GettextCatalog.GetString("Loading..."), 2);
+				GetWorkspaces();
+				progress.Step(1);
 				GetFolders();
-                ExpandPath(RepositoryPath.RootPath);
-                progress.EndTask();
-            }
+				ExpandPath(RepositoryPath.RootPath);
+				progress.EndTask();
+			}
         }
 
 		#endregion
@@ -267,7 +267,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
 			VBox foldersViewBox = new VBox();
 
-			var iconColumn = new ListViewColumn("Folders");
+			var iconColumn = new ListViewColumn(GettextCatalog.GetString("Folders"));
 			iconColumn.Views.Add(new ImageCellView(_iconField));
 			_foldersView.Columns.Add(iconColumn);
 			_foldersView.Columns.Add("", _nameField);
@@ -339,7 +339,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         {
 			if (item != null)
 			{
-				Xwt.Application.Invoke(() =>
+				Application.Invoke(() =>
 				{
 					switch (menuType)
 					{
@@ -361,70 +361,61 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
              
         void GetWorkspaces()
         {
-            try
-            {
-				var workspaces = _projectCollection.GetLocalWorkspaces();
-		
-				_workspaces.Clear();
-				_workspaceStore.Clear();           
-                _workspaceComboBox.SelectionChanged -= OnChangeActiveWorkspaces;
-                
-				_workspaces.AddRange(workspaces);
+			var workspaces = _projectCollection.GetLocalWorkspaces();
 
-				int i = 0;
-				int activeWorkspaceRow = 0;
-                
-				foreach (var workspace in _workspaces)
-				{               
-					var workspaceRow = _workspaceStore.AddRow();
-					_workspaceStore.SetValue(workspaceRow, _workspacePathField, string.Format("     <span color='#cccccc'>{0}</span>", workspace.WorkingFolders.FirstOrDefault()?.ServerItem.ItemName)); 
-					_workspaceStore.SetValue(workspaceRow, _workspaceNameField, workspace.Name);
-					_workspaceStore.SetValue(workspaceRow, _workspaceObjectField, workspace);
+			_workspaces.Clear();
+			_workspaceStore.Clear();
+			_workspaceComboBox.SelectionChanged -= OnChangeActiveWorkspaces;
 
-					if (string.Equals(workspace.Name, _projectCollection.ActiveWorkspaceName, StringComparison.Ordinal))
-					{
-						activeWorkspaceRow = i;
-					}
-                    
-					i++;
-				}
+			_workspaces.AddRange(workspaces);
 
-                var customWorkspaceRow = _workspaceStore.AddRow();  // Separator
-			
-				customWorkspaceRow = _workspaceStore.AddRow();
-                _workspaceStore.SetValue(customWorkspaceRow, _workspaceNameField, "Create Workspace...");
-				_workspaceStore.SetValue(customWorkspaceRow, _workspaceObjectField, 1);
+			int i = 0;
+			int activeWorkspaceRow = 0;
 
-                customWorkspaceRow = _workspaceStore.AddRow();
-                _workspaceStore.SetValue(customWorkspaceRow, _workspaceNameField, "Manage Workspaces...");            
-				_workspaceStore.SetValue(customWorkspaceRow, _workspaceObjectField, 2);
+			foreach (var workspace in _workspaces)
+			{
+				var workspaceRow = _workspaceStore.AddRow();
+				_workspaceStore.SetValue(workspaceRow, _workspacePathField, string.Format("     <span color='#cccccc'>{0}</span>", workspace.WorkingFolders.FirstOrDefault()?.ServerItem.ItemName));
+				_workspaceStore.SetValue(workspaceRow, _workspaceNameField, workspace.Name);
+				_workspaceStore.SetValue(workspaceRow, _workspaceObjectField, workspace);
 
-				_workspaceComboBox.SelectionChanged += OnChangeActiveWorkspaces;
-
-				if (_workspaces.Count > 0)
+				if (string.Equals(workspace.Name, _projectCollection.ActiveWorkspaceName, StringComparison.Ordinal))
 				{
-					if (!activeWorkspaceRow.Equals(0))
-						_workspaceComboBox.SelectedIndex = activeWorkspaceRow;
-			        else
-						_workspaceComboBox.SelectedIndex = 0;
-
-					_noWorkspacesLabel.Visible = false;
-					_workspaceLabel.Visible = true;
-					_workspaceComboBox.Visible = true;
+					activeWorkspaceRow = i;
 				}
-                else
-                {
+
+				i++;
+			}
+
+			var customWorkspaceRow = _workspaceStore.AddRow();  // Separator
+
+			customWorkspaceRow = _workspaceStore.AddRow();
+			_workspaceStore.SetValue(customWorkspaceRow, _workspaceNameField, GettextCatalog.GetString("Create Workspace..."));
+			_workspaceStore.SetValue(customWorkspaceRow, _workspaceObjectField, 1);
+
+			customWorkspaceRow = _workspaceStore.AddRow();
+			_workspaceStore.SetValue(customWorkspaceRow, _workspaceNameField, GettextCatalog.GetString("Manage Workspaces..."));
+			_workspaceStore.SetValue(customWorkspaceRow, _workspaceObjectField, 2);
+
+			_workspaceComboBox.SelectionChanged += OnChangeActiveWorkspaces;
+
+			if (_workspaces.Count > 0)
+			{
+				if (!activeWorkspaceRow.Equals(0))
+					_workspaceComboBox.SelectedIndex = activeWorkspaceRow;
+				else
+					_workspaceComboBox.SelectedIndex = 0;
+
+				_noWorkspacesLabel.Visible = false;
+				_workspaceLabel.Visible = true;
+				_workspaceComboBox.Visible = true;
+			}
+			else
+			{
 				_noWorkspacesLabel.Visible = true;
 				_workspaceLabel.Visible = false;
 				_workspaceComboBox.Visible = false;
-			}
-            }
-            catch
-            {
-                _noWorkspacesLabel.Visible = true;
-                _workspaceLabel.Visible = false;
-                _workspaceComboBox.Visible = false;
-			}
+			}				
         }
         
 		bool WorkspaceRowSeparatorCheck(int i)
@@ -557,17 +548,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
                 if (!IsMapped(item.ServerPath))
                 {
-					row.SetValue(_latestField, "Not mapped");
+					row.SetValue(_latestField, GettextCatalog.GetString("Not mapped"));
                 }
                 else
                 {
                     if (!item.IsInWorkspace)     
                     {
-						row.SetValue(_latestField, "Not downloaded");
+						row.SetValue(_latestField, GettextCatalog.GetString("Not downloaded"));
                     }
                     else
                     {
-						row.SetValue(_latestField, item.IsLatest ? "Yes" : "No");
+						row.SetValue(_latestField, item.IsLatest ? GettextCatalog.GetString("Yes") : GettextCatalog.GetString("No"));
                     }
                 }
 
@@ -766,7 +757,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
             var path = _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
 
-			using (OpenFileDialog openFileDialog = new OpenFileDialog("Browse For File"))
+			using (OpenFileDialog openFileDialog = new OpenFileDialog(GettextCatalog.GetString("Browse For File")))
 			{
 				openFileDialog.CurrentFolder = path;
 				openFileDialog.Multiselect = true;
@@ -803,24 +794,34 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 						{
 							if (dialog.Run() == Command.Ok)
 							{
-								using (var progress = new MessageDialogProgressMonitor(true, false, false))
+								var selectedChanges = dialog.SelectedChanges;
+								string comment = dialog.Comment;
+								var selectedWorkItems = dialog.SelectedWorkItems;
+
+								_worker = Task.Factory.StartNew(delegate
 								{
-									progress.BeginTask("Check In", 1);
-
-									var result = _currentWorkspace.CheckIn(dialog.SelectedChanges, dialog.Comment, dialog.SelectedWorkItems);
-
-									foreach (var failure in result.Failures.Where(f => f.SeverityType == SeverityType.Error))
+									if (!_workerCancel.Token.IsCancellationRequested)
 									{
-										progress.ReportError(failure.Code, new Exception(failure.Message));
+										using (var progress = VersionControlService.GetProgressMonitor(GettextCatalog.GetString("Check In"), VersionControlOperationType.Pull))
+										{
+											progress.BeginTask(GettextCatalog.GetString("Check In"), 1);
+                                            
+											var result = _currentWorkspace.CheckIn(selectedChanges, comment, selectedWorkItems);
+
+											foreach (var failure in result.Failures.Where(f => f.SeverityType == SeverityType.Error))
+											{
+												progress.ReportError(failure.Code, new Exception(failure.Message));
+											}
+
+											Refresh(item, MenuType.List);
+
+											progress.EndTask();
+											progress.ReportSuccess(GettextCatalog.GetString("The check in has been completed successfully"));
+										}
 									}
-
-									progress.EndTask();
-									progress.ReportSuccess("The check in has been completed successfully");
-								}
+								}, _workerCancel.Token, TaskCreationOptions.LongRunning);     
 							}
-						}
-
-						Refresh(item, MenuType.List);
+						}                                                            
 					}	
 				}               
 			}
@@ -899,7 +900,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _localFolder.Text = _currentWorkspace.Data.GetLocalPathForServerPath(serverPath);
         }
 
-        void OnManageWorkspaces(object sender, EventArgs e)
+		void OnManageWorkspaces(object sender, EventArgs e)
         {
             using (var dialog = new WorkspacesDialog(_projectCollection))
             {
@@ -918,7 +919,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			if (_foldersView.SelectedRow != null)
 			{
 				navigator = _foldersStore.GetNavigatorAt(_foldersView.SelectedRow);            
-				selectedPath = ((BaseItem)navigator.GetValue(_baseItemField)).ServerPath;
+				selectedPath = navigator.GetValue(_baseItemField).ServerPath;
 			}
 
 			GetFolders();
@@ -945,7 +946,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             {            
 				var node = _folderDetailsStore.GetNavigatorAt(path);
 				var extendedItem = node.GetValue(_extendedItemField);
-				items.Add((ExtendedItem)extendedItem);
+				items.Add(extendedItem);
             }
 
             if (items.All(i => IsMapped(i.ServerPath)))
@@ -1005,10 +1006,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             {
 				if (!_workerCancel.Token.IsCancellationRequested)
 				{
-					using (var progress = VersionControlService.GetProgressMonitor("Get", VersionControlOperationType.Pull))
+					using (var progress = VersionControlService.GetProgressMonitor(GettextCatalog.GetString("Get"), VersionControlOperationType.Pull))
 					{
 						var option = GetOptions.None;
-						progress.Log.WriteLine("Start downloading items. GetOption: " + option);
+						progress.Log.WriteLine("Downloading items. GetOption: " + option);
 
 						foreach (var request in requests)
 						{
@@ -1018,7 +1019,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 						_currentWorkspace.Get(requests, option);
 						Refresh(items);
 
-						progress.ReportSuccess("The download has been completed successfully");
+						progress.ReportSuccess(GettextCatalog.GetString("The download has been completed successfully"));
 					}
 				}
             }, _workerCancel.Token, TaskCreationOptions.LongRunning);           
@@ -1074,25 +1075,35 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                     {
                         if (dialog.Run() == Command.Ok)
                         {
-                            using (var progress = new MessageDialogProgressMonitor(true, false, false))
-                            {
-                                progress.BeginTask("Check In", 1);
+							var selectedChanges = dialog.SelectedChanges;
+                            string comment = dialog.Comment;
+                            var selectedWorkItems = dialog.SelectedWorkItems;
 
-                                var result = _currentWorkspace.CheckIn(dialog.SelectedChanges, dialog.Comment, dialog.SelectedWorkItems);
+							_worker = Task.Factory.StartNew(delegate
+							{
+								if (!_workerCancel.Token.IsCancellationRequested)
+								{
+									using (var progress = VersionControlService.GetProgressMonitor(GettextCatalog.GetString("Check In"), VersionControlOperationType.Pull))
+									{
+										progress.BeginTask(GettextCatalog.GetString("Check In"), 1);
+                                        
+										var result = _currentWorkspace.CheckIn(selectedChanges, comment, selectedWorkItems);
 
-                                foreach (var failure in result.Failures.Where(f => f.SeverityType == SeverityType.Error))
-                                {
-                                    progress.ReportError(failure.Code, new Exception(failure.Message));
-                                }
+										foreach (var failure in result.Failures.Where(f => f.SeverityType == SeverityType.Error))
+										{
+											progress.ReportError(failure.Code, new Exception(failure.Message));
+										}
+										                       
+										FireFilesChanged(checkInItems);
+										Refresh(items);
 
-                                progress.EndTask();
-								progress.ReportSuccess("The checkin has been completed successfully");
-                            }
+										progress.EndTask();
+										progress.ReportSuccess(GettextCatalog.GetString("The checkin has been completed successfully"));
+									}
+								}
+							}, _workerCancel.Token, TaskCreationOptions.LongRunning);
                         }
                     }
-
-                    FireFilesChanged(checkInItems);
-                    Refresh(items);
                 };
 
                 yield return checkinItem;
@@ -1142,16 +1153,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                     {
                         if (!_workerCancel.Token.IsCancellationRequested)
                         {
-                            using (var progress = VersionControlService.GetProgressMonitor("Unlock", VersionControlOperationType.Pull))
+							using (var progress = VersionControlService.GetProgressMonitor(GettextCatalog.GetString("Unlock"), VersionControlOperationType.Pull))
                             {
-								progress.BeginTask("Unlocking files...", unLockItems.Count);
+								progress.BeginTask(GettextCatalog.GetString("Unlocking files..."), unLockItems.Count);
 
 								_currentWorkspace.UnLockItems(unLockItems.Select(i => i.ServerPath));
                                 FireFilesChanged(unLockItems);
                                 Refresh(items);
 
                                 progress.EndTask();
-								progress.ReportSuccess("The files have been unlocked successfully");
+								progress.ReportSuccess(GettextCatalog.GetString("The files have been unlocked successfully"));
                             }
                         }
                     }, _workerCancel.Token, TaskCreationOptions.LongRunning); 
@@ -1246,16 +1257,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 							{
 								if (!_workerCancel.Token.IsCancellationRequested)
 								{
-									using (var progress = VersionControlService.GetProgressMonitor("Undo", VersionControlOperationType.Pull))
+									using (var progress = VersionControlService.GetProgressMonitor(GettextCatalog.GetString("Undo"), VersionControlOperationType.Pull))
 									{                    
-										progress.BeginTask("Undoing...", unLockItems.Count);
+										progress.BeginTask(GettextCatalog.GetString("Undoing..."), unLockItems.Count);
 										_currentWorkspace.Undo(itemSpecs);
                                         									
 										FireFilesChanged(undoItems);
                                         Refresh(items);
 
 										progress.EndTask();
-										progress.ReportSuccess("The changes have been undone successfully");
+										progress.ReportSuccess(GettextCatalog.GetString("The changes have been undone successfully"));
 									}
 								}
 							}, _workerCancel.Token, TaskCreationOptions.LongRunning);
@@ -1273,9 +1284,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			{
 				if (!_workerCancel.Token.IsCancellationRequested)
 				{
-					using (var progress = VersionControlService.GetProgressMonitor("Lock", VersionControlOperationType.Pull))
+					using (var progress = VersionControlService.GetProgressMonitor(GettextCatalog.GetString("Lock"), VersionControlOperationType.Pull))
 					{
-						progress.BeginTask("Locking files...", itemsTolock.Count);
+						progress.BeginTask(GettextCatalog.GetString("Locking files..."), itemsTolock.Count);
 
 						_currentWorkspace.LockItems(itemsTolock.Select(i => i.ServerPath), lockLevel);
 
@@ -1283,7 +1294,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 						Refresh(itemsTolock);
 
 						progress.EndTask();
-						progress.ReportSuccess("The files have been locked successfully");
+						progress.ReportSuccess(GettextCatalog.GetString("The files have been locked successfully"));
 					}
 				}
 			}, _workerCancel.Token, TaskCreationOptions.LongRunning);
@@ -1295,15 +1306,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			{
 				if (!_workerCancel.Token.IsCancellationRequested)
 				{
-					using (var progress = VersionControlService.GetProgressMonitor("Check Out", VersionControlOperationType.Pull))
+					using (var progress = VersionControlService.GetProgressMonitor(GettextCatalog.GetString("Check Out"), VersionControlOperationType.Pull))
 					{
-						progress.BeginTask("Check Out", itemsToCheckOut.Count);
+						progress.BeginTask(GettextCatalog.GetString("Check Out"), itemsToCheckOut.Count);
 
 						foreach (var item in itemsToCheckOut)
 						{
 							var path = item.IsInWorkspace ? item.LocalPath : _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
 							_currentWorkspace.Get(new GetRequest(item.ServerPath, RecursionType.Full, VersionSpec.Latest), GetOptions.None);
-							progress.Log.WriteLine("Check out item: " + item.ServerPath);
+							progress.Log.WriteLine(GettextCatalog.GetString("Check out item: ") + item.ServerPath);
 
 							_currentWorkspace.PendEdit(path.ToEnumerable(), RecursionType.Full, lockLevel, out ICollection<Failure> failures);
 
@@ -1330,7 +1341,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 						Refresh(itemsToCheckOut);
 
 						progress.EndTask();
-						progress.ReportSuccess("The checkout have been completed successfully");
+						progress.ReportSuccess(GettextCatalog.GetString("The checkout have been completed successfully"));
 					}
 				}
 			}, _workerCancel.Token, TaskCreationOptions.LongRunning);
@@ -1355,7 +1366,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             {
                 var path = _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
 
-                using (OpenFileDialog openFileDialog = new OpenFileDialog("Browse For File"))
+				using (OpenFileDialog openFileDialog = new OpenFileDialog(GettextCatalog.GetString("Browse For File")))
                 {
                     openFileDialog.CurrentFolder = path;
                     openFileDialog.Multiselect = true;
@@ -1389,25 +1400,35 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                             using (var dialog = new CheckInDialog(checkOutItems, _currentWorkspace))
                             {
                                 if (dialog.Run() == Command.Ok)
-                                {
-                                    using (var progress = new MessageDialogProgressMonitor(true, false, false))
-                                    {
-                                        progress.BeginTask("Check In", 1);
+								{ 
+									var selectedChanges = dialog.SelectedChanges;
+                                    string comment = dialog.Comment;
+                                    var selectedWorkItems = dialog.SelectedWorkItems;
 
-                                        var result = _currentWorkspace.CheckIn(dialog.SelectedChanges, dialog.Comment, dialog.SelectedWorkItems);
+									_worker = Task.Factory.StartNew(delegate
+									{
+										if (!_workerCancel.Token.IsCancellationRequested)
+										{
+											using (var progress = VersionControlService.GetProgressMonitor(GettextCatalog.GetString("Check In"), VersionControlOperationType.Pull))
+											{
+												progress.BeginTask(GettextCatalog.GetString("Check In"), 1);
 
-                                        foreach (var failure in result.Failures.Where(f => f.SeverityType == SeverityType.Error))
-                                        {
-                                            progress.ReportError(failure.Code, new Exception(failure.Message));
-                                        }
+												var result = _currentWorkspace.CheckIn(selectedChanges, comment, selectedWorkItems);
 
-                                        progress.EndTask();
-										progress.ReportSuccess("The checkin have been completed successfully");
-                                    }
+												foreach (var failure in result.Failures.Where(f => f.SeverityType == SeverityType.Error))
+												{
+													progress.ReportError(failure.Code, new Exception(failure.Message));
+												}
+
+												Refresh(item, menuType);
+
+												progress.EndTask();
+												progress.ReportSuccess(GettextCatalog.GetString("The checkin have been completed successfully"));
+											}
+										}
+									}, _workerCancel.Token, TaskCreationOptions.LongRunning);
                                 }
-                            }
-
-                            Refresh(item, menuType);
+                            }                                           
                         }
                     }
                 }
@@ -1443,7 +1464,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             if (_currentWorkspace == null || item == null)
                 return;
             
-            using (Xwt.SelectFolderDialog folderSelect = new Xwt.SelectFolderDialog("Browse For Folder"))
+			using (Xwt.SelectFolderDialog folderSelect = new Xwt.SelectFolderDialog(GettextCatalog.GetString("Browse For Folder")))
             {
                 folderSelect.Multiselect = false;
                 folderSelect.CanCreateFolders = true;

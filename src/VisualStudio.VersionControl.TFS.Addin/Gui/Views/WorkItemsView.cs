@@ -135,9 +135,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _view.PackStart(headerBox, false, false);
             
             HPaned mainBox = new HPaned();
-
-			mainBox.Panel1.Resize = false;
-
+         
 			VBox treeViewBox = new VBox
 			{
 				WidthRequest = 300
@@ -151,7 +149,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 				ExpandHorizontal = true
 			};
 
-			rightBox.PackStart(new XwtControl(_listView), true, true);
+			rightBox.PackStart(_listView, true, true);
 			mainBox.Panel2.Content = rightBox;
 
             _view.PackStart(mainBox, true, true);

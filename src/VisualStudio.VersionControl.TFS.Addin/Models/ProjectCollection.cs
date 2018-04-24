@@ -395,6 +395,11 @@ namespace MonoDevelop.VersionControl.TFS.Models
             clientService.Value.Resolve(workItemId, changeSet, comment);
         }
 
+		public List<int> GetWorkItemIds(StoredQuery query, WorkItemProject project)
+        {
+			return clientService.Value.GetWorkItemIds(query, project);
+        }
+
         public List<int> GetWorkItemIds(StoredQuery query, FieldList fields)
         {
             return clientService.Value.GetWorkItemIds(query, fields);

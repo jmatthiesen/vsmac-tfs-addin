@@ -29,11 +29,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
-    public sealed class StoredQuery
+	public sealed class StoredQuery
     {
         [TableFieldName("ID")]
         public Guid Id { get; set; }
@@ -67,6 +68,32 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         [TableFieldName("ParentID")]
         public Guid ParentId { get; set; }
+
+		public XElement GetWiqlXml(XNamespace messageNs, string url, string projectName)
+		{          
+			XElement wiqlNode = new XElement("Wiql", QueryText);
+
+			XElement dayPrecissionNode = new XElement("DayPrecision", true);
+                     
+			XElement projectNode = new XElement("Context", QueryText);
+			projectNode.Add(new XAttribute("Key", "project"));
+			projectNode.Add(new XAttribute("Value", projectName));
+			projectNode.Add(new XAttribute("ValueType", "String"));
+		
+			XElement teamNode = new XElement("Context", QueryText);
+			teamNode.Add(new XAttribute("Key", "team"));
+			teamNode.Add(new XAttribute("Value", string.Format("{0} Team", projectName)));
+			teamNode.Add(new XAttribute("ValueType", "String"));
+         
+			XNamespace queryNs = XNamespace.Get("");
+
+			XElement element =  
+				new XElement(messageNs + "psQuery", 
+				             new XElement(queryNs + "Query", 
+				                          new XAttribute("Product", url),
+				                          wiqlNode,  dayPrecissionNode, projectNode, teamNode));
+			return element;
+		}
 
         public XElement GetQueryXml(WorkItemContext context, FieldList fields)
         {
