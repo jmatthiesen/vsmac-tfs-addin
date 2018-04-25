@@ -66,7 +66,7 @@ namespace MonoDevelop.VersionControl.TFS
 
         protected override Repository OnCreateRepositoryInstance()
         {
-            return DependencyContainer.GetTFSRepository(null, null, null);
+			return DependencyContainer.GetTeamFoundationServerRepository(null, null, null);
         }
 
         public override IRepositoryEditor CreateRepositoryEditor(Repository repo)
@@ -176,7 +176,7 @@ namespace MonoDevelop.VersionControl.TFS
               
                 if (workspaceData != null)
                 {
-                    return DependencyContainer.GetTFSRepository(path, workspaceData, projectCollection);
+					return DependencyContainer.GetTeamFoundationServerRepository(path, workspaceData, projectCollection);
                 }
             }
 

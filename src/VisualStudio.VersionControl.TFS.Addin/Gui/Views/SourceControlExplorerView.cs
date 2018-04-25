@@ -36,7 +36,6 @@ using MonoDevelop.Components;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
-using MonoDevelop.Ide.ProgressMonitoring;
 using MonoDevelop.VersionControl.TFS.Gui.Dialogs;
 using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Models;
@@ -45,7 +44,7 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Views
 {
-    public class SourceControlExplorerView : ViewContent
+	public class SourceControlExplorerView : ViewContent
     {
         #region Variables
 
@@ -103,14 +102,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             BuildGui();
             AttachEvents();
 
-			using (var progress = new MessageDialogProgressMonitor(true, false, false))
-			{
-				progress.BeginTask(GettextCatalog.GetString("Loading..."), 2);
-				GetWorkspaces();
-				progress.Step(1);
-				GetFolders();
+			using (var monitor = IdeApp.Workbench.ProgressMonitors.GetLoadProgressMonitor(true))
+            {
+				monitor.BeginTask(GettextCatalog.GetString(GettextCatalog.GetString("Loading...")), 2);
+				LoadWorkspaces();
+				monitor.Step(1);
+				LoadFolders();
 				ExpandPath(RepositoryPath.RootPath);
-				progress.EndTask();
+				monitor.EndTask();
 			}
         }
 
@@ -197,9 +196,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			{
 				MinWidth = 300
 			};
-
-            _workspaceComboBox.RowSeparatorCheck = WorkspaceRowSeparatorCheck;
-
+                     
 			_workspaceNameField = new DataField<string>();
 			_workspacePathField = new DataField<string>();
 			_workspaceObjectField = new DataField<object>();
@@ -344,10 +341,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 					switch (menuType)
 					{
 						case MenuType.List:
-							GetFolderDetails(item.ServerPath.ParentPath);
+							LoadFolderDetails(item.ServerPath.ParentPath);
 							break;
 						case MenuType.Tree:
-							GetFolderDetails(item.ServerPath);
+							LoadFolderDetails(item.ServerPath);
 							break;
 					}
 				});
@@ -359,7 +356,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             Refresh(items.FirstOrDefault(), MenuType.List);
         }
              
-        void GetWorkspaces()
+        void LoadWorkspaces()
         {
 			var workspaces = _projectCollection.GetLocalWorkspaces();
 
@@ -386,10 +383,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
 				i++;
 			}
-
-			var customWorkspaceRow = _workspaceStore.AddRow();  // Separator
-
-			customWorkspaceRow = _workspaceStore.AddRow();
+                     
+			var customWorkspaceRow = _workspaceStore.AddRow();
 			_workspaceStore.SetValue(customWorkspaceRow, _workspaceNameField, GettextCatalog.GetString("Create Workspace..."));
 			_workspaceStore.SetValue(customWorkspaceRow, _workspaceObjectField, 1);
 
@@ -417,18 +412,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 				_workspaceComboBox.Visible = false;
 			}				
         }
-        
-		bool WorkspaceRowSeparatorCheck(int i)
-        {         
-			var separator = _workspaces.Count + 1;
-
-			if (i + 1 == separator)
-				return true;
-
-            return false;
-        }
-
-        void GetFolders()
+       
+		void LoadFolders()
         {
 			_worker = Task.Factory.StartNew(delegate
 			{
@@ -438,7 +423,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 						return;
 
 					var items = _currentWorkspace.GetItems(new[] { new ItemSpec(RepositoryPath.RootPath, RecursionType.Full) },
-														   VersionSpec.Latest, DeletedState.NonDeleted, ItemType.Folder, false);
+					                                       VersionSpec.Latest, DeletedState.NonDeleted, ItemType.Folder, false);
                                                            
 					var root = ItemSetToHierarchItemConverter.Convert(items);
                     			
@@ -502,7 +487,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			_treeLevel--;
         }
 
-        void GetFolderDetails(string serverPath)
+        void LoadFolderDetails(string serverPath)
         {
 			_folderDetailsStore.Clear();
 
@@ -573,7 +558,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 				var node = _foldersStore.GetNavigatorAt(_foldersView.SelectedRow);
 				var item = node.GetValue(_baseItemField);
 
-				GetFolderDetails(item.ServerPath);
+				LoadFolderDetails(item.ServerPath);
 				ShowMappingPath(item.ServerPath);
 			}
         }
@@ -708,7 +693,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 						{
 							if (dialog.Run() == Command.Ok)
 							{
-								GetWorkspaces();
+								LoadWorkspaces();
 							}
 						}
 						break;
@@ -717,7 +702,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 						{
 							if (dialog.Run() == Command.Close)
 							{
-								GetWorkspaces();
+								LoadWorkspaces();
 							}
 						}
 						break;
@@ -738,7 +723,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 						if (currentItem != null)
 						{
 							ShowMappingPath(currentItem.ServerPath);
-							GetFolderDetails(currentItem.ServerPath);
+							LoadFolderDetails(currentItem.ServerPath);
 						}
 					}
 				}
@@ -906,7 +891,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             {
                 if (dialog.Run() == Command.Close)
                 {
-                    GetWorkspaces();
+					LoadWorkspaces();
                 }
             }
         }
@@ -922,7 +907,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 				selectedPath = navigator.GetValue(_baseItemField).ServerPath;
 			}
 
-			GetFolders();
+			LoadFolders();
 
             if (selectedPath != null)
 				ExpandPath(selectedPath);

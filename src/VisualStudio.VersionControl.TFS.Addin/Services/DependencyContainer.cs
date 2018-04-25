@@ -54,7 +54,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                                                  new TypedParameter(typeof(ProjectCollection), collection));
         }
 
-        public static TeamFoundationServerRepository GetTFSRepository(string path, WorkspaceData workspaceData, ProjectCollection collection)
+        public static TeamFoundationServerRepository GetTeamFoundationServerRepository(string path, WorkspaceData workspaceData, ProjectCollection collection)
         {
             using (var scope = Container.BeginLifetimeScope())
             {

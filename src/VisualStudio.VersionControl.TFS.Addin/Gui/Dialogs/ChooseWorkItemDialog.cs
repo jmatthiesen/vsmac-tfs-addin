@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Autofac;
 using MonoDevelop.Core;
+using MonoDevelop.Ide;
 using MonoDevelop.VersionControl.TFS.Models;
 using MonoDevelop.VersionControl.TFS.Services;
 using Xwt;
@@ -211,11 +212,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             _listView.Columns.Clear();
 
-            using (var progress = new Ide.ProgressMonitoring.MessageDialogProgressMonitor(true, false, false))
+			using (var monitor = IdeApp.Workbench.ProgressMonitors.GetLoadProgressMonitor(true))
             {
                 var fields = CachedMetaData.Instance.Fields;
                 WorkItemStore store = new WorkItemStore(query, collection);
-                var data = store.LoadByPage(progress);
+				var data = store.LoadByPage(monitor);
                
                 if (data.Count > 0)
                 {
@@ -272,18 +273,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                             row.SetValue(_workItemField, workItem);
                            
                             foreach (var map in mapping)
-                            {
-                                object value;
-
-                                if (workItem.WorkItemInfo.TryGetValue(map.Key.ReferenceName, out value))
-                                {
-                                    row.SetValue(map.Value, value);
-                                }
-                                else
-                                {
-                                    row.SetValue(map.Value, null);
-                                }
-                            }
+							{                        
+								if (workItem.WorkItemInfo.TryGetValue(map.Key.ReferenceName, out object value))
+								{
+									row.SetValue(map.Value, value);
+								}
+								else
+								{
+									row.SetValue(map.Value, null);
+								}
+							}
                         }
                     }
                 }

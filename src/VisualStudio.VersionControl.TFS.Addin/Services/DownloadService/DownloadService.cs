@@ -43,7 +43,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         }
 
-        #region implemented abstract members of TfsService
+        #region Implemented abstract members of TfsService
 
         public override System.Xml.Linq.XNamespace MessageNs => throw new NotImplementedException();
 

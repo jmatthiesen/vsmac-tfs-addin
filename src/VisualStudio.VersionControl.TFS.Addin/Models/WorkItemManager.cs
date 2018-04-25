@@ -33,7 +33,7 @@ using System.Text;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
-    sealed class WorkItemManager
+    public sealed class WorkItemManager
     {
         readonly ProjectCollection collection;
 

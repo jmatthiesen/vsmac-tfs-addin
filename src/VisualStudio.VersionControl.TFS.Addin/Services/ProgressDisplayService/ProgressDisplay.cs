@@ -25,17 +25,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using MonoDevelop.Ide.ProgressMonitoring;
+using MonoDevelop.Core;
+using MonoDevelop.Ide;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
-    sealed class ProgressDisplay : IProgressDisplay
+	sealed class ProgressDisplay : IProgressDisplay
     {
-        readonly MessageDialogProgressMonitor progressMonitor;
+        readonly ProgressMonitor progressMonitor;
 
         public ProgressDisplay()
         {
-            progressMonitor = new MessageDialogProgressMonitor(false, false);
+			progressMonitor = IdeApp.Workbench.ProgressMonitors.GetLoadProgressMonitor(true);
         }
 
         public void Dispose()
@@ -53,6 +54,6 @@ namespace MonoDevelop.VersionControl.TFS.Services
             progressMonitor.EndTask();
         }
 
-        public bool IsCancelRequested { get { return false; } }
+		public bool IsCancelRequested { get { return progressMonitor.CancellationToken.IsCancellationRequested; } }
     }
 }

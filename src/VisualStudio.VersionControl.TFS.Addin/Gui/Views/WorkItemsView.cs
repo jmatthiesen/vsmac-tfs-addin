@@ -32,10 +32,11 @@ using System.Text;
 using MonoDevelop.Components;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
+using MonoDevelop.Ide.Fonts;
 using MonoDevelop.Ide.Gui;
-using MonoDevelop.Ide.ProgressMonitoring;
 using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
+using Xwt.Drawing;
 using static MonoDevelop.VersionControl.TFS.Gui.Pads.TeamExplorerPad;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Views
@@ -53,6 +54,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         TreeView _listView;
         DataField<WorkItem> _workItemField;
         TreeStore _listStore;
+		Label _noResultsLabel;
 
 		ProjectInfo _project;
         ProjectCollection _projectCollection;
@@ -67,13 +69,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             BuildGui();
             AttachEvents();
 
-            using (var progress = new MessageDialogProgressMonitor(true, false, false))
+			using (var monitor = IdeApp.Workbench.ProgressMonitors.GetLoadProgressMonitor(true))
             {
-                progress.BeginTask("Loading...", 2);
+				monitor.BeginTask(GettextCatalog.GetString("Loading..."), 2);
                 LoadWorkItems(project);
-                progress.Step(1);
+				monitor.Step(1);
                 ExpandAllWorkItems();
-                progress.EndTask();
+				monitor.EndTask();
             }
         }
 
@@ -126,7 +128,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             };
 
             _workItemField = new DataField<WorkItem>();
-        }
+
+			_noResultsLabel = new Label(GettextCatalog.GetString("No Results"))
+			{
+				VerticalPlacement = WidgetPlacement.Start,
+				HorizontalPlacement = WidgetPlacement.Start,
+				MinWidth = 400,
+				Margin = new WidgetSpacing(12),
+				Visible = false
+			};
+		}
 
         void BuildGui()
         {
@@ -146,10 +157,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
 			VBox rightBox = new VBox
 			{
+				BackgroundColor = Colors.White,
 				ExpandHorizontal = true
 			};
 
-			rightBox.PackStart(_listView, true, true);
+			rightBox.PackStart(_noResultsLabel, false, false);
+			rightBox.PackEnd(_listView, true, true);
 			mainBox.Panel2.Content = rightBox;
 
             _view.PackStart(mainBox, true, true);
@@ -166,13 +179,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
 		void OnRefresh(object sender, EventArgs e)
 		{
-			using (var progress = new MessageDialogProgressMonitor(true, false, false))
+			using (var monitor = IdeApp.Workbench.ProgressMonitors.GetLoadProgressMonitor(true))
             {
-                progress.BeginTask("Loading...", 2);
+				monitor.BeginTask(GettextCatalog.GetString("Loading..."), 2);
                 LoadWorkItems(_project);
-                progress.Step(1);
+				monitor.Step(1);
                 ExpandAllWorkItems();
-                progress.EndTask();
+				monitor.EndTask();
             }
 		}
 
@@ -273,58 +286,69 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         {
             _listView.Columns.Clear();
 
-            using (var progress = new MessageDialogProgressMonitor(true, false, false))
-            {
-                var fields = CachedMetaData.Instance.Fields;
-                WorkItemStore store = new WorkItemStore(query, collection);
-                var data = store.LoadByPage(progress);
-             
-                if (data.Count > 0)
-                {
-                    var firstItem = data[0];
-                    List<IDataField> dataFields = new List<IDataField>();
-                    var mapping = new Dictionary<Field, IDataField<object>>();
-                 
-                    foreach (var item in firstItem.WorkItemInfo.Keys)
-                    {
-                        var field = fields[item];
-                        var dataField = new DataField<object>();
-                        dataFields.Add(dataField);
-                        mapping.Add(field, dataField);
-                    }
+			using (var monitor = IdeApp.Workbench.ProgressMonitors.GetLoadProgressMonitor(true))
+			{
+				if (!monitor.CancellationToken.IsCancellationRequested)
+				{               
+					var fields = CachedMetaData.Instance.Fields;
+					WorkItemStore store = new WorkItemStore(query, collection);
+					var data = store.LoadByPage(monitor);
 
-                    if (dataFields.Any())
-                    {
-                        _workItemField = new DataField<WorkItem>();
-                        dataFields.Insert(0, _workItemField);
-                        _listStore = new TreeStore(dataFields.ToArray());
-                       
-                        foreach (var map in mapping)
-                        {
-                            _listView.Columns.Add(map.Key.Name, map.Value);
-                        }
+					if (data.Count > 0)
+					{
+						var firstItem = data[0];
+						List<IDataField> dataFields = new List<IDataField>();
+						var mapping = new Dictionary<Field, IDataField<object>>();
 
-                        _listView.DataSource = _listStore;
+						foreach (var item in firstItem.WorkItemInfo.Keys)
+						{
+							var field = fields[item];
+							var dataField = new DataField<object>();
+							dataFields.Add(dataField);
+							mapping.Add(field, dataField);
+						}
 
-                        foreach (var workItem in data)
-                        {
-                            var row = _listStore.AddNode();
-                            row.SetValue(_workItemField, workItem);
+						if (dataFields.Any())
+						{
+							_workItemField = new DataField<WorkItem>();
+							dataFields.Insert(0, _workItemField);
+							_listStore = new TreeStore(dataFields.ToArray());
 
-                            foreach (var map in mapping)
-                            {  
-								if (workItem.WorkItemInfo.TryGetValue(map.Key.ReferenceName, out object value))
+							foreach (var map in mapping)
+							{
+								_listView.Columns.Add(map.Key.Name, map.Value);
+							}
+
+							_listView.DataSource = _listStore;
+
+							foreach (var workItem in data)
+							{
+								var row = _listStore.AddNode();
+								row.SetValue(_workItemField, workItem);
+
+								foreach (var map in mapping)
 								{
-									row.SetValue(map.Value, value);
-								}
-								else
-								{
-									row.SetValue(map.Value, null);
+									if (workItem.WorkItemInfo.TryGetValue(map.Key.ReferenceName, out object value))
+									{
+										row.SetValue(map.Value, value);
+									}
+									else
+									{
+										row.SetValue(map.Value, null);
+									}
 								}
 							}
-                        }
-                    }
-                }
+
+							_noResultsLabel.Visible = false;
+							_listView.Visible = true;
+						}
+					}
+					else
+					{
+						_noResultsLabel.Visible = true;
+						_listView.Visible = false;
+					}
+				}
             }
         }
 
