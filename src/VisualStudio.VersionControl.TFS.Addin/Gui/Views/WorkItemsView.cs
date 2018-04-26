@@ -27,6 +27,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using MonoDevelop.Components;
@@ -236,6 +237,31 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         }
 
         /// <summary>
+        /// Opens the WorkItem URL.
+        /// </summary>
+        void OpenUrl()
+		{
+			var store = (TreeStore)_listView.DataSource;
+
+            foreach (var row in _listView.SelectedRows)
+            {            
+				var node = _listStore.GetNavigatorAt(row);
+                var workItem = node.GetValue(_workItemField);
+
+				if(workItem != null)
+				{
+					// More information: https://docs.microsoft.com/en-us/vsts/work/work-items/work-item-url-hyperlink?view=vsts
+					var workItemUrl = string.Format("{0}DefaultCollection/{1}/_workitems?id={2}&_a=edit", 
+					                                _projectCollection.Server.Uri.OriginalString,
+					                                _project.Name,
+					                                workItem.Id);
+                                                    
+					Process.Start(workItemUrl);
+				}
+            }           
+		}
+
+        /// <summary>
         /// Loads the work items.
         /// </summary>
         /// <param name="project">Project.</param>
@@ -440,6 +466,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 				items.Add(workItem);
             }
 
+			menu.Items.Add(OpenUrlMenuItem(items));
 			menu.Items.Add(CopyMenuItem(items));
                        
 			return menu;
@@ -458,6 +485,21 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             };
 
 			return copy;
+        }
+
+		MenuItem OpenUrlMenuItem(List<WorkItem> items)
+        {
+            MenuItem copy = new MenuItem(GettextCatalog.GetString("Open Url"));
+
+            copy.Clicked += (sender, e) =>
+            {
+                if (items.Any())
+                {
+                    OpenUrl();
+                }
+            };
+
+            return copy;
         }
     }
 }

@@ -146,7 +146,9 @@ namespace MonoDevelop.VersionControl.TFS
 
         async void RefreshAccessTokenAsync()
         {
-			foreach(var server in _configuration.Servers.Where(s => s.Authorization is OAuthAuthorization))
+			var oAuthServers = _configuration.Servers.Where(s => s.Authorization is OAuthAuthorization);
+
+			foreach(var server in oAuthServers)
 			{
                 var auth = (OAuthAuthorization)server.Authorization;
 

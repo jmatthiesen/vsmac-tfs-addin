@@ -99,8 +99,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 			_workerCancel?.Cancel();
 
             base.Dispose();
-        }       
-  
+        } 
+
         /// <summary>
         /// Init and create the TeamExplorerPad User Interface.
         /// </summary>
