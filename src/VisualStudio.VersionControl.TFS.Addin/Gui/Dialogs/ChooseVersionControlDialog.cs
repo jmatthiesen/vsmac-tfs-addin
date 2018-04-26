@@ -34,6 +34,11 @@ using Xwt.Drawing;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+	/// Server type. Options:
+	/// - VSTS
+	/// - TFS
+    /// </summary>
 	public enum ServerType
     {
         VSTS,
@@ -48,6 +53,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         public ServerType ServerType { get; set; }
     }
 
+    /// <summary>
+    /// Choose version control dialog.
+    /// </summary>
     public class ChooseVersionControlDialog : Dialog
     {
         Label _title;
@@ -65,15 +73,22 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Init();
             BuildGui();
 			AttachEvents();
-            GetData();
+			LoadData();
         }
           
+        /// <summary>
+        /// Gets or sets the selected server.
+        /// </summary>
+        /// <value>The server.</value>
 		internal ServerTypeInfo Server
         {
             get { return _server; }
             set { _server = value; }
         }
 
+        /// <summary>
+		/// Init ChooseVersionControlDialog.
+        /// </summary>
         void Init()
         {
             _title = new Label(GettextCatalog.GetString("Where is your project hosted?"));
@@ -105,6 +120,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             };
         }
 
+        /// <summary>
+		/// Builds the ChooseVersionControlDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Open from Source Control");
@@ -138,13 +156,21 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false;
         }
 
+        /// <summary>
+		/// Attachs the ChooseVersionControlDialog events.
+        /// </summary>
 		void AttachEvents()
         {
 			_vstsProjectTypeWidget.ButtonPressed += OnServerTypeChange;
 			_tfsProjectTypeWidget.ButtonPressed += OnServerTypeChange;
 		}
 
-		private void OnServerTypeChange(object sender, ButtonEventArgs e)
+        /// <summary>
+        /// Ons the server type change.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
+		void OnServerTypeChange(object sender, ButtonEventArgs e)
 		{
 			_vstsProjectTypeWidget.IsSelected = !_vstsProjectTypeWidget.IsSelected;
 			_tfsProjectTypeWidget.IsSelected = !_tfsProjectTypeWidget.IsSelected;
@@ -159,7 +185,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 			}
 		}
 
-		void GetData()
+        /// <summary>
+        /// Loads the data.
+        /// </summary>
+		void LoadData()
 		{
 			_servers = GetServers();
 
@@ -172,8 +201,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 			_tfsProjectTypeWidget.Icon = tfsServer.Icon;
 			_tfsProjectTypeWidget.Title = tfsServer.Title;
 			_tfsProjectTypeWidget.Description = tfsServer.Description;
+
+			Server = _servers.FirstOrDefault(s => s.ServerType == ServerType.VSTS);
 		}
 
+        /// <summary>
+		/// Gets the servers (VSTS and TFVC).
+        /// </summary>
+        /// <returns>The servers.</returns>
 		List<ServerTypeInfo> GetServers()
         {
 			return new List<ServerTypeInfo>

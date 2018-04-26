@@ -34,6 +34,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Add edit workspace dialog.
+    /// </summary>
     public class AddEditWorkspaceDialog : Dialog
     {
         ListView _foldersView;
@@ -53,15 +56,20 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             if (_workspaceData != null)
             {
-                FillData();
-                FillWorkingFolders();
+				LoadData();
+                LoadWorkingFolders();
             }
             else
             {
-                FillDefaultData();
+                LoadDefaultData();
             }
         }
 
+        /// <summary>
+		/// Init AddEditWorkspaceDialog.
+        /// </summary>
+        /// <param name="projectCollection">Project collection.</param>
+        /// <param name="workspaceData">Workspace data.</param>
         void Init(ProjectCollection projectCollection, WorkspaceData workspaceData)
         {
             _projectCollection = projectCollection;
@@ -75,6 +83,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _computerEntry = new TextEntry();
         }
 
+        /// <summary>
+		/// Builds the AddEditWorkspaceDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             if (_workspaceData != null)
@@ -146,6 +157,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false;
         }
 
+        /// <summary>
+		/// Open SelectProjectDialog and SelectFolderDialog to create a new working folder.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
         void OnAddWorkingFolder(object sender, EventArgs e)
         {
             using (var projectSelect = new SelectProjectDialog(_projectCollection))
@@ -168,6 +184,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Add a new workspace.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
         void OnAddWorkspace(object sender, EventArgs e)
         {
             try
@@ -204,20 +225,29 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Respond(Command.Ok);
         }
 
-        void FillDefaultData()
+        /// <summary>
+        /// Loads the default data.
+        /// </summary>
+        void LoadDefaultData()
         {
             _nameEntry.Text = _computerEntry.Text = Environment.MachineName;
             _ownerEntry.Text = _projectCollection.Server.UserName;
         }
 
-        void FillData()
+        /// <summary>
+        /// Loads the data.
+        /// </summary>
+        void LoadData()
         {
             _nameEntry.Text = _workspaceData.Name;
             _ownerEntry.Text = _workspaceData.Owner;
             _computerEntry.Text = _workspaceData.Computer;
         }
 
-        void FillWorkingFolders()
+        /// <summary>
+        /// Loads the working folders.
+        /// </summary>
+        void LoadWorkingFolders()
         {
             foreach (var workingFolder in _workspaceData.WorkingFolders)
             {

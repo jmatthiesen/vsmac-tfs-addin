@@ -38,6 +38,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Credentials dialog.
+    /// </summary>
     public class CredentialsDialog : Dialog
     {
         VBox _typeContainer;
@@ -54,6 +57,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             BuildGui();
         }
 
+        /// <summary>
+        /// Gets the server authorization.
+        /// </summary>
+        /// <value>The server authorization.</value>
         internal IServerAuthorization ServerAuthorization
         {
             get
@@ -72,6 +79,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Gets the add server result.
+        /// </summary>
+        /// <value>The add server result.</value>
         internal AddServerResult AddServerResult
         {
             get
@@ -83,6 +94,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Gets the server URI.
+        /// </summary>
+        /// <value>The server URI.</value>
         internal Uri ServerUri
         {
             get
@@ -94,11 +109,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+		/// Init CredentialsDialog.
+        /// </summary>
 		void Init()
         {
             _typeContainer = new VBox();
         }
 
+        /// <summary>
+		/// Builds the CredentialsDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Log In");
@@ -130,7 +151,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             var logInButton = new Button(GettextCatalog.GetString("Log in"))
             {
-                BackgroundColor = Xwt.Drawing.Colors.SkyBlue,
                 MinWidth = GuiSettings.ButtonWidth
             };
 
@@ -150,8 +170,16 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Content = container;
         }
 
+        /// <summary>
+        /// Sets the type config.
+        /// </summary>
         void SetTypeConfig()
         {
+			if (_serverType == null)
+			{
+				return;
+			}
+
             switch(_serverType.ServerType)
             {
                 case ServerType.VSTS:

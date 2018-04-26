@@ -26,6 +26,8 @@
 // THE SOFTWARE.
 
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using MonoDevelop.Core;
 using MonoDevelop.VersionControl.TFS.Models;
 using MonoDevelop.VersionControl.TFS.Services;
@@ -33,6 +35,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Select project dialog.
+    /// </summary>
     public class SelectProjectDialog : Dialog
     {
         ProjectCollection _projectCollection;
@@ -41,13 +46,20 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<string> _name;
         DataField<string> _path;
 
+		Task _worker;
+        CancellationTokenSource _workerCancel;
+
         internal SelectProjectDialog(ProjectCollection projectCollection)
         {
             Init(projectCollection);
             BuildGui();
-            GetData();
+            LoadData();
         }
 
+        /// <summary>
+        /// Gets the selected path.
+        /// </summary>
+        /// <value>The selected path.</value>
         public string SelectedPath
         {
             get
@@ -60,10 +72,23 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 return node.GetValue(_path);
             }
         }
+        
+		protected override void OnClosed()
+		{
+			_workerCancel?.Cancel();
 
-        void Init(ProjectCollection projectCollection)
+			base.OnClosed();
+		}
+
+		/// <summary>
+		/// Init SelectProjectDialog.
+		/// </summary>
+		/// <param name="projectCollection">Project collection.</param>
+		void Init(ProjectCollection projectCollection)
         {
             _projectCollection = projectCollection;
+
+			_workerCancel = new CancellationTokenSource();
 
             _treeView = new TreeView();
             _name = new DataField<string>();
@@ -72,6 +97,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _treeStore = new TreeStore(_name, _path);
         }
 
+        /// <summary>
+		/// Builds the SelectProjectDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Browse for Folder");
@@ -125,17 +153,30 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false; 
         }
 
-        void GetData()
+        /// <summary>
+        /// Load the projects.
+        /// </summary>
+		void LoadData()
         {
-            _treeStore.Clear();
+			_treeStore.Clear();
 
-            var repositoryService = _projectCollection.GetService<RepositoryService>();
-            var items = repositoryService.QueryFolders();
-            var root = ItemSetToHierarchItemConverter.Convert(items);
-            var node = _treeStore.AddNode().SetValue(_name, root.Name).SetValue(_path, root.ServerPath);
-            AddChilds(node, root.Children);
-            var topNode = _treeStore.GetFirstNode();
-            _treeView.ExpandRow(topNode.CurrentPosition, false);
+			_worker = Task.Factory.StartNew(delegate
+			{
+				if (!_workerCancel.Token.IsCancellationRequested)
+				{               
+					var repositoryService = _projectCollection.GetService<RepositoryService>();
+					var items = repositoryService.QueryFolders();
+					var root = ItemSetToHierarchItemConverter.Convert(items);
+
+					Application.Invoke(() =>
+					{
+						var node = _treeStore.AddNode().SetValue(_name, root.Name).SetValue(_path, root.ServerPath);
+						AddChilds(node, root.Children);
+						var topNode = _treeStore.GetFirstNode();
+						_treeView.ExpandRow(topNode.CurrentPosition, false);
+					});
+				}
+			}, _workerCancel.Token, TaskCreationOptions.LongRunning);
         }
 
         void AddChilds(TreeNavigator node, List<HierarchyItem> children)

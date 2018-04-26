@@ -35,6 +35,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Check in dialog.
+    /// </summary>
     public class CheckInDialog : Dialog
     {
         VBox _content;
@@ -58,9 +61,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             Init();
             BuildGui();
-            GetData(items, workspace);
+			LoadData(items, workspace);
         }
 
+        /// <summary>
+        /// Gets the selected changes.
+        /// </summary>
+        /// <value>The selected changes.</value>
         internal List<PendingChange> SelectedChanges
         {
             get
@@ -79,6 +86,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Gets the comment.
+        /// </summary>
+        /// <value>The comment.</value>
         internal string Comment
         {
             get
@@ -87,6 +98,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Gets the selected work items.
+        /// </summary>
+        /// <value>The selected work items.</value>
         internal Dictionary<int, WorkItemCheckinAction> SelectedWorkItems
         {
             get
@@ -103,6 +118,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+		/// Init CheckInDialog.
+        /// </summary>
         void Init()
         {
             _content = new VBox();
@@ -129,6 +147,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _workItemsStore = new ListStore(_idField, _titleField, _workItemField);
         }
 
+        /// <summary>
+		/// Builds the CheckInDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Check In files");
@@ -208,7 +229,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             UpdateRemoveWorkItem();
         }
 
-        void GetData(IEnumerable<BaseItem> items, IWorkspaceService workspace)
+        /// <summary>
+        /// Loads the data.
+        /// </summary>
+        /// <param name="items">Items.</param>
+        /// <param name="workspace">Workspace.</param>
+        void LoadData(IEnumerable<BaseItem> items, IWorkspaceService workspace)
         {
             _fileStore.Clear();
 

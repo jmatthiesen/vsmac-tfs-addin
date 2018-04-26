@@ -19,6 +19,9 @@ using Xwt.Drawing;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 {
+    /// <summary>
+    /// Team explorer pad.
+    /// </summary>
 	public class TeamExplorerPad : PadContent
     {
         public enum TeamExplorerNodeType
@@ -54,6 +57,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 
         public override Control Control { get { return new XwtControl(_content); } }
 
+        /// <summary>
+		/// Initialize TeamExplorerPad.
+        /// </summary>
+        /// <param name="window">Window.</param>
         protected override async void Initialize(IPadWindow window)
         {
             base.Initialize(window);
@@ -75,6 +82,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
             }
         }
 
+        /// <summary>
+        /// Releases all resource used by the <see cref="T:MonoDevelop.VersionControl.TFS.Gui.Pads.TeamExplorerPad"/> object.
+        /// </summary>
+        /// <remarks>Call <see cref="Dispose"/> when you are finished using the
+        /// <see cref="T:MonoDevelop.VersionControl.TFS.Gui.Pads.TeamExplorerPad"/>. The <see cref="Dispose"/> method
+        /// leaves the <see cref="T:MonoDevelop.VersionControl.TFS.Gui.Pads.TeamExplorerPad"/> in an unusable state.
+        /// After calling <see cref="Dispose"/>, you must release all references to the
+        /// <see cref="T:MonoDevelop.VersionControl.TFS.Gui.Pads.TeamExplorerPad"/> so the garbage collector can reclaim
+        /// the memory that the <see cref="T:MonoDevelop.VersionControl.TFS.Gui.Pads.TeamExplorerPad"/> was occupying.</remarks>
         public override void Dispose()
         {
             _treeView.Dispose();
@@ -83,8 +99,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 			_workerCancel?.Cancel();
 
             base.Dispose();
-        }
-
+        }       
+  
+        /// <summary>
+        /// Init and create the TeamExplorerPad User Interface.
+        /// </summary>
         void Init()
 		{
             _workerCancel = new CancellationTokenSource();
@@ -129,6 +148,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
             OnServersChanged = UpdateData;
         }
 
+        /// <summary>
+        /// Add Pad action buttons
+        /// </summary>
+		/// <param name="window">IPadWindow.</param>
 		void AddButtons(IPadWindow window)
         {
             _toolbar = window.GetToolbar(DockPositionType.Top);
@@ -143,6 +166,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 			_toolbar.ShowAll();
         }
 
+        /// <summary>
+        /// Register TeamExplorerPad events.
+        /// </summary>
         void AttachEvents()
         {
             _addbutton.Clicked += OnConnectToServer;
@@ -150,6 +176,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
             _service.OnServersChange += OnServersChanged;
         }
 
+        /// <summary>
+        /// Return the numbers of projects.
+        /// </summary>
+        /// <returns>The total number of projects.</returns>
         int NumberProjects()
 		{
 			int projects = 0;
@@ -170,6 +200,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 			return projects;
 		}
 
+        /// <summary>
+        /// Reset the server and project lists.
+        /// </summary>
         void ClearData()
 		{
 			_treeStore.Clear();
@@ -200,6 +233,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
             }
 		}
 
+        /// <summary>
+		/// Updates the data (servers, projects) async.
+        /// </summary>
+        /// <returns>The data async.</returns>
+        /// <param name="monitor">Monitor.</param>
 		Task UpdateDataAsync(ProgressMonitor monitor)
         {         
 			_worker = Task.Factory.StartNew(delegate
@@ -236,7 +274,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 							}
 						}
 					}
-                              
+                       
+                    // Updates the UI in the UI Thread
 					Application.Invoke(() =>
 					{
 						foreach (var server in _servers)
@@ -256,6 +295,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
     
 								foreach (ProjectWorkItem projectWorkItem in _projects
 								         .Where(c => c.Project.Collection.Id == projectCollection.Id)
+								         .DistinctBy(w => w.Project.Id)
 								         .OrderBy(x => x.Project.Name))
 								{
 									node.AddChild().SetValue(_name, projectWorkItem.Project.Name)
@@ -338,6 +378,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 			});
         }
 
+        /// <summary>
+        /// Fires when a row is clicked.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
         void OnRowClicked(object sender, TreeViewRowEventArgs e)
         {
             var node = _treeStore.GetNavigatorAt(e.Position);
@@ -347,17 +392,26 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
             {
                 node.MoveToParent();
                 var project = (ProjectInfo)node.GetValue(_item);
-                SourceControlExplorerView.Show(project);
+		  
+				// Open SourceControlExplorerView
+				SourceControlExplorerView.Show(project);  
             }
 
             if (nodeType == TeamExplorerNodeType.WorkItems)
             {
                 node.MoveToParent();
                 var project = (ProjectInfo)node.GetValue(_item);
-                WorkItemsView.Show(project);
+
+				// Open WorkItemsView
+				WorkItemsView.Show(project); 
             }
         }
 
+        /// <summary>
+        /// Ons the connect to server.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
         void OnConnectToServer(object sender, EventArgs e)
         {
 			using (var dialog = new ConnectToServerDialog())

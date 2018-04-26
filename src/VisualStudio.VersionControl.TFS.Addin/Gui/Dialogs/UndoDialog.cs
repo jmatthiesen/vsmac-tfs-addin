@@ -33,6 +33,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Undo dialog.
+    /// </summary>
     public class UndoDialog : Dialog
     {
         ListView _filesView;
@@ -47,9 +50,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             Init();
             BuildGui();
-            GetData(items, workspace);
+			LoadData(items, workspace);
         }
 
+        /// <summary>
+        /// Gets the selected items.
+        /// </summary>
+        /// <value>The selected items.</value>
         internal List<PendingChange> SelectedItems
         {
             get
@@ -68,6 +75,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+		/// Init UndoDialog.
+        /// </summary>
         void Init()
         {
             _filesView = new ListView();    
@@ -79,6 +89,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _filesStore = new ListStore(_isCheckedField, _nameField, _changesField, _folderField, _changeField);
         }
 
+        /// <summary>
+		/// Builds the UndoDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Undo changes");
@@ -106,7 +119,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false;
         }
 
-        void GetData(List<ExtendedItem> items, IWorkspaceService workspace)
+        /// <summary>
+        /// Loads the data.
+        /// </summary>
+        /// <param name="items">Items.</param>
+        /// <param name="workspace">Workspace.</param>
+        void LoadData(List<ExtendedItem> items, IWorkspaceService workspace)
         {
             _filesStore.Clear();
 

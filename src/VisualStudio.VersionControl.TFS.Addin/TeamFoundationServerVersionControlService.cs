@@ -146,10 +146,8 @@ namespace MonoDevelop.VersionControl.TFS
 
         async void RefreshAccessTokenAsync()
         {
-            var server = _configuration.Servers.SingleOrDefault(s => s.Authorization is OAuthAuthorization);
-
-            if (server != null)
-            {
+			foreach(var server in _configuration.Servers.Where(s => s.Authorization is OAuthAuthorization))
+			{
                 var auth = (OAuthAuthorization)server.Authorization;
 
                 bool tokenNearExpiry = (auth.ExpiresOn <=                                 

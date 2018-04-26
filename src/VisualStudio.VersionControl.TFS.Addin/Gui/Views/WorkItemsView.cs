@@ -41,6 +41,9 @@ using static MonoDevelop.VersionControl.TFS.Gui.Pads.TeamExplorerPad;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Views
 {
+	/// <summary>
+    /// Work items view.
+    /// </summary>
 	public class WorkItemsView : ViewContent
     {
 		XwtControl _control;
@@ -89,6 +92,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
         }
         
+        /// <summary>
+		/// Init WorkItemsView.
+        /// </summary>
+        /// <param name="project">Project.</param>
         void Init(ProjectInfo project)
         {
 			_project = project;
@@ -139,6 +146,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			};
 		}
 
+        /// <summary>
+		/// Builds the WorkItemsView GUI.
+        /// </summary>
         void BuildGui()
         {
 			HBox headerBox = new HBox();
@@ -168,6 +178,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _view.PackStart(mainBox, true, true);
         }
 
+        /// <summary>
+        /// Attachs the events.
+        /// </summary>
         void AttachEvents()
         {
 			_refreshButton.Clicked += OnRefresh;
@@ -196,7 +209,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 				CopyWorkItemToClipboard();
             }
         }
-
+        
+        /// <summary>
+        /// Copies the selected WorkItem to clipboard.
+        /// </summary>
 		void CopyWorkItemToClipboard()
         {
             var store = (TreeStore)_listView.DataSource;
@@ -219,6 +235,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             Clipboard.SetText(builder.ToString());
         }
 
+        /// <summary>
+        /// Loads the work items.
+        /// </summary>
+        /// <param name="project">Project.</param>
         void LoadWorkItems(ProjectInfo project)
         {
             _treeStore.Clear();
@@ -277,11 +297,19 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			_treeView.DataSource = _treeStore;
         }
 
+        /// <summary>
+        /// Expands all work items rows.
+        /// </summary>
         void ExpandAllWorkItems()
         {
             _treeView.ExpandAll();
         }
 
+        /// <summary>
+        /// Loads the queries.
+        /// </summary>
+        /// <param name="query">Query.</param>
+        /// <param name="collection">Collection.</param>
         void LoadQueries(StoredQuery query, ProjectCollection collection)
         {
             _listView.Columns.Clear();
@@ -395,6 +423,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             }
         }
 
+        /// <summary>
+        /// Builds the tree view popup menu.
+        /// </summary>
+        /// <returns>The tree view popup menu.</returns>
 		Menu BuildTreeViewPopupMenu()
 		{
 			Menu menu = new Menu();

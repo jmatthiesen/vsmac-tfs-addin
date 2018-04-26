@@ -29,6 +29,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui
 {
     public static class GuiSettings
     {
-        public const int ButtonWidth = 80;
+        public const int ButtonWidth = 80;  // Default button width
     }
 }

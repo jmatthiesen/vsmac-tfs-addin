@@ -34,6 +34,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Check out dialog.
+    /// </summary>
     public class CheckOutDialog : Dialog
     {
         List<ExtendedItem> _items;
@@ -51,9 +54,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             Init(items, workspace);
             BuildGui();
-            GetData();
+			LoadData();
         }
 
+        /// <summary>
+        /// Gets the selected items.
+        /// </summary>
+        /// <value>The selected items.</value>
         internal List<ExtendedItem> SelectedItems
         {
             get
@@ -72,6 +79,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Gets the lock level.
+        /// </summary>
+        /// <value>The lock level.</value>
         internal LockLevel LockLevel
         {
             get
@@ -80,6 +91,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+		/// Init CheckOutDialog.
+        /// </summary>
+        /// <param name="items">Items.</param>
+        /// <param name="workspace">Workspace.</param>
         void Init(List<ExtendedItem> items, IWorkspaceService workspace)
         {
             _items = items;
@@ -94,6 +110,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _lockLevelBox = BuildLockLevelComboBox();
         }
 
+        /// <summary>
+		/// Builds the CheckOutDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Checkout");
@@ -123,6 +142,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false;
         }
 
+        /// <summary>
+        /// Builds the lock level combo box.
+        /// </summary>
+        /// <returns>The lock level combo box.</returns>
         ComboBox BuildLockLevelComboBox()
         {
             ComboBox lockLevelBox = new ComboBox { WidthRequest = 150 };
@@ -133,15 +156,22 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             var service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
 
-            if (service.CheckOutLockLevel == LockLevel.Unchanged)
-                lockLevelBox.SelectedItem = LockLevel.CheckOut;
-            else
-                lockLevelBox.SelectedItem = service.CheckOutLockLevel;
+			if (service.CheckOutLockLevel == LockLevel.Unchanged)
+			{
+				lockLevelBox.SelectedItem = LockLevel.CheckOut;
+			}
+			else
+			{
+				lockLevelBox.SelectedItem = service.CheckOutLockLevel;
+			}
 
             return lockLevelBox;
         }
 
-        void GetData()
+        /// <summary>
+		/// Loads the data (checkout files).
+        /// </summary>
+        void LoadData()
         {
             _fileStore.Clear();
 

@@ -32,6 +32,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Failures dialog.
+    /// </summary>
     public class FailuresDialog : Dialog
     {
 		VBox _view;
@@ -45,9 +48,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             Init();
             BuildGui();
-            GetData(failures);
+			LoadData(failures);
         }
 
+        /// <summary>
+		/// Init FailuresDialog.
+        /// </summary>
         void Init()
         {
 			_view = new VBox();
@@ -58,6 +64,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 			_failuresStore = new ListStore(_typeField, _messageField, _failureField);   
 		}
 
+        /// <summary>
+		/// Builds the FailuresDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Failures");
@@ -88,7 +97,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 			Resizable = false;
         }
 
-        void GetData(IEnumerable<Failure> failures)
+        /// <summary>
+        /// Loads the data.
+        /// </summary>
+        /// <param name="failures">Failures.</param>
+        void LoadData(IEnumerable<Failure> failures)
         {
             _failuresStore.Clear();
 

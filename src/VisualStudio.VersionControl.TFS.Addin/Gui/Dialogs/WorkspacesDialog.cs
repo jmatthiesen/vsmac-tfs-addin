@@ -34,6 +34,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Workspaces dialog.
+    /// </summary>
     public class WorkspacesDialog : Dialog
     {
         ProjectCollection _projectCollection;
@@ -54,9 +57,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
            
             Init();
             BuildGui();
-            GetWorkspaces();
+			LoadWorkspaces();
         }
 
+        /// <summary>
+		/// Init WorkspacesDialog.
+        /// </summary>
         void Init()
         {
 			_listView = new ListView
@@ -80,6 +86,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _showRemoteCheck = new CheckBox();
         }
 
+        /// <summary>
+		/// Builds the WorkspacesDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             VBox content = new VBox();
@@ -90,7 +99,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             HBox remoteBox = new HBox();
 
-            _showRemoteCheck.Clicked += (sender, e) => GetWorkspaces();
+			_showRemoteCheck.Clicked += (sender, e) => LoadWorkspaces();
             remoteBox.PackStart(_showRemoteCheck);
             remoteBox.PackStart(new Label(GettextCatalog.GetString("Show remote workspaces")));
             content.PackStart(remoteBox);
@@ -120,7 +129,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false;
         }
 
-        void GetWorkspaces()
+        /// <summary>
+        /// Loads the workspaces.
+        /// </summary>
+        void LoadWorkspaces()
         {
             _listStore.Clear();
 
@@ -152,7 +164,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             {
                 if (dialog.Run(this) == Command.Ok)
                 {
-                    GetWorkspaces();
+					LoadWorkspaces();
                 }
             }
         }
@@ -166,7 +178,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             {
                 if (dialog.Run(this) == Command.Ok)
                 {
-                    GetWorkspaces();
+					LoadWorkspaces();
                 }
             }
         }
@@ -180,7 +192,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 var owner = _listStore.GetValue(_listView.SelectedRow, _owner);
                 _projectCollection.DeleteWorkspace(name, owner);
 
-                GetWorkspaces();
+				LoadWorkspaces();
             }       
         }
 

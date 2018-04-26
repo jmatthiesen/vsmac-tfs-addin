@@ -36,6 +36,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Choose work item dialog.
+    /// </summary>
     public class ChooseWorkItemDialog : Dialog
     {       
         TreeView _queryView;
@@ -62,12 +65,19 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             AttachEvents();
         }
 
+        /// <summary>
+        /// Gets the work item.
+        /// </summary>
+        /// <value>The work item.</value>
         public WorkItem WorkItem
         {
             get { return _workItem;  }
             private set { _workItem = value; }
         }
 
+        /// <summary>
+		/// Init ChooseWorkItemDialog.
+        /// </summary>
         void Init()
         {
             _queryView = new TreeView();
@@ -80,6 +90,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _versionControlService = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();         
         }
 
+        /// <summary>
+		/// Builds the ChooseWorkItemDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Choose Work Item");
@@ -112,6 +125,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Content = content;
         }
 
+        /// <summary>
+		/// Attachs the ChooseWorkItemDialog events.
+        /// </summary>
         void AttachEvents()
         {
             _queryView.RowActivated += (sender, e) =>
@@ -143,6 +159,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             };
         }
 
+        /// <summary>
+        /// Creates the WorkItems queries.
+        /// </summary>
         void CreateQueries()
         {
             _queryStore.Clear();
@@ -208,6 +227,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 _queryView.ExpandToRow(cursor.CurrentPosition);
         }
 
+        /// <summary>
+        /// Loads the WorkItems query.
+        /// </summary>
+        /// <param name="query">Query.</param>
+        /// <param name="collection">Collection.</param>
         void LoadQuery(StoredQuery query, ProjectCollection collection)
         {
             _listView.Columns.Clear();

@@ -32,6 +32,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Rename dialog.
+    /// </summary>
     public class RenameDialog : Dialog
     {
         ExtendedItem _item;
@@ -43,6 +46,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             BuildGui();
         }
 
+        /// <summary>
+        /// Gets the new path.
+        /// </summary>
+        /// <value>The new path.</value>
         public string NewPath
         {
             get
@@ -53,6 +60,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+		/// Init RenameDialog.
+        /// </summary>
+        /// <param name="item">Item.</param>
         void Init(ExtendedItem item)
         {
             _item = item;
@@ -63,6 +74,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 			};
 		}
 
+        /// <summary>
+        /// Builds the GUI.
+        /// </summary>
         void BuildGui()
         {
             var content = new HBox();

@@ -35,7 +35,10 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
-    public class LockDialog: Dialog
+	/// <summary>
+    /// Lock dialog.
+    /// </summary>
+    public class LockDialog : Dialog
     {
         ListView _fileView;
         DataField<bool> _isCheckedField;
@@ -49,9 +52,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
             Init();
             BuildGui();
-            GetData(items);
+			LoadData(items);
         }
 
+        /// <summary>
+        /// Gets the selected items.
+        /// </summary>
+        /// <value>The selected items.</value>
         internal List<ExtendedItem> SelectedItems
         {
             get
@@ -72,6 +79,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Gets the lock level.
+        /// </summary>
+        /// <value>The lock level.</value>
         internal LockLevel LockLevel
         {
             get
@@ -80,6 +91,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+		/// Init LockDialog.
+        /// </summary>
         void Init()
         {
             _fileView = new ListView();
@@ -91,6 +105,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _lockLevelBox = BuildLockLevelComboBox();
         }
 
+        /// <summary>
+		/// Builds the LockDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Lock Files");
@@ -119,6 +136,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false;
         }
 
+        /// <summary>
+        /// Builds the lock level combo box.
+        /// </summary>
+        /// <returns>The lock level combo box.</returns>
         ComboBox BuildLockLevelComboBox()
         {
             ComboBox lockLevelBox = new ComboBox { WidthRequest = 150 };
@@ -137,7 +158,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             return lockLevelBox;
         }
 
-        void GetData(List<ExtendedItem> items)
+        /// <summary>
+        /// Loads the data.
+        /// </summary>
+        /// <param name="items">Items.</param>
+        void LoadData(List<ExtendedItem> items)
         {
             _fileStore.Clear();
             foreach (var item in items)

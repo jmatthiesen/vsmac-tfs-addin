@@ -44,6 +44,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Views
 {
+	/// <summary>
+    /// Source control explorer view.
+    /// </summary>
 	public class SourceControlExplorerView : ViewContent
     {
         #region Variables
@@ -158,6 +161,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			base.Dispose();
 		}
 
+        /// <summary>
+		/// Init SourceControlExplorerView.
+        /// </summary>
 		void Init()
         {
 			_workerCancel = new CancellationTokenSource();
@@ -245,6 +251,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _versionControlService = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
         }
        
+        /// <summary>
+		/// Builds the SourceControlExplorerView GUI.
+        /// </summary>
         void BuildGui()
         {          
 			_workspaceComboBox.Views.Add(new TextCellView(_workspaceNameField));
@@ -307,6 +316,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _view.PackStart(mainBox, true, true); 
 		}
         
+        /// <summary>
+        /// Attachs the events.
+        /// </summary>
         void AttachEvents()
         {
             _workspaceComboBox.SelectionChanged += OnChangeActiveWorkspaces;
@@ -332,6 +344,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             FileService.NotifyFilesRemoved(items.Select(i => new FilePath(_currentWorkspace.Data.GetLocalPathForServerPath(i.ServerPath))));
         }
 
+        /// <summary>
+        /// Refresh the UI.
+        /// </summary>
+        /// <param name="item">Item.</param>
+        /// <param name="menuType">Menu type.</param>
         void Refresh(BaseItem item, MenuType menuType)
         {
 			if (item != null)
@@ -356,6 +373,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             Refresh(items.FirstOrDefault(), MenuType.List);
         }
              
+        /// <summary>
+        /// Loads the workspaces.
+        /// </summary>
         void LoadWorkspaces()
         {
 			var workspaces = _projectCollection.GetLocalWorkspaces();
@@ -413,6 +433,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			}				
         }
        
+        /// <summary>
+        /// Loads project folders.
+        /// </summary>
 		void LoadFolders()
         {
 			_worker = Task.Factory.StartNew(delegate
@@ -487,6 +510,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			_treeLevel--;
         }
 
+        /// <summary>
+        /// Loads the folder details.
+        /// </summary>
+        /// <param name="serverPath">Server path.</param>
         void LoadFolderDetails(string serverPath)
         {
 			_folderDetailsStore.Clear();
@@ -921,6 +948,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             List
         }
 
+        /// <summary>
+        /// Builds the list view popup menu.
+        /// </summary>
+        /// <returns>The list view popup menu.</returns>
         Menu BuildListViewPopupMenu()
         {
             Menu menu = new Menu();

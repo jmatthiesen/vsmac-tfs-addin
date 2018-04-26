@@ -36,6 +36,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Connect to server dialog.
+    /// </summary>
     public class ConnectToServerDialog : Dialog
     {
         ListView _serverList;
@@ -57,6 +60,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             UpdateDeleteServer();
         }
 
+        /// <summary>
+		/// Init ConnectToServerDialog.
+        /// </summary>
         void Init()
         {
             _service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
@@ -65,6 +71,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _serverStore = new ListStore(_nameField, _urlField, _serverField);
         }
 
+        /// <summary>
+		/// Builds the ConnectToServerDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Add/Remove Server");
@@ -143,6 +152,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Adds a server.
+        /// </summary>
         void AddServer()
         {
             try
@@ -206,6 +218,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Updates the servers.
+        /// </summary>
         void UpdateServers()
         {
             _serverStore.Clear();
@@ -219,7 +234,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 _serverStore.SetValue(row, _serverField, server);
             }
         }
-
+        /// <summary>
+        /// Updates the delete server button state.
+        /// </summary>
         void UpdateDeleteServer()
         {
             _removeButton.Sensitive = _serverList.SelectedRow != -1;

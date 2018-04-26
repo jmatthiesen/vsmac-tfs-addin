@@ -41,6 +41,9 @@ using Xwt.Drawing;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Check out map dialog.
+    /// </summary>
 	public class CheckOutMapDialog : Dialog
     {
         Label _titleLabel;   
@@ -99,6 +102,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Ons the Dialog closed.
+        /// </summary>
 		protected override void OnClosed()
 		{
             _workerCancel?.Cancel();
@@ -106,6 +112,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 			base.OnClosed();
 		}
 
+        /// <summary>
+		/// Init CheckOutMapDialog.
+        /// </summary>
+        /// <param name="versionControlService">Version control service.</param>
 		void Init(TeamFoundationServerVersionControlService versionControlService)
         {
             _versionControlService = versionControlService;
@@ -195,6 +205,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             };
         } 
 
+        /// <summary>
+		/// Builds the CheckOutMapDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             Title = GettextCatalog.GetString("Checkout from VSTS or TFS Repository");
@@ -532,6 +545,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 			Refresh();
         }
 
+        /// <summary>
+        /// Refresh accounts, project collections, workspaces and folders.
+        /// </summary>
         void Refresh()
 		{
 			using (var monitor = IdeApp.Workbench.ProgressMonitors.GetLoadProgressMonitor(true))
@@ -546,6 +562,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
 		}
 
+        /// <summary>
+        /// Ons the checkout.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="args">Arguments.</param>
         void OnCheckout(object sender, EventArgs args)
         {
             if (_currentWorkspace == null)
@@ -709,6 +730,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Loads the project collection.
+        /// </summary>
         void LoadProjectCollection()
         {
 			var row = _accountComboBox.SelectedIndex;
@@ -734,25 +758,36 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
-        void LoadCurrentWorkspace()
-        {
+		/// <summary>
+		/// Loads the current workspace.
+		/// </summary>
+		void LoadCurrentWorkspace()
+		{
 			var row = _workspaceComboBox.SelectedIndex;
 
-            if (row == -1)
-                return;
+			if (row == -1)
+				return;
 
-            var selectedItem = _workspaceStore.GetValue(row, _workspaceObjectField);
-            
+			var selectedItem = _workspaceStore.GetValue(row, _workspaceObjectField);
+
 			if (selectedItem is WorkspaceData workspaceData)
+			{
 				_currentWorkspace = DependencyContainer.GetWorkspace(workspaceData, _projectCollection);
+			}
 		}
 
+        /// <summary>
+        /// Reset the projects information.
+        /// </summary>
         void ClearProjects()
 		{
 			_projectsStore.Clear();
 			_filesStore.Clear();
 		}
 
+        /// <summary>
+        /// Loads the projects.
+        /// </summary>
         void LoadProjects()
         {
 			_projectsSpinner.Visible = true;
@@ -793,6 +828,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }, _workerCancel.Token, TaskCreationOptions.LongRunning);
         }
 
+        /// <summary>
+        /// Loads the selected project folders.
+        /// </summary>
+        /// <param name="path">Path.</param>
         void LoadFolders(string path)
         {
             _filesStore.Clear();
@@ -834,6 +873,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Determine if the project use git as source control.
+        /// </summary>
+        /// <returns><c>true</c>, if source control git enabled was ised, <c>false</c> otherwise.</returns>
+        /// <param name="projectDetails">Project details.</param>
         bool IsSourceControlGitEnabled(ProjectDetails projectDetails)
         {
             if (projectDetails.Details.Any(p => p.Name == "System.SourceControlGitEnabled"))
@@ -844,6 +888,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             return false;
         }
 
+        /// <summary>
+		/// Gets the project type image (Git or VSTS).
+        /// </summary>
+        /// <returns>The project type image.</returns>
+        /// <param name="projectDetails">Project details.</param>
         Image GetProjectTypeImage(ProjectDetails projectDetails)
         {
             if (IsSourceControlGitEnabled(projectDetails))

@@ -27,12 +27,17 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MonoDevelop.Core;
 using MonoDevelop.VersionControl.TFS.Models;
 using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Choose projects dialog.
+    /// </summary>
     public class ChooseProjectsDialog : Dialog
     {
         ListStore _collectionStore;
@@ -46,18 +51,37 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         DataField<string> _projectName;
         DataField<ProjectInfo> _projectItem;
         CheckBoxCellView _checkView;
+		Spinner _projectsSpinner;
+
+		Task _worker;
+        CancellationTokenSource _workerCancel;
 
         internal List<ProjectCollection> SelectedProjectColletions { get; set; }
 
         internal ChooseProjectsDialog(TeamFoundationServer server)
         {
             Init();
-            BuildGui(server);     
+            BuildGui(server);
             LoadProjects(server);
         }
 
+		/// <summary>
+        /// Ons the Dialog closed.
+        /// </summary>
+        protected override void OnClosed()
+        {
+            _workerCancel?.Cancel();
+
+            base.OnClosed();
+        }
+
+        /// <summary>
+		/// Init ChooseProjectsDialog.
+        /// </summary>
         void Init()
         {
+			_workerCancel = new CancellationTokenSource();
+
             _collectionsList = new ListBox();
             _projectsList = new TreeView();
 
@@ -70,24 +94,44 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             _collectionStore = new ListStore(_collectionName, _collectionItem);
             _projectsStore = new TreeStore(_isProjectSelected, _projectType, _projectName, _projectItem);
+
+			_projectsSpinner = new Spinner
+            {
+                HeightRequest = 24,
+                WidthRequest = 24,
+                Animate = true,
+                HorizontalPlacement = WidgetPlacement.Center,
+                VerticalPlacement = WidgetPlacement.Center
+            };
         }
 
+        /// <summary>
+		/// Builds the ChooseProjectsDialog GUI.
+        /// </summary>
+        /// <param name="server">Server.</param>
         void BuildGui(TeamFoundationServer server)
         {
-            Title = "Choose Projects";
-            Resizable = false;
+			Title = GettextCatalog.GetString("Choose Projects");
+            
+			var vBox = new VBox
+			{
+				HeightRequest = 350,
+				WidthRequest = 500
+			};
 
-            var vBox = new VBox();
+			vBox.PackStart(_projectsSpinner, true, WidgetPlacement.Center);
+
             var hbox = new HBox();
+
             _collectionsList.DataSource = _collectionStore;
             _collectionsList.Views.Add(new TextCellView(_collectionName));
-            _collectionsList.MinWidth = 200;
-            _collectionsList.MinHeight = 300;
+			_collectionsList.MinHeight = 300;
+			_collectionsList.MinWidth = 200;
             hbox.PackStart(_collectionsList);
 
             _projectsList.DataSource = _projectsStore;
-            _projectsList.MinWidth = 300;
-            _projectsList.MinHeight = 300;
+			_projectsList.MinHeight = 300;
+			_projectsList.MinWidth = 300;
 
             _checkView = new CheckBoxCellView(_isProjectSelected) { Editable = true };
 
@@ -147,9 +191,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             var buttonBox = new HBox();
             buttonBox.PackEnd(okButton);
             buttonBox.PackEnd(cancelButton);
-            vBox.PackStart(buttonBox);
+			vBox.PackEnd(buttonBox);
 
             Content = vBox;
+			Resizable = false;
 
             if (!server.ProjectCollections.Any())
                 SelectedProjectColletions = new List<ProjectCollection>();
@@ -157,42 +202,70 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 SelectedProjectColletions = new List<ProjectCollection>(server.ProjectCollections);
         }
 
+        /// <summary>
+        /// Loading.
+        /// </summary>
+        /// <param name="isLoading">If set to <c>true</c> is loading.</param>
+        void Loading(bool isLoading)
+		{
+			_projectsSpinner.Visible = isLoading;
+			_collectionsList.Visible = !isLoading;
+			_projectsList.Visible = !isLoading;
+		}
+   
+        /// <summary>
+        /// Loads the projects.
+        /// </summary>
+		/// <param name="server">TeamFoundationServer.</param>
         void LoadProjects(TeamFoundationServer server)
         {
-            server.LoadStructure();
+			Loading(true);
 
-            foreach (var col in server.ProjectCollections)
-            {
-                var row = _collectionStore.AddRow();
-                _collectionStore.SetValue(row, _collectionName, col.Name);
-                _collectionStore.SetValue(row, _collectionItem, col);
-            }
+			_worker = Task.Factory.StartNew(delegate
+			{
+				if (!_workerCancel.Token.IsCancellationRequested)
+				{
+					server.LoadStructure();
 
-            _collectionsList.SelectionChanged += (sender, e) =>
-            {
-                if (_collectionsList.SelectedRow > -1)
-                {
-                    var collection = _collectionStore.GetValue(_collectionsList.SelectedRow, _collectionItem);
-                    var selectedColletion = SelectedProjectColletions.SingleOrDefault(pc => pc == collection);
+					Application.Invoke(() =>
+					{
+						foreach (var col in server.ProjectCollections)
+						{
+							var row = _collectionStore.AddRow();
+							_collectionStore.SetValue(row, _collectionName, col.Name);
+							_collectionStore.SetValue(row, _collectionItem, col);
+						}
 
-                    _projectsStore.Clear();
+						_collectionsList.SelectionChanged += (sender, e) =>
+						{
+							if (_collectionsList.SelectedRow > -1)
+							{
+								var collection = _collectionStore.GetValue(_collectionsList.SelectedRow, _collectionItem);
+								var selectedColletion = SelectedProjectColletions.FirstOrDefault(pc => pc == collection);
 
-                    foreach (var project in collection.Projects)
-                    {
-                        var node = _projectsStore.AddNode();
-                        var projectCopy = project;
-        
-                        var isSelected = selectedColletion != null && selectedColletion.Projects.Any(p => p == projectCopy);                      
-                        node.SetValue(_isProjectSelected, isSelected);
-                        node.SetValue(_projectType, GetProjectTypeImage(project.ProjectDetails));
-                        node.SetValue(_projectName, project.Name);
-                        node.SetValue(_projectItem, project);
-                    }
-                }
-            };
+								_projectsStore.Clear();
 
-            if (server.ProjectCollections.Any())
-                _collectionsList.SelectRow(0);
+								foreach (var project in collection.Projects)
+								{
+									var node = _projectsStore.AddNode();
+									var projectCopy = project;
+
+									var isSelected = selectedColletion != null && selectedColletion.Projects.Any(p => p == projectCopy);
+									node.SetValue(_isProjectSelected, isSelected);
+									node.SetValue(_projectType, GetProjectTypeImage(project.ProjectDetails));
+									node.SetValue(_projectName, project.Name);
+									node.SetValue(_projectItem, project);
+								}
+							}
+						};
+
+						if (server.ProjectCollections.Any())
+							_collectionsList.SelectRow(0);
+
+						Loading(false);
+					});               
+				}
+			}, _workerCancel.Token, TaskCreationOptions.LongRunning);
         }
 
         bool IsSourceControlGitEnabled(ProjectDetails projectDetails)

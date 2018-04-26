@@ -38,6 +38,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Views
 {
+	/// <summary>
+    /// Resolve conflicts view.
+    /// </summary>
     public class ResolveConflictsView : ViewContent
     {
         List<LocalPath> _paths;
@@ -74,7 +77,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 var sourceDoc = view.GetContent<ResolveConflictsView>();
                 if (sourceDoc != null)
                 {
-                    sourceDoc.GetData(workspace, paths);
+					sourceDoc.LoadData(workspace, paths);
                     sourceDoc.LoadConflicts();
                     view.Window.SelectWindow();
                     return;
@@ -82,11 +85,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             }
 
             ResolveConflictsView resolveConflictsView = new ResolveConflictsView();
-            resolveConflictsView.GetData(workspace, paths);
+			resolveConflictsView.LoadData(workspace, paths);
             resolveConflictsView.LoadConflicts();
             IdeApp.Workbench.OpenDocument(resolveConflictsView, true);
         }
 
+        /// <summary>
+		/// Init ResolveConflictsView.
+        /// </summary>
         void Init()
         {
             _view = new VBox();
@@ -107,6 +113,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _versionControlService = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
         }
 
+        /// <summary>
+		/// Builds the ResolveConflictsView GUI.
+        /// </summary>
         void BuildGui()
         {
             ContentName = GettextCatalog.GetString("Resolve Conflicts");
@@ -129,6 +138,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _view.PackStart(_listView, true, true);
         }
 
+        /// <summary>
+        /// Attachs the events.
+        /// </summary>
         void AttachEvents()
         {
             _listView.SelectionChanged += (sender, e) => SetButtonSensitive();
@@ -139,7 +151,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _viewServer.Clicked += (sender, e) => ViewRemoteClicked();  
         }
 
-        void GetData(IWorkspaceService workspace, List<LocalPath> paths)
+        /// <summary>
+        /// Loads the data.
+        /// </summary>
+        /// <param name="workspace">Workspace.</param>
+        /// <param name="paths">Paths.</param>
+        void LoadData(IWorkspaceService workspace, List<LocalPath> paths)
         {
             _workspace = workspace;
             _paths.Clear();
@@ -198,6 +215,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             doc.Closed += (o, e) => fileName.Delete();
         }
 
+        /// <summary>
+        /// Loads the conflicts.
+        /// </summary>
         void LoadConflicts()
         {
             if (_paths.Count == 0)

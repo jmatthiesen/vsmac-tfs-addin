@@ -46,6 +46,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
             BuildGui();
         }
 
+        /// <summary>
+		/// Init SettingsWidget.
+        /// </summary>
         void Init()
         {
             _service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
@@ -54,6 +57,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
             _debugModeBox = new CheckBox(GettextCatalog.GetString("Debug Mode"));
         }
 
+        /// <summary>
+		/// Builds the SettingsWidget GUI.
+        /// </summary>
         void BuildGui()
         {
             PackStart(new Label(GettextCatalog.GetString("Lock Level:")));
@@ -70,6 +76,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
             _service.DebugMode = _debugModeBox.Active;
         }
 
+        /// <summary>
+        /// Creates the lock level combo box.
+        /// </summary>
+        /// <returns>The lock level combo box.</returns>
         ComboBox CreateLockLevelComboBox()
         {
             ComboBox lockLevelBox = new ComboBox();

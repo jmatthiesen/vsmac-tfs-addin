@@ -36,6 +36,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 {
+	/// <summary>
+    /// Get spec version dialog.
+    /// </summary>
     public class GetSpecVersionDialog : Dialog
     {
         IWorkspaceService _workspace;
@@ -66,6 +69,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 			base.OnClosed();
 		}
 
+        /// <summary>
+		/// Init GetSpecVersionDialog.
+        /// </summary>
+        /// <param name="workspace">Workspace.</param>
 		void Init(IWorkspaceService workspace)
         {
             _workspace = workspace;
@@ -83,6 +90,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _forceGet = new CheckBox(GettextCatalog.GetString("Force get file already in workspace"));
         }
 
+        /// <summary>
+		/// Builds the GetSpecVersionDialog GUI.
+        /// </summary>
         void BuildGui()
         {
             Title = "Get";
@@ -137,6 +147,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Resizable = false;
         }
 
+        /// <summary>
+        /// Adds the data.
+        /// </summary>
+        /// <param name="items">Items.</param>
         internal void AddData(List<ExtendedItem> items)
         {
             _listStore.Clear();
