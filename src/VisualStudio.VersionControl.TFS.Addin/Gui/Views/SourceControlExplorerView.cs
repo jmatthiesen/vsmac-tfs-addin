@@ -52,6 +52,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         #region Variables
 
         int _treeLevel;
+		List<TeamFoundationServer> _servers;
         ProjectCollection _projectCollection;
         List<WorkspaceData> _workspaces;
         IWorkspaceService _currentWorkspace;
@@ -59,6 +60,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 		XwtControl _control;
         VBox _view;
 		HBox _headerBox;
+		Label _serverLabel;
+		ComboBox _serverComboBox;
+		DataField<string> _serverNameField;
+		DataField<ProjectCollection> _serverCollectionField;
+		ListStore _serverStore;
 		Button _addItemButton;
 		Button _refreshButton;
         ComboBox _workspaceComboBox;
@@ -95,9 +101,20 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         #region Constructor
 
-        internal SourceControlExplorerView(ProjectCollection projectCollection)
+		internal SourceControlExplorerView(IEnumerable<TeamFoundationServer> servers = null, ProjectCollection projectCollection = null)
         {
-            _projectCollection = projectCollection;
+			if (servers != null)
+			{
+				_servers = servers.ToList();
+
+				var collection = _servers.SelectMany(x => x.ProjectCollections).First();
+                var projectInfo = collection.Projects.FirstOrDefault();
+				_projectCollection = projectInfo.Collection;
+			}
+			else
+			{
+				_projectCollection = projectCollection;
+			}
 
             ContentName = GettextCatalog.GetString("Source Explorer") + " - " + _projectCollection.Server.Name + " - " + _projectCollection.Name;
 
@@ -108,6 +125,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			using (var monitor = IdeApp.Workbench.ProgressMonitors.GetLoadProgressMonitor(true))
             {
 				monitor.BeginTask(GettextCatalog.GetString(GettextCatalog.GetString("Loading...")), 2);
+				LoadServers();
 				LoadWorkspaces();
 				monitor.Step(1);
 				LoadFolders();
@@ -123,12 +141,18 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 		public override Control Control => _control;
 
         #endregion
-
+        
         #region Public Methods
+
+		internal static void Show(IEnumerable<TeamFoundationServer> servers)
+        {
+            var sourceControlExplorerView = new SourceControlExplorerView(servers, null);
+            IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
+        }
 
         internal static void Show(ProjectCollection projectCollection)
         {
-            var sourceControlExplorerView = new SourceControlExplorerView(projectCollection);
+            var sourceControlExplorerView = new SourceControlExplorerView(null, projectCollection);
             IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
         }
 
@@ -137,14 +161,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             var collection = projectInfo.Collection;
             var path = new RepositoryPath(RepositoryPath.RootPath + projectInfo.Name, true);
           
-            var sourceControlExplorerView = new SourceControlExplorerView(collection);
+            var sourceControlExplorerView = new SourceControlExplorerView(null, collection);
             sourceControlExplorerView.ExpandPath(path);
             IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
         }
 
         internal static void Show(ProjectCollection collection, string path, string fileName)
         {
-            var sourceControlExplorerView = new SourceControlExplorerView(collection);
+            var sourceControlExplorerView = new SourceControlExplorerView(null, collection);
             sourceControlExplorerView.ExpandPath(path);
             sourceControlExplorerView.FindItem(fileName);
             IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
@@ -154,6 +178,18 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
 		#region Private Methods
 
+        /// <summary>
+        /// Releases all resource used by the
+        /// <see cref="T:MonoDevelop.VersionControl.TFS.Gui.Views.SourceControlExplorerView"/> object.
+        /// </summary>
+        /// <remarks>Call <see cref="Dispose"/> when you are finished using the
+        /// <see cref="T:MonoDevelop.VersionControl.TFS.Gui.Views.SourceControlExplorerView"/>. The
+        /// <see cref="Dispose"/> method leaves the
+        /// <see cref="T:MonoDevelop.VersionControl.TFS.Gui.Views.SourceControlExplorerView"/> in an unusable state.
+        /// After calling <see cref="Dispose"/>, you must release all references to the
+        /// <see cref="T:MonoDevelop.VersionControl.TFS.Gui.Views.SourceControlExplorerView"/> so the garbage collector
+        /// can reclaim the memory that the
+        /// <see cref="T:MonoDevelop.VersionControl.TFS.Gui.Views.SourceControlExplorerView"/> was occupying.</remarks>
 		public override void Dispose()
 		{
 			_workerCancel?.Cancel();
@@ -175,6 +211,23 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			_control = new XwtControl(_view);
 
 			_headerBox = new HBox();
+            
+			_serverLabel = new Label(GettextCatalog.GetString("Server") + ":")
+            {
+                Margin = new WidgetSpacing(6, 0, 0, 0)
+            };
+
+			_serverComboBox = new ComboBox
+            {
+                MinWidth = 300,
+				Margin = new WidgetSpacing(6, 0, 6, 0)
+            };
+
+			_serverNameField = new DataField<string>();
+			_serverCollectionField = new DataField<ProjectCollection>();
+			_serverStore = new ListStore(_serverNameField, _serverCollectionField);
+
+			_serverComboBox.ItemsSource = _serverStore;
 
             _localFolder = new Label();
                        
@@ -255,10 +308,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 		/// Builds the SourceControlExplorerView GUI.
         /// </summary>
         void BuildGui()
-        {          
+        {
+			_serverComboBox.Views.Add(new TextCellView(_serverNameField));
+
 			_workspaceComboBox.Views.Add(new TextCellView(_workspaceNameField));
             _workspaceComboBox.Views.Add(new TextCellView { MarkupField = _workspacePathField });
 
+			_headerBox.PackStart(_serverLabel, false, false);   
+			_headerBox.PackStart(_serverComboBox, false, false);   
+			_headerBox.PackStart(new HSeparator() { BackgroundColor = Xwt.Drawing.Colors.Gray, Margin = new WidgetSpacing(0, 6, 0, 6) }, false, false);   
 			_headerBox.PackStart(_addItemButton, false, false);   
 			_headerBox.PackStart(_refreshButton, false, false);   
 			_headerBox.PackStart(new HSeparator() { BackgroundColor = Xwt.Drawing.Colors.Gray, Margin = new WidgetSpacing(0, 6, 0, 6) }, false, false);   
@@ -321,6 +379,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         /// </summary>
         void AttachEvents()
         {
+			_serverComboBox.SelectionChanged += OnChangeServers;
             _workspaceComboBox.SelectionChanged += OnChangeActiveWorkspaces;
 			_addItemButton.Clicked += OnAddNewItem;
             _manageButton.Clicked += OnManageWorkspaces;
@@ -368,11 +427,43 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			}
         }
 
+        /// <summary>
+        /// Refresh the UI.
+        /// </summary>
+        /// <param name="items">Items.</param>
         void Refresh(IEnumerable<BaseItem> items)
         {
             Refresh(items.FirstOrDefault(), MenuType.List);
         }
-             
+
+        /// <summary>
+        /// Loads the servers.
+        /// </summary>
+		void LoadServers()
+		{
+			var servers = _servers;
+	
+			_serverStore.Clear();
+
+			_serverComboBox.SelectionChanged -= OnChangeServers;
+
+			foreach (var server in servers)
+			{
+				var serverRow = _serverStore.AddRow();
+				_serverStore.SetValue(serverRow, _serverNameField, server.Name);
+				var projectCollection = server.ProjectCollections.FirstOrDefault();
+
+				if (projectCollection != null)
+				{
+					_serverStore.SetValue(serverRow, _serverCollectionField, projectCollection);
+				}
+			}
+
+			_serverComboBox.SelectionChanged += OnChangeServers;
+
+			_serverComboBox.SelectedIndex = 0;
+		}
+
         /// <summary>
         /// Loads the workspaces.
         /// </summary>
@@ -433,11 +524,19 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			}				
         }
        
+        void ClearFolders()
+		{
+			_foldersStore.Clear();
+            _foldersList.Clear();
+		}
+
         /// <summary>
         /// Loads project folders.
         /// </summary>
 		void LoadFolders()
         {
+			ClearFolders();
+
 			_worker = Task.Factory.StartNew(delegate
 			{
 				if (!_workerCancel.Token.IsCancellationRequested)
@@ -451,10 +550,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 					var root = ItemSetToHierarchItemConverter.Convert(items);
                     			
 					Application.Invoke(() =>
-					{
-						_foldersStore.Clear();
-						_foldersList.Clear();
-
+					{                  
             			var node = _foldersStore.AddNode();
 
             			var serverName = string.Equals(_projectCollection.Server.Name, _projectCollection.Server.Uri.OriginalString, StringComparison.OrdinalIgnoreCase)
@@ -511,12 +607,20 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         }
 
         /// <summary>
+        /// Clears the folder details collection.
+        /// </summary>
+        void ClearFolderDetails()
+		{
+            _folderDetailsStore.Clear();		
+		}
+
+        /// <summary>
         /// Loads the folder details.
         /// </summary>
         /// <param name="serverPath">Server path.</param>
         void LoadFolderDetails(string serverPath)
         {
-			_folderDetailsStore.Clear();
+			ClearFolderDetails();
 
 			var itemSet = _currentWorkspace.GetExtendedItems(new[] { new ItemSpec(serverPath, RecursionType.OneLevel) }, DeletedState.NonDeleted, ItemType.Any);
           
@@ -700,12 +804,48 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             }
         }
 
+		void OnChangeServers(object sender, EventArgs ev)
+		{
+            var row = _serverComboBox.SelectedIndex;
+
+            if (row == -1)
+                return;
+
+			var selectedItem = _serverStore.GetValue(row, _serverCollectionField);
+
+			if (selectedItem is ProjectCollection projectCollection)
+			{
+				_projectCollection = projectCollection;
+
+                // Update Title
+				ContentName = GettextCatalog.GetString("Source Explorer") + " - " + _projectCollection.Server.Name + " - " + _projectCollection.Name;
+
+                // Refresh Content
+				using (var monitor = IdeApp.Workbench.ProgressMonitors.GetLoadProgressMonitor(true))
+                {
+                    monitor.BeginTask(GettextCatalog.GetString(GettextCatalog.GetString("Loading...")), 2);
+                    LoadWorkspaces();
+                    monitor.Step(1);
+                    LoadFolders();
+                    ExpandPath(RepositoryPath.RootPath);
+                    monitor.EndTask();
+                }
+			}
+		}
+
         void OnChangeActiveWorkspaces(object sender, EventArgs ev)
         {
 			var row = _workspaceComboBox.SelectedIndex;
-            
+
 			if (row == -1)
+			{
+				// no workspace, clear data
+				_currentWorkspace = null;
+				ClearFolders();
+				ClearFolderDetails();
+
 				return;
+			}
 
 			var selectedItem = _workspaceStore.GetValue(row, _workspaceObjectField);
 
@@ -901,6 +1041,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             return _currentWorkspace.Data.IsServerPathMapped(serverPath);
         }
 
+        /// <summary>
+        /// Shows the mapping local path.
+        /// </summary>
+        /// <param name="serverPath">Server path.</param>
         void ShowMappingPath(RepositoryPath serverPath)
         {
             if (!IsMapped(serverPath))
@@ -1294,6 +1438,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             }
         }
 
+        /// <summary>
+        /// Lock the specified file or files.
+        /// </summary>
+        /// <param name="itemsTolock">Items tolock.</param>
+        /// <param name="lockLevel">Lock level.</param>
         void Lock(List<ExtendedItem> itemsTolock, LockLevel lockLevel)
         {
 			_worker = Task.Factory.StartNew(delegate
@@ -1316,6 +1465,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			}, _workerCancel.Token, TaskCreationOptions.LongRunning);
         }
 
+        /// <summary>
+        /// Checkout file or files.
+        /// </summary>
+        /// <param name="itemsToCheckOut">Items to check out.</param>
+        /// <param name="lockLevel">Lock level.</param>
         void CheckOut(List<ExtendedItem> itemsToCheckOut, LockLevel lockLevel)
         {
 			_worker = Task.Factory.StartNew(delegate

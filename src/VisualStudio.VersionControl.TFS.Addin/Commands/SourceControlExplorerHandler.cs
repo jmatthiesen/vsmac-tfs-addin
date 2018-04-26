@@ -11,13 +11,22 @@ namespace MonoDevelop.VersionControl.TFS.Commands
         protected override void Run()
         {
             var service = DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>();
-            var collection = service.Servers.SelectMany(x => x.ProjectCollections).First();
-            var project = collection.Projects.FirstOrDefault();
-         
-            if (project != null)
-            {
-				SourceControlExplorerView.Show(project);
-            }
+
+			if (service.Servers.Count == 1)
+			{
+				var collection = service.Servers.SelectMany(x => x.ProjectCollections).First();
+				var project = collection.Projects.FirstOrDefault();
+                
+				if (project != null)
+				{
+					SourceControlExplorerView.Show(project);
+				}
+			}
+			else
+			{
+				var servers = service.Servers;
+				SourceControlExplorerView.Show(servers);
+			}
         }
 
         protected override void Update(CommandInfo info)
