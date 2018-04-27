@@ -3,7 +3,7 @@ using System.IO;
 
 namespace MonoDevelop.VersionControl.TFS.Extensions
 {
-    internal static class UriBuilderExtensions
+    static class UriBuilderExtensions
     {
         internal static void AppendToPath(this UriBuilder builder, string pathToAdd)
         {

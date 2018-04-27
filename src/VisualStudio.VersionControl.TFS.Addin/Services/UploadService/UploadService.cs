@@ -38,7 +38,7 @@ using MonoDevelop.VersionControl.TFS.Models;
 namespace MonoDevelop.VersionControl.TFS.Services
 {
     [ServiceResolver(typeof(UploadServiceResolver))]
-    internal sealed class UploadService : TFSService
+    sealed class UploadService : TFSService
     {
         UploadService(Uri baseUri, string servicePath)
             : base(baseUri, servicePath)

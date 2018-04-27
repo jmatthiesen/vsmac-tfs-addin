@@ -28,6 +28,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
 using MonoDevelop.VersionControl.TFS.Models;
@@ -310,6 +311,8 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         public void Resolve(int workItemId, int changeSet, string comment)
         {
+			Debug.WriteLine(string.Format("{0} - {1} - {2}", workItemId, changeSet, comment));
+
             throw new NotImplementedException();
         }
     }

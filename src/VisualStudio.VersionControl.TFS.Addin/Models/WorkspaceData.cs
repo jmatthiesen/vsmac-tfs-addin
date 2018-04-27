@@ -59,7 +59,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         public bool IsLocalPathMapped(LocalPath localPath)
         {
             if (localPath == null)
-                throw new ArgumentNullException("localPath");
+				throw new ArgumentNullException(nameof(localPath));
           
             return WorkingFolders.Any(f => localPath.IsChildOrEqualOf(f.LocalItem));
         }

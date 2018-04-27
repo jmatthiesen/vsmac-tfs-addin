@@ -241,24 +241,32 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         /// </summary>
         void OpenUrl()
 		{
-			var store = (TreeStore)_listView.DataSource;
+			try
+			{
+				var store = (TreeStore)_listView.DataSource;
 
-            foreach (var row in _listView.SelectedRows)
-            {            
-				var node = _listStore.GetNavigatorAt(row);
-                var workItem = node.GetValue(_workItemField);
-
-				if(workItem != null)
+				foreach (var row in _listView.SelectedRows)
 				{
-					// More information: https://docs.microsoft.com/en-us/vsts/work/work-items/work-item-url-hyperlink?view=vsts
-					var workItemUrl = string.Format("{0}DefaultCollection/{1}/_workitems?id={2}&_a=edit", 
-					                                _projectCollection.Server.Uri.OriginalString,
-					                                _project.Name,
-					                                workItem.Id);
-                                                    
-					Process.Start(workItemUrl);
+					var node = _listStore.GetNavigatorAt(row);
+					var workItem = node.GetValue(_workItemField);
+
+					if (workItem != null)
+					{
+						// More information: https://docs.microsoft.com/en-us/vsts/work/work-items/work-item-url-hyperlink?view=vsts
+						var workItemUrl = string.Format("{0}DefaultCollection/{1}/_workitems?id={2}&_a=edit",
+														_projectCollection.Server.Uri.OriginalString,
+														_project.Name,
+														workItem.Id);
+
+						Process.Start(workItemUrl);
+					}
 				}
-            }           
+			}
+			catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                MessageService.ShowError(GettextCatalog.GetString("Cannot open WorkItem URL. Please, try again."));
+            }
 		}
 
         /// <summary>
@@ -471,7 +479,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                        
 			return menu;
 		}
-
+        
+        /// <summary>
+        /// Copy WorkItem information to the Clipboard.
+        /// </summary>
+        /// <returns>The menu item.</returns>
+        /// <param name="items">Items.</param>
 		MenuItem CopyMenuItem(List<WorkItem> items)
         {
             MenuItem copy = new MenuItem(GettextCatalog.GetString("Copy to Clipboard"));
@@ -487,6 +500,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			return copy;
         }
 
+        /// <summary>
+        /// Open URL menu item.
+        /// </summary>
+        /// <returns>The URL menu item.</returns>
+        /// <param name="items">Items.</param>
 		MenuItem OpenUrlMenuItem(List<WorkItem> items)
         {
             MenuItem copy = new MenuItem(GettextCatalog.GetString("Open Url"));

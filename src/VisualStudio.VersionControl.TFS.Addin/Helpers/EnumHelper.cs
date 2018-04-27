@@ -58,12 +58,12 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
         public static ConflictType ParseConflictType(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentNullException("value");
+				throw new ArgumentNullException(nameof(value));
             ConflictType conflictType;
             if (Enum.TryParse<ConflictType>(value.Replace(" ", ","), true, out conflictType))
                 return conflictType;
             else
-                throw new ArgumentException("Unknown Conflict Type", "value");
+				throw new ArgumentException("Unknown Conflict Type", nameof(value));
         }
 
         public static RequestType ParseRequestType(string value)
@@ -91,13 +91,13 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
         public static SeverityType ParseSeverityType(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentNullException("value");
-            SeverityType severityType;
-            if (Enum.TryParse<SeverityType>(value.Replace(" ", ","), true, out severityType))
-                return severityType;
-            else
-                throw new ArgumentException("Unknown Severity Type", "value");
-        }
+				throw new ArgumentNullException(nameof(value));
+			
+			if (Enum.TryParse(value.Replace(" ", ","), true, out SeverityType severityType))
+				return severityType;
+			else
+				throw new ArgumentException("Unknown Severity Type", nameof(value));
+		}
     }
 }
 

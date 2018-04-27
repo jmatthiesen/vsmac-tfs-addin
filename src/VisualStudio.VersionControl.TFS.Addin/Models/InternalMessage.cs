@@ -40,7 +40,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
 		const string MessageNamespace =	"http://schemas.microsoft.com/TeamFoundation/2005/06/WorkItemTracking/ClientServices/03";
 		
         WebRequest _request;
-		XmlTextWriter _xtw;
+		readonly XmlTextWriter _xtw;
 		string _methodName;
 
 		public XmlTextWriter Body

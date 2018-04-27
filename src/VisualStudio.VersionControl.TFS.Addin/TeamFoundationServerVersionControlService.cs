@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.IdentityService.Clients.ActiveDirectory;
 using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Models;
@@ -36,8 +37,11 @@ using MonoDevelop.VersionControl.TFS.Services;
 
 namespace MonoDevelop.VersionControl.TFS
 {
-    public sealed class TeamFoundationServerVersionControlService
+	public sealed class TeamFoundationServerVersionControlService
     {
+		/// <summary>
+        /// The OAuth expiration margin in minutes.
+        /// </summary>
         const int ExpirationMarginInMinutes = 5;
 
         readonly IConfigurationService _configurationService;
@@ -47,8 +51,6 @@ namespace MonoDevelop.VersionControl.TFS
         {
             _configurationService = configurationService;
             _configuration = _configurationService.Load();
-
-            RefreshAccessTokenAsync();
         }
 
         public void AddServer(TeamFoundationServer server)
@@ -115,6 +117,12 @@ namespace MonoDevelop.VersionControl.TFS
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this
+        /// <see cref="T:MonoDevelop.VersionControl.TFS.TeamFoundationServerVersionControlService"/> debug mode.
+		/// DebugMode write logs to local file.
+        /// </summary>
+        /// <value><c>true</c> if debug mode; otherwise, <c>false</c>.</value>
         public bool DebugMode
         {
             get
@@ -128,6 +136,9 @@ namespace MonoDevelop.VersionControl.TFS
             }
         }
 
+        /// <summary>
+        /// Refreshs the working repositories.
+        /// </summary>
         public void RefreshWorkingRepositories()
         {
             foreach(var system in VersionControlService.GetVersionControlSystems())
@@ -138,45 +149,55 @@ namespace MonoDevelop.VersionControl.TFS
                 }
             }
         }
+       
+        /// <summary>
+        /// Refreshs the OAuth access token.
+        /// </summary>
+        /// <returns>True if renewed access token.</returns>
+		public void RefreshAccessToken()
+        {         
+			var oAuthServers = _configuration.Servers.Where(s => s.Authorization is OAuthAuthorization).ToList();
 
+			foreach (var server in oAuthServers)
+			{
+				var auth = (OAuthAuthorization)server.Authorization;
+
+				bool tokenNearExpiry = (auth.ExpiresOn <=
+										DateTime.UtcNow + TimeSpan.FromMinutes(ExpirationMarginInMinutes));
+
+				if (tokenNearExpiry)
+				{
+					var tokenCache = AdalCacheHelper.GetAdalFileCacheInstance(server.Uri.Host);
+
+					var items = tokenCache.ReadItems();
+
+					if (items.Any())
+					{
+						var context = new AuthenticationContext(OAuthConstants.Authority, true, tokenCache);
+                        
+						// Acquires security token without asking for user credential.
+						var task = Task.Run(async () => await context.AcquireTokenSilentAsync(OAuthConstants.Resource, OAuthConstants.ClientId));
+						task.Wait();
+
+						auth.OauthToken = task.Result.AccessToken;
+						auth.ExpiresOn = task.Result.ExpiresOn;
+
+						server.Authorization = auth;
+
+                        // Update cache
+						AddServer(server);
+						AdalCacheHelper.PersistTokenCache(server.Uri.Host, tokenCache);
+					}
+				}
+			}         
+		}
+
+        /// <summary>
+        /// Save configuration.
+        /// </summary>
         void Save()
         {
             _configurationService.Save(_configuration);
-        }
-
-        async void RefreshAccessTokenAsync()
-        {
-			var oAuthServers = _configuration.Servers.Where(s => s.Authorization is OAuthAuthorization);
-
-			foreach(var server in oAuthServers)
-			{
-                var auth = (OAuthAuthorization)server.Authorization;
-
-                bool tokenNearExpiry = (auth.ExpiresOn <=                                 
-                                        DateTime.UtcNow + TimeSpan.FromMinutes(ExpirationMarginInMinutes));
-
-                if (tokenNearExpiry)
-                {
-                    var tokenCache = AdalCacheHelper.GetAdalFileCacheInstance(server.Uri.Host);
-
-                    var items = tokenCache.ReadItems();
-
-                    if (items.Any())
-                    {
-                        var context = new AuthenticationContext(OAuthConstants.Authority, true, tokenCache);
-
-                        var result = await context.AcquireTokenSilentAsync(OAuthConstants.Resource, OAuthConstants.ClientId);
-
-                        auth.OauthToken = result.AccessToken;
-                        auth.ExpiresOn = result.ExpiresOn;
-
-                        server.Authorization = auth;
-
-                        AddServer(server);
-                        AdalCacheHelper.PersistTokenCache(server.Uri.Host, tokenCache);
-                    }
-                }
-            }
         }
     }
 }

@@ -112,8 +112,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 				_projectCollection = projectInfo.Collection;
 			}
 			else
-			{
+			{				
 				_projectCollection = projectCollection;
+				_servers = new List<TeamFoundationServer> { _projectCollection.Server };
 			}
 
             ContentName = GettextCatalog.GetString("Source Explorer") + " - " + _projectCollection.Server.Name + " - " + _projectCollection.Name;
@@ -441,6 +442,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         /// </summary>
 		void LoadServers()
 		{
+			if (_servers == null)
+				return;
+			
 			var servers = _servers;
 	
 			_serverStore.Clear();
@@ -521,9 +525,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 				_noWorkspacesLabel.Visible = true;
 				_workspaceLabel.Visible = false;
 				_workspaceComboBox.Visible = false;
+
+				_currentWorkspace = null;
+				ShowMappingPath(null);
+				ClearFolders();
+				ClearFolderDetails();
 			}				
         }
        
+        /// <summary>
+        /// Reset projects data.
+        /// </summary>
         void ClearFolders()
 		{
 			_foldersStore.Clear();
@@ -535,8 +547,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         /// </summary>
 		void LoadFolders()
         {
-			ClearFolders();
-
 			_worker = Task.Factory.StartNew(delegate
 			{
 				if (!_workerCancel.Token.IsCancellationRequested)
@@ -550,7 +560,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 					var root = ItemSetToHierarchItemConverter.Convert(items);
                     			
 					Application.Invoke(() =>
-					{                  
+					{       
+						ClearFolders();
+
             			var node = _foldersStore.AddNode();
 
             			var serverName = string.Equals(_projectCollection.Server.Name, _projectCollection.Server.Uri.OriginalString, StringComparison.OrdinalIgnoreCase)
@@ -806,10 +818,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
 		void OnChangeServers(object sender, EventArgs ev)
 		{
-            var row = _serverComboBox.SelectedIndex;
+			var row = _serverComboBox.SelectedIndex;
 
-            if (row == -1)
-                return;
+			if (row == -1)
+			{
+				return;
+			}
 
 			var selectedItem = _serverStore.GetValue(row, _serverCollectionField);
 
@@ -839,11 +853,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
 			if (row == -1)
 			{
-				// no workspace, clear data
-				_currentWorkspace = null;
-				ClearFolders();
-				ClearFolderDetails();
-
 				return;
 			}
 
@@ -979,6 +988,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			}
 		}
 
+        /// <summary>
+        /// Expands the selected path.
+        /// </summary>
+        /// <param name="path">Path.</param>
 		void ExpandPath(string path)
 		{
 			if (string.IsNullOrEmpty(path))
@@ -1033,6 +1046,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			_folderDetailsView.ScrollToRow(position);
         }
 
+        /// <summary>
+        /// Determines if a repository path the mapped.
+        /// </summary>
+        /// <returns><c>true</c>, if mapped was ised, <c>false</c> otherwise.</returns>
+        /// <param name="serverPath">Server path.</param>
         bool IsMapped(RepositoryPath serverPath)
         {
             if (_currentWorkspace == null)
@@ -1047,7 +1065,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         /// <param name="serverPath">Server path.</param>
         void ShowMappingPath(RepositoryPath serverPath)
         {
-            if (!IsMapped(serverPath))
+			if (serverPath == null || !IsMapped(serverPath))
             {
                 _localFolder.Text = GettextCatalog.GetString("Not Mapped");
                 return;

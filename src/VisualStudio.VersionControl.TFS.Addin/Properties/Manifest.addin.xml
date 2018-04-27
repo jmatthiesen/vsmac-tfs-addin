@@ -1,6 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ExtensionModel>
 
+    <!-- Init (Auth Validation) -->
+    <Extension path="/MonoDevelop/Ide/StartupHandlers">
+        <Class class="MonoDevelop.VersionControl.TFS.Commands.InitCommand"/>
+    </Extension>
+    
     <!-- VersionControlSystems -->
     <Extension path="/MonoDevelop/VersionControl/VersionControlSystems">
         <Class class="MonoDevelop.VersionControl.TFS.TeamFoundationServerVersionControl"/>

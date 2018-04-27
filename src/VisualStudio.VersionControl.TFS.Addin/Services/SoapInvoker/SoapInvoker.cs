@@ -32,6 +32,7 @@ using System.Net;
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.Schema;
+using Autofac;
 using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
@@ -90,7 +91,10 @@ namespace MonoDevelop.VersionControl.TFS.Services
         }
 
         public XElement InvokeResult()
-        {
+		{
+			// If OAuth Token from cache is near to expire, renew it.
+			DependencyContainer.Container.Resolve<TeamFoundationServerVersionControlService>().RefreshAccessToken();
+
             var responseElement = InvokeResponse();
             return MethodResultExtractor(responseElement);
         }

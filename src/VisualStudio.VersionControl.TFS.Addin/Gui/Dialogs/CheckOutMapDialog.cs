@@ -472,29 +472,31 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             {
                 var menuOption = Convert.ToInt32(selectedItem);
 
-                switch (menuOption)
-                {
-                    case 1:
-                        using (var dialog = new AddEditWorkspaceDialog(_projectCollection, null))
-                        {
-                            if (dialog.Run(this) == Command.Ok)
-                            {
-                                LoadWorkspaces();
-                            }
-                        }
-                        break;
-                    case 2:
-                        using (var dialog = new WorkspacesDialog(_projectCollection))
-                        {
-                            if (dialog.Run() == Command.Close)
-                            {
-                                LoadWorkspaces();
-                            }
-                        }
-                        break;
-                }
-            }
-            else
+				switch (menuOption)
+				{
+					case 1:
+						using (var dialog = new AddEditWorkspaceDialog(_projectCollection, null))
+						{
+							if (dialog.Run(this) == Command.Ok)
+							{
+								LoadWorkspaces();
+							}
+						}
+						break;
+					case 2:
+						using (var dialog = new WorkspacesDialog(_projectCollection))
+						{
+							if (dialog.Run() == Command.Close)
+							{
+								LoadWorkspaces();
+							}
+						}
+						break;
+					default:
+						break;
+				}
+			}
+			else
             {
 				if (selectedItem is WorkspaceData workspaceData)
 				{
@@ -512,9 +514,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                     _localPathEntry.Text = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                 }
 			}
-        }
+		}
 
-        void OnChangeProject(object sender, EventArgs args)
+		void OnChangeProject(object sender, EventArgs args)
         {
             var row = _projectsListView.SelectedRow;
 
@@ -657,10 +659,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 				_accountComboBox.SelectedIndex = 0;
             }
         }
-
+        
 		Image GetAccountIcon(string username)
 		{
-			MailAddress address = new MailAddress(username);
+			var address = new MailAddress(username);
             string host = address.Host;
             
 			if(host.Contains("microsoft") || host.Contains("hotmail"))
@@ -813,9 +815,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 								_projectsStore.SetValue(row, _projectName, project.Name);
 								_projectsStore.SetValue(row, _projectItem, project);
 
-								if (selectedColletion.Projects.Any())
+								if (selectedColletion.Projects.Any() && _projectsListView != null)
 								{
-									_projectsListView?.SelectRow(0);
+									_projectsListView.SelectRow(0);
 								}
 
 								count++;
@@ -902,5 +904,5 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             return Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.VSTS.png").WithSize(16, 16);
         }
-    }
+	}
 }

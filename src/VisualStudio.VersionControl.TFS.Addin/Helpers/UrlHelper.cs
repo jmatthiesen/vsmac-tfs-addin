@@ -32,15 +32,15 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
 {
     public static class UrlHelper
     {
-        private static readonly char urlSeparator = '/';
+        static readonly char urlSeparator = '/';
 
         public static Uri AddPath(this Uri baseUri, string path)
         {
             if (baseUri == null)
-                throw new ArgumentNullException("baseUri");
+				throw new ArgumentNullException(nameof(baseUri));
           
             if (path == null)
-                throw new ArgumentNullException("path");
+				throw new ArgumentNullException(nameof(path));
 
             var uriBuilder = new UriBuilder(baseUri);
             uriBuilder.Path = CombinePaths(uriBuilder.Path, path);
