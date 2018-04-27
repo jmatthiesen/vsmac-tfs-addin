@@ -46,14 +46,19 @@ namespace MonoDevelop.VersionControl.TFS
         readonly IWorkspaceService workspace;
         readonly VersionInfoResolver _versionInfoResolver;
         readonly TeamFoundationServerVersionControlService _versionControlService;
-        readonly FileKeeperService _fileKeeperService;
+        readonly IFileKeeperService _fileKeeperService;
 
-        public TeamFoundationServerRepository(string rootPath, IWorkspaceService workspace,
-                                              TeamFoundationServerVersionControlService versionControlService, FileKeeperService fileKeeperService)
-        {
-            if (workspace == null)
-                return;
-            
+		public TeamFoundationServerRepository(
+			string rootPath,
+			IWorkspaceService workspace,
+			TeamFoundationServerVersionControlService versionControlService,
+			IFileKeeperService fileKeeperService)
+		{
+			if (workspace == null)
+			{
+				return;
+			}
+
             RootPath = rootPath;
             this.workspace = workspace;
             _versionControlService = versionControlService;
@@ -101,11 +106,13 @@ namespace MonoDevelop.VersionControl.TFS
             var serverPath = workspace.Data.GetServerPathForLocalPath(new LocalPath(localFile));
             ItemSpec spec = new ItemSpec(serverPath, RecursionType.None);
             ChangesetVersionSpec versionFrom = null;
-          
-            if (since != null)
-                versionFrom = new ChangesetVersionSpec(((TFSRevision)since).Version);
-        
-            return workspace.QueryHistory(spec, VersionSpec.Latest, versionFrom, null, short.MaxValue).Select(x => new TFSRevision(this, serverPath, x)).ToArray();
+
+			if (since != null)
+			{
+				versionFrom = new ChangesetVersionSpec(((TeamFoundationServerRevision)since).Version);
+			}
+
+			return workspace.QueryHistory(spec, VersionSpec.Latest, versionFrom, null, short.MaxValue).Select(x => new TeamFoundationServerRevision(this, serverPath, x)).ToArray();
         }
 
         protected override IEnumerable<VersionInfo> OnGetVersionInfo(IEnumerable<FilePath> paths, bool getRemoteStatus)
@@ -131,7 +138,7 @@ namespace MonoDevelop.VersionControl.TFS
             _versionInfoResolver.InvalidateCache(paths);
             NotificationService.NotifyFilesChanged(paths);
         }
-
+       
         protected override void OnCommit(ChangeSet changeSet, ProgressMonitor monitor)
         {
             var commitItems = (from it in changeSet.Items
@@ -179,7 +186,7 @@ namespace MonoDevelop.VersionControl.TFS
         protected override void OnRevertToRevision(FilePath localPath, Revision revision, ProgressMonitor monitor)
         {
             var spec = new ItemSpec(localPath, localPath.IsDirectory ? RecursionType.Full : RecursionType.None);
-            var rev = (TFSRevision)revision;
+			var rev = (TeamFoundationServerRevision)revision;
             var request = new GetRequest(spec, new ChangesetVersionSpec(rev.Version));
             workspace.Get(request, GetOptions.None);
             _versionInfoResolver.InvalidateCache(localPath);
@@ -189,11 +196,12 @@ namespace MonoDevelop.VersionControl.TFS
         protected override void OnAdd(FilePath[] localPaths, bool recurse, ProgressMonitor monitor)
         {
             var paths = localPaths.Select(x => new LocalPath(x)).Where(IsFileInWorkspace).ToArray();
-            ICollection<Failure> failures;
-            workspace.PendAdd(paths, recurse, out failures);
+			workspace.PendAdd(paths, recurse, out ICollection<Failure> failures);
 
-            var failuresDialog = new FailuresDialog(failures);
-            failuresDialog.Show();
+			using (var failuresDialog = new FailuresDialog(failures))
+            {
+                failuresDialog.Run();
+            }
 
             _versionInfoResolver.InvalidateCache(paths, recurse);
             NotificationService.NotifyFilesChanged(paths);
@@ -223,9 +231,8 @@ namespace MonoDevelop.VersionControl.TFS
                 var forRemove = statuses.Where(s => s.Value.IsVersioned &&
                                                     !s.Value.HasLocalChange(VersionStatus.ScheduledAdd)).Select(s => s.Key);
 
-                ICollection<Failure> failures;
-                workspace.PendDelete(forRemove, recursive ? RecursionType.Full : RecursionType.None, keepLocal, out failures);
-                if (failures.Any(f => f.SeverityType == SeverityType.Error))
+				workspace.PendDelete(forRemove, recursive ? RecursionType.Full : RecursionType.None, keepLocal, out ICollection<Failure> failures);
+				if (failures.Any(f => f.SeverityType == SeverityType.Error))
                 {
                     foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
                     {
@@ -244,7 +251,7 @@ namespace MonoDevelop.VersionControl.TFS
 
         protected override string OnGetTextAtRevision(FilePath repositoryPath, Revision revision)
         {
-            var tfsRevision = (TFSRevision)revision;
+			var tfsRevision = (TeamFoundationServerRevision)revision;
            
             if (tfsRevision.Version == 0)
                 return string.Empty;
@@ -265,7 +272,7 @@ namespace MonoDevelop.VersionControl.TFS
 
         protected override RevisionPath[] OnGetRevisionChanges(Revision revision)
         {
-            var tfsRevision = (TFSRevision)revision;
+			var tfsRevision = (TeamFoundationServerRevision)revision;
 
             var changeSet = workspace.QueryChangeset(tfsRevision.Version, true);
             List<RevisionPath> revisionPaths = new List<RevisionPath>();
@@ -351,16 +358,20 @@ namespace MonoDevelop.VersionControl.TFS
 
         void Move(LocalPath from, LocalPath to)
         {
-            ICollection<Failure> failures;
-            workspace.PendRename(from, to, out failures);
+			if (workspace != null)
+			{
+				workspace.PendRename(from, to, out ICollection<Failure> failures);
+                               
+				using (var failuresDialog = new FailuresDialog(failures))
+                {
+                    failuresDialog.Run();
+                }
 
-            var failuresDialog = new FailuresDialog(failures);
-            failuresDialog.Show();
+				_versionInfoResolver.InvalidateCache(to);
 
-            _versionInfoResolver.InvalidateCache(to);
-
-            NotificationService.NotifyFileRemoved(from);
-            NotificationService.NotifyFileChanged(to);
+				NotificationService.NotifyFileRemoved(from);
+				NotificationService.NotifyFileChanged(to);
+			}
         }
 
         protected override void OnLock(ProgressMonitor monitor, params FilePath[] localPaths)
@@ -374,8 +385,7 @@ namespace MonoDevelop.VersionControl.TFS
             var paths = localPaths.Select(x => new LocalPath(x)).ToArray();
             LockItems(paths, LockLevel.None);
         }
-
-  
+          
         void LockItems(LocalPath[] localPaths, LockLevel lockLevel)
         {
             workspace.LockItems(localPaths, lockLevel);
@@ -421,9 +431,8 @@ namespace MonoDevelop.VersionControl.TFS
                   
                     try
                     {
-                        ICollection<Failure> failures;
-                        workspace.PendEdit(path.ToEnumerable(), RecursionType.None, _versionControlService.CheckOutLockLevel, out failures);
-                        if (failures.Any(f => f.SeverityType == SeverityType.Error))
+						workspace.PendEdit(path.ToEnumerable(), RecursionType.None, _versionControlService.CheckOutLockLevel, out ICollection<Failure> failures);
+						if (failures.Any(f => f.SeverityType == SeverityType.Error))
                         {
                             foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
                             {
@@ -460,11 +469,15 @@ namespace MonoDevelop.VersionControl.TFS
             using (var progress = VersionControlService.GetProgressMonitor("CheckOut"))
             {
                 progress.Log.WriteLine("Start check out item: " + path);
-                ICollection<Failure> failures;
-                workspace.CheckOut(path.ToEnumerable(), out failures);
-        
-                var failuresDialog = new FailuresDialog(failures);
-                failuresDialog.Show();
+				workspace.CheckOut(path.ToEnumerable(), out ICollection<Failure> failures);
+
+				if (failures.Any())
+				{
+					using (var failuresDialog = new FailuresDialog(failures))
+					{
+						failuresDialog.Run();
+					}
+				}
 
                 _versionInfoResolver.InvalidateCache(path);
                 NotificationService.NotifyFileChanged(path);

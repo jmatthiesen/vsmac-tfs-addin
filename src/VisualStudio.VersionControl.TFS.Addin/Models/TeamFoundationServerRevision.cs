@@ -30,19 +30,19 @@ using System;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
-    sealed class TFSRevision : Revision
+	sealed class TeamFoundationServerRevision : Revision
     {
         public int Version { get; set; }
 
         public string ItemPath { get; set; }
 
-        public TFSRevision(Repository repo, int version, string itemPath) : base(repo)
+		public TeamFoundationServerRevision(Repository repo, int version, string itemPath) : base(repo)
         {
             Version = version;
             ItemPath = itemPath;
         }
 
-        public TFSRevision(Repository repo, string itemPath, Changeset changeset) : 
+		public TeamFoundationServerRevision(Repository repo, string itemPath, Changeset changeset) : 
             this(repo, changeset.ChangesetId, itemPath)
         {
             Author = changeset.Committer;
@@ -73,7 +73,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
            
             if (changeSets.Count == 2)
             {
-                return new TFSRevision(repo, ItemPath, changeSets[1]);
+				return new TeamFoundationServerRevision(repo, ItemPath, changeSets[1]);
             }
 
             return null;

@@ -153,24 +153,27 @@ namespace MonoDevelop.VersionControl.TFS.Models
         VersionStatus GetServerVersionStatus(ExtendedItem item)
         {
             var status = VersionStatus.Versioned;
+
             if (item.IsLocked)
                 status = status | VersionStatus.Locked;
+			
             if (item.DeletionId > 0 || item.VersionLatest == 0)
                 return status | VersionStatus.Missing;
+			
             if (item.VersionLatest > item.VersionLocal)
                 return status | VersionStatus.Modified;
 
             return status;
         }
 
-        TFSRevision GetLocalRevision(ExtendedItem item)
+		TeamFoundationServerRevision GetLocalRevision(ExtendedItem item)
         {
-            return new TFSRevision(_repository, item.VersionLocal, item.SourceServerItem);
+			return new TeamFoundationServerRevision(_repository, item.VersionLocal, item.SourceServerItem);
         }
 
-        TFSRevision GetServerRevision(ExtendedItem item)
+		TeamFoundationServerRevision GetServerRevision(ExtendedItem item)
         {
-            return new TFSRevision(_repository, item.VersionLatest, item.SourceServerItem);
+			return new TeamFoundationServerRevision(_repository, item.VersionLatest, item.SourceServerItem);
         }
 
         #endregion
@@ -182,6 +185,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             foreach (var path in paths)
             {
                 var cachedStatus = Get(path);
+
                 if (cachedStatus == null || (bool)_requiredRefresh.GetValue(cachedStatus))
                 {
                     if (!_repository.Workspace.Data.IsLocalPathMapped(path))
@@ -200,18 +204,19 @@ namespace MonoDevelop.VersionControl.TFS.Models
                     result.Add(path, cachedStatus);
                 }
             }
+
             if (pathsWhichNeedServerRequest.Any())
             {
                 var statuses = ProcessUnCachedItems(pathsWhichNeedServerRequest);
                 result.AddRange(statuses);
             }
+
             return result;
         }
-
-
+        
         public Dictionary<LocalPath, VersionInfo> GetDirectoryStatus(LocalPath localPath)
         {
-            //For folder status we won't use cache.
+            // For folder status we won't use cache.
             var localItems = localPath.CollectSubPathsAndSelf().ToArray();
             var itemSpecs = new[] { new ItemSpec(_repository.Workspace.Data.GetServerPathForLocalPath(localPath), RecursionType.Full) };
             var pendingChanges = _repository.Workspace.GetPendingChanges(itemSpecs);

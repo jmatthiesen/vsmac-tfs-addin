@@ -31,7 +31,7 @@ using System.Xml.Linq;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
-    public static class TFSServiceMessage
+    public static class TeamFoundationServerServiceMessage
     {
         public readonly static XNamespace ServiceNs = "http://microsoft.com/webservices/";
 

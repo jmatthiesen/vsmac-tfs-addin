@@ -38,10 +38,10 @@ using MonoDevelop.VersionControl.TFS.Models;
 using MonoDevelop.VersionControl.TFS.Services;
 
 namespace MonoDevelop.VersionControl.TFS
-{
+{   
     public class TeamFoundationServerVersionControl : VersionControlSystem
     {
-        readonly Dictionary<FilePath, TeamFoundationServerRepository> repositoriesCache = new Dictionary<FilePath, TeamFoundationServerRepository>();
+        readonly Dictionary<FilePath, TeamFoundationServerRepository> _repositoriesCache = new Dictionary<FilePath, TeamFoundationServerRepository>();
         readonly TeamFoundationServerVersionControlService _versionControlService;
 
         public TeamFoundationServerVersionControl()
@@ -85,28 +85,35 @@ namespace MonoDevelop.VersionControl.TFS
             if (path.IsNullOrEmpty)
                 return null;
             
-            foreach (var repo in repositoriesCache)
+			foreach (var repo in _repositoriesCache)
             {
-                if (repo.Key == path || path.IsChildPathOf(repo.Key))
-                {
-                    repo.Value.Refresh();
-                    return repo.Value;
-                }
+				if (repo.Value != null)
+				{
+					if (repo.Key == path || path.IsChildPathOf(repo.Key))
+					{
+						repo.Value.Refresh();
 
-                if (repo.Key.IsChildPathOf(path))
-                {
-                    repositoriesCache.Remove(repo.Key);
-                    var repo1 = GetRepository(path, id);
-                    repositoriesCache.Add(path, repo1);
-                    return repo1;
-                }
+						return repo.Value;
+					}
+
+					if (repo.Key.IsChildPathOf(path))
+					{
+						_repositoriesCache.Remove(repo.Key);
+						var repoClone = GetRepository(path, id);
+						_repositoriesCache.Add(path, repoClone);
+
+						return repoClone;
+					}
+				}
             }
 
             var repository = GetRepository(path, id);
 
-            if (repository != null)
-                repositoriesCache.Add(path, repository);
-            
+			if (repository != null)
+			{
+				_repositoriesCache.Add(path, repository);
+			}
+
             return repository;
         }
 
@@ -185,7 +192,7 @@ namespace MonoDevelop.VersionControl.TFS
 
         internal void RefreshRepositories()
         {
-            foreach (var repo in repositoriesCache)
+			foreach (var repo in _repositoriesCache)
             {
                 repo.Value.Refresh();
             }
@@ -193,7 +200,13 @@ namespace MonoDevelop.VersionControl.TFS
 
         protected override FilePath OnGetRepositoryPath(FilePath path, string id)
         {
-            throw new NotImplementedException();
+			if (path.IsEmpty || path.ParentDirectory.IsEmpty || path.IsNull || path.ParentDirectory.IsNull)
+                return null;
+			
+			if(Directory.Exists(path))
+                return path;
+			
+            return OnGetRepositoryPath(path.ParentDirectory, id);
         }
     }
 }

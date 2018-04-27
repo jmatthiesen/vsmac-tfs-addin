@@ -44,7 +44,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
         {
             get
             {
-                return TFSServiceMessage.ServiceNs;
+                return TeamFoundationServerServiceMessage.ServiceNs;
             }
         }
 

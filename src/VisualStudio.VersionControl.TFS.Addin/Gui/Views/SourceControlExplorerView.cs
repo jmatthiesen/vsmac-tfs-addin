@@ -1398,8 +1398,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
                         if (errors)
                         {
-                            var failuresDialog = new FailuresDialog(failures);
-                            failuresDialog.Show();
+							using (var failuresDialog = new FailuresDialog(failures))
+                            {
+                                failuresDialog.Run();
+                            }
                         }
 
                         FireFilesRemoved(items);
@@ -1578,8 +1580,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
 						if (failures.Any())
                         {
-                            var failuresDialog = new FailuresDialog(failures);
-                            failuresDialog.Show();
+							using (var failuresDialog = new FailuresDialog(failures))
+                            {
+                                failuresDialog.Run();
+                            }
                         }
                         else
                         {

@@ -32,9 +32,9 @@ namespace MonoDevelop.VersionControl.TFS.Models
     {
         public RepositoryPath RemotePath { get; set; }
         public VersionStatus LocalStatus { get; set; }
-        public TFSRevision LocalRevision { get; set; }
+        public TeamFoundationServerRevision LocalRevision { get; set; }
         public VersionStatus RemoteStatus { get; set; }
-        public TFSRevision RemoteRevision { get; set; }
+		public TeamFoundationServerRevision RemoteRevision { get; set; }
 
         public bool IsUnversioned
         {

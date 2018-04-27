@@ -73,7 +73,6 @@
     <Compile Remove="Icons.cs" />
     <Compile Remove="Helpers\TeamFoundationServerFileHelper.cs" />
     <Compile Remove="Gui\Widgets\AddVisualStudioTeamServicesWidget.cs" />
-    <Compile Remove="Models\TeamFoundationServerRevision.cs" />
     <Compile Remove="Gui\Widgets\AddServerWidget.cs" />
     <Compile Remove="Gui\Cells\ServerTypeCellView.cs" />
   </ItemGroup>
