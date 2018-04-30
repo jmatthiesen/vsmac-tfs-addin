@@ -3,7 +3,7 @@
 
     <!-- Init (Auth Validation) -->
     <Extension path="/MonoDevelop/Ide/StartupHandlers">
-        <Class class="MonoDevelop.VersionControl.TFS.Commands.InitCommand"/>
+        <Class class="MonoDevelop.VersionControl.TFS.Commands.InitHandler"/>
     </Extension>
     
     <!-- VersionControlSystems -->

@@ -177,7 +177,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         public List<ProjectInfo> Projects { get { return projects; } }
 
         public TService GetService<TService>()
-            where TService : TFSService
+			where TService : TeamFoundationServerService
         {
             var locationService = new LocationService(Server.Uri, LocationServicePath) { Server = Server };
             return locationService.LoadService<TService>();

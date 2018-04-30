@@ -37,56 +37,51 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
         {
             if (string.IsNullOrWhiteSpace(value))
                 return ChangeType.None;
-            ChangeType changeType;
-            if (Enum.TryParse<ChangeType>(value.Replace(" ", ","), true, out changeType))
-                return changeType;
-            else
-                return ChangeType.None;
-        }
+			if (Enum.TryParse<ChangeType>(value.Replace(" ", ","), true, out ChangeType changeType))
+				return changeType;
+			else
+				return ChangeType.None;
+		}
 
         public static ItemType ParseItemType(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
                 return ItemType.Any;
-            ItemType itemType;
-            if (Enum.TryParse<ItemType>(value.Replace(" ", ","), true, out itemType))
-                return itemType;
-            else
-                return ItemType.Any;
-        }
+			if (Enum.TryParse<ItemType>(value.Replace(" ", ","), true, out ItemType itemType))
+				return itemType;
+			else
+				return ItemType.Any;
+		}
 
         public static ConflictType ParseConflictType(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
 				throw new ArgumentNullException(nameof(value));
-            ConflictType conflictType;
-            if (Enum.TryParse<ConflictType>(value.Replace(" ", ","), true, out conflictType))
-                return conflictType;
-            else
+			if (Enum.TryParse<ConflictType>(value.Replace(" ", ","), true, out ConflictType conflictType))
+				return conflictType;
+			else
 				throw new ArgumentException("Unknown Conflict Type", nameof(value));
-        }
+		}
 
         public static RequestType ParseRequestType(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
                 return RequestType.None;
-            RequestType requestType;
-            if (Enum.TryParse<RequestType>(value.Replace(" ", ","), true, out requestType))
-                return requestType;
-            else
-                return RequestType.None;
-        }
+			if (Enum.TryParse<RequestType>(value.Replace(" ", ","), true, out RequestType requestType))
+				return requestType;
+			else
+				return RequestType.None;
+		}
 
         public static LockLevel ParseLockLevel(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
                 return LockLevel.None;
-            LockLevel lockType;
-            if (Enum.TryParse<LockLevel>(value.Replace(" ", ","), true, out lockType))
-                return lockType;
-            else
-                return LockLevel.None;
-        }
+			if (Enum.TryParse<LockLevel>(value.Replace(" ", ","), true, out LockLevel lockType))
+				return lockType;
+			else
+				return LockLevel.None;
+		}
 
         public static SeverityType ParseSeverityType(string value)
         {

@@ -30,6 +30,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
+	/// <summary>
+    /// No authorization config.
+    /// </summary>
     public sealed class NoAuthorizationConfig : IServerAuthorizationConfig
     {
         public Widget Widget

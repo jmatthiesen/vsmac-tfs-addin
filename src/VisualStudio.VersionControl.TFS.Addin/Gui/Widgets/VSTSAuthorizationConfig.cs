@@ -30,6 +30,9 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
+	/// <summary>
+    /// VSTS  Authorization config.
+    /// </summary>
 	sealed class VSTSAuthorizationConfig : TeamFoundationServerAuthorizationConfig, IOAuthAuthorizationConfig
     {
         public VSTSAuthorizationConfig()
@@ -37,8 +40,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
             Init();
         }
 
+        /// <summary>
+        /// Gets or sets the oauth token.
+        /// </summary>
+        /// <value>The oauth token.</value>
         public string OauthToken { get; set; }
-        public DateTimeOffset ExpiresOn { get; set; }
+       
+        /// <summary>
+        /// Gets or sets the expiration time.
+        /// </summary>
+        /// <value>The expires on.</value>
+		public DateTimeOffset ExpiresOn { get; set; }
 
         void Init()
         {

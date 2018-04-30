@@ -37,7 +37,7 @@ using MonoDevelop.VersionControl.TFS.Models;
 namespace MonoDevelop.VersionControl.TFS.Services
 {
     [ServiceResolver(typeof(RepositoryServiceResolver))]
-    sealed class RepositoryService : TFSService
+	sealed class RepositoryService : TeamFoundationServerService
     {
         private RepositoryService(Uri baseUri, string servicePath)
             : base(baseUri, servicePath)

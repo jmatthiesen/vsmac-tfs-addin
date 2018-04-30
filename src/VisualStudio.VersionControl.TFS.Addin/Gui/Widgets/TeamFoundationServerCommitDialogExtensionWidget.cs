@@ -50,8 +50,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 			Init();
 			BuildGui();
 		}
-
-
+        
         /// <summary>
         /// Gets the work items.
         /// </summary>

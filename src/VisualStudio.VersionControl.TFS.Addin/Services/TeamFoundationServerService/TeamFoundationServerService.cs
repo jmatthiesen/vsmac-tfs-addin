@@ -1,11 +1,12 @@
-﻿// EnvironmentHelper.cs
+﻿// TFSService.cs
 // 
-// Author:
+// Authors:
+//       Ventsislav Mladenov
 //       Javier Suárez Ruiz
 // 
 // The MIT License (MIT)
 // 
-// Copyright (c) 2018 Javier Suárez Ruiz
+// Copyright (c) 2013-2018 Ventsislav Mladenov, Javier Suárez Ruiz
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,37 +26,47 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
+using System.Xml;
+using System.Xml.Linq;
+using MonoDevelop.VersionControl.TFS.Helpers;
 using MonoDevelop.VersionControl.TFS.Models;
-using Xwt.Drawing;
 
-namespace MonoDevelop.VersionControl.TFS.Helpers
+namespace MonoDevelop.VersionControl.TFS.Services
 {
-	public static class ImageHelper
+	public abstract class TeamFoundationServerService
     {
-		/// <summary>
-        /// Gets the repository image.
-        /// </summary>
-        /// <returns>The repository image.</returns>
-		public static Image GetRepositoryImage()
+		protected TeamFoundationServerService(Uri baseUri, string servicePath)
         {
-			return Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.project-16.png").WithSize(16, 16);
+            BaseUri = baseUri;
+            ServicePath = servicePath;
+            Url = BaseUri.AddPath(ServicePath);
         }
 
-        /// <summary>
-		/// Gets the item image based on ItemType (File or Folder).
-        /// </summary>
-        /// <returns>The item image.</returns>
-        /// <param name="itemType">Item type.</param>
-		public static Image GetItemImage(ItemType itemType)
+        public Uri BaseUri { get; private set; }
+
+        public string ServicePath { get; private set; }
+
+        public Uri Url { get; private set; }
+
+        public TeamFoundationServer Server { get; set; }
+
+        public abstract XNamespace MessageNs { get; }
+
+        public IXmlNamespaceResolver NsResolver
         {
-            if (itemType == ItemType.File)
+            get
             {
-				return Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.file-16.png");
+                XmlNamespaceManager manager = new XmlNamespaceManager(new NameTable());
+                manager.AddNamespace("msg", MessageNs.ToString());
+
+                return manager;
             }
-            else
-            {
-				return Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.folder-16.png");
-            }
+        }
+
+        protected ISoapInvoker GetSoapInvoker()
+        {
+            return DependencyContainer.GetSoapInvoker(this);
         }
     }
 }

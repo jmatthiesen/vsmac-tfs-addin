@@ -76,6 +76,7 @@ namespace MonoDevelop.VersionControl.TFS.Commands
 
             var serversCount = service.Servers.Count;
 
+            // VIsible if there are servers
             info.Visible = serversCount > 0;
         }   
     }

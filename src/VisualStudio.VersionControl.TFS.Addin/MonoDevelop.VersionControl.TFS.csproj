@@ -66,7 +66,7 @@
     <Folder Include="Services\ConfigurationService\" />
     <Folder Include="Services\ClientService\" />
     <Folder Include="Services\ProgressDisplayService\" />
-    <Folder Include="Services\TFSService\" />
+    <Folder Include="Services\TeamFoundationServerService\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Models\ServerAuthentication.cs" />
@@ -75,6 +75,7 @@
     <Compile Remove="Gui\Widgets\AddVisualStudioTeamServicesWidget.cs" />
     <Compile Remove="Gui\Widgets\AddServerWidget.cs" />
     <Compile Remove="Gui\Cells\ServerTypeCellView.cs" />
+    <Compile Remove="Helpers\RepositoryCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Icons\file-16.png" />

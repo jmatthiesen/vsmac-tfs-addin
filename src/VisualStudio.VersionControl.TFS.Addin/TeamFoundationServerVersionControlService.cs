@@ -37,6 +37,9 @@ using MonoDevelop.VersionControl.TFS.Services;
 
 namespace MonoDevelop.VersionControl.TFS
 {
+	/// <summary>
+    /// Team foundation server version control service.
+    /// </summary>
 	public sealed class TeamFoundationServerVersionControlService
     {
 		/// <summary>

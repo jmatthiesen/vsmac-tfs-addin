@@ -39,6 +39,9 @@ using MonoDevelop.VersionControl.TFS.Services;
 
 namespace MonoDevelop.VersionControl.TFS
 {   
+	/// <summary>
+    /// Team foundation server version control.
+    /// </summary>
     public class TeamFoundationServerVersionControl : VersionControlSystem
     {
         readonly Dictionary<FilePath, TeamFoundationServerRepository> _repositoriesCache = new Dictionary<FilePath, TeamFoundationServerRepository>();
@@ -131,6 +134,12 @@ namespace MonoDevelop.VersionControl.TFS
             return repository;
         }
 
+        /// <summary>
+        /// Get repository path.
+        /// </summary>
+        /// <returns>The get repository path.</returns>
+        /// <param name="path">Path.</param>
+        /// <param name="id">Identifier.</param>
 		protected override FilePath OnGetRepositoryPath(FilePath path, string id)
         {
 			if (path.IsEmpty || path.ParentDirectory.IsEmpty || path.IsNull || path.ParentDirectory.IsNull)

@@ -34,7 +34,7 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
-    internal sealed class LocationService : TFSService
+	internal sealed class LocationService : TeamFoundationServerService
     {
         #region implemented abstract members of TFSService
 
@@ -53,7 +53,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
         {
         }
 
-        public TFSService LoadService(Type serviceType)
+		public TeamFoundationServerService LoadService(Type serviceType)
         {
             var invoker = GetSoapInvoker();
             invoker.CreateEnvelope("QueryServices");
@@ -87,7 +87,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             var servicePath = serviceElement.Attribute("relativePath").Value;
 
             var serviceConstructor = serviceType.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(System.Uri), typeof(System.String) }, null);
-            var service = (TFSService)serviceConstructor.Invoke(new object[] { basePath, servicePath } );
+			var service = (TeamFoundationServerService)serviceConstructor.Invoke(new object[] { basePath, servicePath } );
 
             service.Server = Server;
             var properties = serviceType.GetProperties();
@@ -107,7 +107,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
 
         public TService LoadService<TService>()
-            where TService: TFSService
+			where TService: TeamFoundationServerService
         {
             return (TService)LoadService(typeof(TService));
         }

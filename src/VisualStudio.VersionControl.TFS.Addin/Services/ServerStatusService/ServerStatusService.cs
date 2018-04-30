@@ -32,7 +32,7 @@ using MonoDevelop.VersionControl.TFS.Models;
 namespace MonoDevelop.VersionControl.TFS.Services
 {
     [ServiceResolver(typeof(ServerStatusServiceResolver))]
-    internal sealed class ServerStatusService : TFSService
+	internal sealed class ServerStatusService : TeamFoundationServerService
     {
         ServerStatusService(Uri baseUri, string servicePath)
             : base(baseUri, servicePath)

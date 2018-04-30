@@ -57,18 +57,21 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
             _debugModeBox = new CheckBox(GettextCatalog.GetString("Debug Mode"));
         }
 
-        /// <summary>
+		/// <summary>
 		/// Builds the SettingsWidget GUI.
-        /// </summary>
-        void BuildGui()
-        {
-            PackStart(new Label(GettextCatalog.GetString("Lock Level:")));
-            PackStart(_lockLevelBox);
+		/// </summary>
+		void BuildGui()
+		{
+			PackStart(new Label(GettextCatalog.GetString("Lock Level:")));
+			PackStart(_lockLevelBox);
 
-            _debugModeBox.AllowMixed = false;
-            _debugModeBox.Active = _service.DebugMode;
-            PackStart(_debugModeBox);
-        }
+			_debugModeBox.AllowMixed = false;
+			_debugModeBox.Active = _service.DebugMode;
+
+#if DEBUG
+			PackStart(_debugModeBox);
+#endif
+		}
 
         public void ApplyChanges()
         {

@@ -34,6 +34,9 @@ using MonoDevelop.VersionControl.TFS.MonoDevelopWrappers.Implementation;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Add-in Dependency Container.
+    /// </summary>
     public static class DependencyContainer
     {
         public static void Register(ContainerBuilder builder)
@@ -63,9 +66,9 @@ namespace MonoDevelop.VersionControl.TFS.Services
             }
         }
 
-        public static ISoapInvoker GetSoapInvoker(TFSService service)
+		public static ISoapInvoker GetSoapInvoker(TeamFoundationServerService service)
         {
-            return Container.Resolve<ISoapInvoker>(new TypedParameter(typeof(TFSService), service));
+			return Container.Resolve<ISoapInvoker>(new TypedParameter(typeof(TeamFoundationServerService), service));
         }
     }
 

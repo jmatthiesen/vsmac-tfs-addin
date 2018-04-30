@@ -35,21 +35,19 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
 
         public override bool Initialize(ChangeSet changeSet)
         {
-			var repo = changeSet.Repository as TeamFoundationServerRepository;
-          
-			if (repo != null)
-            {
+			if (changeSet.Repository is TeamFoundationServerRepository repo)
+			{
 				_widget = new TeamFoundationServerCommitDialogExtensionWidget();
 				Add(_widget);
 
 				_widget.Show();
-                Show();
+				Show();
 
-                return true;
-            }
-            else
-                return false;
-        }
+				return true;
+			}
+
+			return false;
+		}
 
         public override bool OnBeginCommit(ChangeSet changeSet)
         {

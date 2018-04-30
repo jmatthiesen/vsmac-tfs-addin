@@ -54,6 +54,9 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
         }
     }
 
+    /// <summary>
+	/// Team foundation server VersionControlCommandHandler.
+    /// </summary>
     class TeamFoundationServerCommandHandler : VersionControlCommandHandler
     {
 		/// <summary>

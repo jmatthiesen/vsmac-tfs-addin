@@ -50,7 +50,7 @@ namespace MonoDevelop.VersionControl.TFS.MonoDevelopWrappers.Implementation
         /// <param name="path">Path.</param>
         public void NotifyFileChanged(string path)
         {
-            var filePath = new FilePath(path);
+			var filePath = new FilePath(path);
 			VersionControlService.NotifyFileStatusChanged(new FileUpdateEventArgs(_repository, filePath, filePath.IsDirectory));
 			FileService.NotifyFileChanged(filePath);
         }

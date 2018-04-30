@@ -30,6 +30,9 @@ using Xwt;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
+	/// <summary>
+	/// Server type widget (CustomRoundedFrameBox).
+    /// </summary>
 	public class ServerTypeWidget : Components.RoundedFrameBox
 	{
 		HBox _contentBox;

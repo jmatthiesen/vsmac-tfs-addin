@@ -14,7 +14,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Panels
         {
             _widget.ApplyChanges();
         }
-
+        
         /// <summary>
         /// Creates the panel widget.
         /// </summary>

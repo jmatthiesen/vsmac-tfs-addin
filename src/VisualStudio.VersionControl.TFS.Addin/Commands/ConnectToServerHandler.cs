@@ -41,7 +41,13 @@ namespace MonoDevelop.VersionControl.TFS.Commands
         }
 
         protected override void Update(CommandInfo info)
-        {  
+		{           
+			if (VersionControlService.IsGloballyDisabled)
+            {
+                info.Enabled = false;
+                return;
+            }
+
             info.Enabled = true;
 
             base.Update(info);

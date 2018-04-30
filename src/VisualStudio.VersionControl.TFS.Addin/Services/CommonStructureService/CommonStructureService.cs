@@ -36,7 +36,7 @@ using MonoDevelop.VersionControl.TFS.Models;
 namespace MonoDevelop.VersionControl.TFS.Services
 {
     [ServiceResolver(typeof(CommonStructureServiceResolver))]
-    internal sealed class CommonStructureService : TFSService
+	internal sealed class CommonStructureService : TeamFoundationServerService
     {
         CommonStructureService(Uri baseUri, string servicePath)
             : base(baseUri, servicePath)

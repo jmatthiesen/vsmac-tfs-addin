@@ -44,14 +44,14 @@ namespace MonoDevelop.VersionControl.TFS.Services
         readonly XNamespace soapNs = "http://schemas.xmlsoap.org/soap/envelope/";
         
 
-        readonly TFSService service;
+		readonly TeamFoundationServerService service;
         readonly ILoggingService _loggingService;
         readonly XNamespace messagegNs;
         readonly Uri url;
         readonly XDocument document;
         string methodName;
 
-        public SoapInvoker(TFSService service, ILoggingService loggingService)
+		public SoapInvoker(TeamFoundationServerService service, ILoggingService loggingService)
         {
             this.service = service;
             _loggingService = loggingService;

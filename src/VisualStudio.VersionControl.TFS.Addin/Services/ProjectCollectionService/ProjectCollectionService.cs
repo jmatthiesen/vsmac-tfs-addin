@@ -35,7 +35,7 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
-    internal sealed class ProjectCollectionService : TFSService
+	internal sealed class ProjectCollectionService : TeamFoundationServerService
     {
 
         #region implemented abstract members of TFSService

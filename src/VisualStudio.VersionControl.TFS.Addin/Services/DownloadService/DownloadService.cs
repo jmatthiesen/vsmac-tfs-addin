@@ -35,7 +35,7 @@ using MonoDevelop.VersionControl.TFS.Models;
 namespace MonoDevelop.VersionControl.TFS.Services
 {
     [ServiceResolver(typeof(DownloadServiceResolver))]
-    sealed class DownloadService : TFSService
+	sealed class DownloadService : TeamFoundationServerService
     {
         private DownloadService(Uri baseUri, string servicePath)
             : base(baseUri, servicePath)

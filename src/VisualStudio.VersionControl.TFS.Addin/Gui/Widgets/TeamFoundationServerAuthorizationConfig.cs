@@ -35,6 +35,9 @@ using Xwt.Drawing;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
+	/// <summary>
+    /// Team foundation server authorization config.
+    /// </summary>
     class TeamFoundationServerAuthorizationConfig : IServerAuthorizationConfig, IUserPasswordAuthorizationConfig
     {
         public VBox _container;
