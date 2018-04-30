@@ -32,6 +32,9 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.MonoDevelopWrappers.Implementation
 {
+	/// <summary>
+    /// Notification service.
+    /// </summary>
     internal sealed class NotificationService : INotificationService
     {
         readonly TeamFoundationServerRepository _repository;
@@ -41,11 +44,15 @@ namespace MonoDevelop.VersionControl.TFS.MonoDevelopWrappers.Implementation
             _repository = repository;
         }
 
+        /// <summary>
+        /// Notifies the file changed.
+        /// </summary>
+        /// <param name="path">Path.</param>
         public void NotifyFileChanged(string path)
         {
-            var fp = new FilePath(path);
-            VersionControlService.NotifyFileStatusChanged(new FileUpdateEventArgs(_repository, fp, fp.IsDirectory));
-            FileService.NotifyFileChanged(fp);
+            var filePath = new FilePath(path);
+			VersionControlService.NotifyFileStatusChanged(new FileUpdateEventArgs(_repository, filePath, filePath.IsDirectory));
+			FileService.NotifyFileChanged(filePath);
         }
 
         public void NotifyFilesChanged(IEnumerable<string> paths)
@@ -61,11 +68,15 @@ namespace MonoDevelop.VersionControl.TFS.MonoDevelopWrappers.Implementation
             NotifyFilesChanged(paths.Select(x => (string)x));
         }
 
+        /// <summary>
+        /// Notifies the file removed.
+        /// </summary>
+        /// <param name="path">Path.</param>
         public void NotifyFileRemoved(string path)
         {
-            var fp = new FilePath(path);
-            VersionControlService.NotifyFileStatusChanged(new FileUpdateEventArgs(_repository, fp, fp.IsDirectory));
-            FileService.NotifyFileRemoved(fp);
+            var filePath = new FilePath(path);
+			VersionControlService.NotifyFileStatusChanged(new FileUpdateEventArgs(_repository, filePath, filePath.IsDirectory));
+			FileService.NotifyFileRemoved(filePath);
         }
 
         public void NotifyFilesRemoved(IEnumerable<string> paths)

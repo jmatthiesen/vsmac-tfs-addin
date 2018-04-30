@@ -90,7 +90,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 if (_currentConfig is VSTSAuthorizationConfig)
                     return ((VSTSAuthorizationConfig)_currentConfig).Result;
                 
-                return ((TFSAuthorizationConfig)_currentConfig).Result;
+				return ((TeamFoundationServerAuthorizationConfig)_currentConfig).Result;
             }
         }
 
@@ -105,7 +105,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 if (_currentConfig is VSTSAuthorizationConfig)
                     return ((VSTSAuthorizationConfig)_currentConfig).Result.Url;
                 
-                return ((TFSAuthorizationConfig)_currentConfig).Result.Url;
+				return ((TeamFoundationServerAuthorizationConfig)_currentConfig).Result.Url;
             }
         }
 

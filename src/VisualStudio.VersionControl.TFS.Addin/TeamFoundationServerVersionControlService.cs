@@ -95,17 +95,7 @@ namespace MonoDevelop.VersionControl.TFS
         {
             collection.ActiveWorkspaceName = workspaceName;
             Save();
-        }
-
-        public MergeToolInfo MergeToolInfo
-        {
-            get { return _configuration.MergeToolInfo; }
-            set
-            {
-                _configuration.MergeToolInfo = value;
-                Save();
-            }
-        }
+        }       
 
         public LockLevel CheckOutLockLevel
         {

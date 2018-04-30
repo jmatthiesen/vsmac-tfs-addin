@@ -59,9 +59,9 @@ namespace MonoDevelop.VersionControl.TFS.Models
                 case ServerAuthorizationType.Oauth:
                     return new VSTSAuthorizationConfig();
                 case ServerAuthorizationType.Ntlm:
-                    return new TFSAuthorizationConfig();
+					return new TeamFoundationServerAuthorizationConfig();
                 case ServerAuthorizationType.Basic:
-                    return new TFSAuthorizationConfig();
+					return new TeamFoundationServerAuthorizationConfig();
                 default:
                     return new NoAuthorizationConfig();
             }

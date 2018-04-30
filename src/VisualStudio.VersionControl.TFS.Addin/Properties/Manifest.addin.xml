@@ -11,7 +11,7 @@
         <Class class="MonoDevelop.VersionControl.TFS.TeamFoundationServerVersionControl"/>
     </Extension>
 
-    <!-- Commit Dialog -->
+    <!-- CommitDialog Extension -->
     <Extension path = "/MonoDevelop/VersionControl/CommitDialogExtensions">
         <Class class="MonoDevelop.VersionControl.TFS.Extensions.TeamFoundationServerCommitDialogExtension" />
     </Extension>

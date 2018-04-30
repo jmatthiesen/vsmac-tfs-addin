@@ -35,7 +35,7 @@ using Xwt.Drawing;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
-    class TFSAuthorizationConfig : IServerAuthorizationConfig, IUserPasswordAuthorizationConfig
+    class TeamFoundationServerAuthorizationConfig : IServerAuthorizationConfig, IUserPasswordAuthorizationConfig
     {
         public VBox _container;
         VBox _tfsContainer;
@@ -49,7 +49,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
         Label _ntlmLabel;
         bool? _clearSavePassword;
 
-        public TFSAuthorizationConfig()
+		public TeamFoundationServerAuthorizationConfig()
         {
             Init();
             BuildGui();

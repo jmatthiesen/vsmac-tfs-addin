@@ -36,13 +36,10 @@ namespace MonoDevelop.VersionControl.TFS.Services
         public Configuration()
         {
             Servers = new List<TeamFoundationServer>();
-            MergeToolInfo = new MergeToolInfo();
         }
 
         public List<TeamFoundationServer> Servers { get; set; }
-
-        public MergeToolInfo MergeToolInfo { get; set; }
-
+              
         public LockLevel DefaultLockLevel { get; set; }
 
         public bool DebugMode { get; set; }

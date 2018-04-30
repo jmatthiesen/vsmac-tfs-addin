@@ -34,7 +34,7 @@ using MonoDevelop.VersionControl.TFS.Helpers;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
-    internal sealed class VersionInfoResolver
+	internal sealed class VersionInfoResolver
     {
         readonly TeamFoundationServerRepository _repository;
         static readonly Dictionary<LocalPath, VersionInfo> Cache = new Dictionary<LocalPath, VersionInfo>();
@@ -62,6 +62,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                         var path = localPath;
                         Cache.RemoveAll(x => x.Key.IsChildOrEqualOf(path));
                     }
+
                     Cache.Remove(localPath);
                 }
             }
@@ -95,8 +96,11 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             lock (Locker)
             {
-                if (Cache.ContainsKey(path))
-                    return Cache[path];
+				if (Cache.ContainsKey(path))
+				{
+					return Cache[path];
+				}
+
                 return null;
             }
         }
@@ -144,8 +148,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             {
                 status = status | VersionStatus.Modified;
                 return status;
-            }
-
+            }           
             
             return status;
         }
@@ -182,7 +185,8 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             var result = new Dictionary<LocalPath, VersionInfo>();
             var pathsWhichNeedServerRequest = new List<LocalPath>();
-            foreach (var path in paths)
+        
+			foreach (var path in paths)
             {
                 var cachedStatus = Get(path);
 
@@ -241,28 +245,32 @@ namespace MonoDevelop.VersionControl.TFS.Models
         Dictionary<LocalPath, VersionInfo> ExtractVersionInfo(IList<LocalPath> localItems, IList<ExtendedItem> serverItems, IList<PendingChange> pendingChanges)
         {
             var result = new Dictionary<LocalPath, VersionInfo>();
-            //Fetch all server Items with changes
+         
+			// Fetch all server Items with changes
             foreach (var serverItem in serverItems.Where(si => pendingChanges.Any(pc => pc.ServerItem == si.ServerPath)))
             {
                 var info = ConvertToInfo(serverItem.LocalPath, GetVersionInfoStatus(serverItem, pendingChanges));
                 result.Add(serverItem.LocalPath, info);
                 UpdateCache(serverItem.LocalPath, info);
             }
-            //All Mapped w/o changes
+
+            // All Mapped w/o changes
             foreach (var serverItem in serverItems.Where(si => !si.LocalPath.IsEmpty && pendingChanges.All(pc => pc.ServerItem != si.ServerPath)))
             {
                 var info = ConvertToInfo(serverItem.LocalPath, VersionInfoStatus.Versioned(serverItem.ServerPath));
                 result.Add(serverItem.LocalPath, info);
                 UpdateCache(serverItem.LocalPath, info);
             }
-            //For all local files not mapped with no pending changes.
+
+            // For all local files not mapped with no pending changes.
             foreach (var localItem in localItems.Where(i => serverItems.All(s => s.LocalPath != i) && pendingChanges.All(pc => pc.LocalItem != i)))
             {
                 //Check if Item exists on server and local but is market as not downloaded.
                 var serverPath = _repository.Workspace.Data.GetServerPathForLocalPath(localItem);
                 var item = serverItems.SingleOrDefault(si => si.ServerPath == serverPath);
                 VersionInfo info;
-                if (item == null)
+              
+				if (item == null)
                 {
                     info = ConvertToInfo(localItem, VersionInfoStatus.Unversioned);
                 }
@@ -271,6 +279,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                     var status = VersionInfoStatus.Versioned(serverPath);
                     info = ConvertToInfo(localItem, status);
                 }
+
                 result.Add(localItem, info);
                 UpdateCache(localItem, info);
             }
@@ -285,23 +294,23 @@ namespace MonoDevelop.VersionControl.TFS.Models
             {
                 RemotePath = item.ServerPath,
                 LocalStatus = GetLocalVersionStatus(item, pendingChanges),
-                LocalRevision = GetLocalRevision(item),
-                //Bug in Monodevelop ? When refresh does not update Remote Status on new items.
-                RemoteStatus = VersionStatus.Versioned, // GetServerVersionStatus(item1),
+                LocalRevision = GetLocalRevision(item),     
+                RemoteStatus = VersionStatus.Versioned, 
                 RemoteRevision = GetServerRevision(item)
             };
         }
 
         VersionInfo ConvertToInfo(LocalPath path, VersionInfoStatus status)
         {
-            if (status.IsUnversioned)
-                return VersionInfo.CreateUnversioned(new FilePath(path), path.IsDirectory);
-            else
-            {
-                return new VersionInfo(new FilePath(path), status.RemotePath, path.IsDirectory,
-                        status.LocalStatus, status.LocalRevision,
-                        status.RemoteStatus, status.RemoteRevision);
-            }
+			if (status.IsUnversioned)
+			{
+				return VersionInfo.CreateUnversioned(new FilePath(path), path.IsDirectory);
+
+			}
+               
+			return new VersionInfo(new FilePath(path), status.RemotePath, path.IsDirectory,                    
+			                       status.LocalStatus, status.LocalRevision,
+			                       status.RemoteStatus, status.RemoteRevision);    
         }
     }
 }

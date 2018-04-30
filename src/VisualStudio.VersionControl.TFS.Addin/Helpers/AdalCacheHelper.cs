@@ -1,4 +1,4 @@
-﻿// CollectionHelper.cs
+﻿// AdalCacheHelper.cs
 // 
 // Author:
 //       Javier Suárez Ruiz
@@ -31,7 +31,10 @@ using Microsoft.IdentityService.Clients.ActiveDirectory;
 
 namespace MonoDevelop.VersionControl.TFS.Helpers
 {
-    public class AdalCacheHelper
+	/// <summary>
+    /// Adal cache helper.
+    /// </summary>
+    public static class AdalCacheHelper
     {
         static readonly string TokenCachePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         static readonly string TokenCacheExtension = ".txt";
@@ -45,6 +48,11 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
             return cache;
         }
 
+        /// <summary>
+        /// Persists the OAuth token cache.
+        /// </summary>
+        /// <param name="cacheId">Cache identifier.</param>
+        /// <param name="cache">Cache.</param>
         public static void PersistTokenCache(string cacheId, TokenCache cache)
         {
             PersistCacheToFile(cacheId, cache);
@@ -56,6 +64,11 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
             File.WriteAllBytes(Path.Combine(TokenCachePath, cacheId + TokenCacheExtension), bytes);
         }
 
+        /// <summary>
+        /// Loads an OAuth token from cache.
+        /// </summary>
+        /// <param name="cacheId">Cache identifier.</param>
+        /// <param name="cache">Cache.</param>
         static void LoadCacheFromFile(string cacheId, TokenCache cache)
         {
             var file = Path.Combine(TokenCachePath, cacheId + TokenCacheExtension);

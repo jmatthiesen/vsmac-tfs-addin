@@ -91,6 +91,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 		DataField<string> _latestField;
 		DataField<string> _lastCheckInField;
 		TreeStore _folderDetailsStore;
+		List<TreeNavigator> _folderDetailsList;
 
 		Task _worker;
         CancellationTokenSource _workerCancel;
@@ -122,15 +123,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             Init();
             BuildGui();
             AttachEvents();
-
+            
 			using (var monitor = IdeApp.Workbench.ProgressMonitors.GetLoadProgressMonitor(true))
             {
 				monitor.BeginTask(GettextCatalog.GetString(GettextCatalog.GetString("Loading...")), 2);
 				LoadServers();
 				LoadWorkspaces();
 				monitor.Step(1);
-				LoadFolders();
-				ExpandPath(RepositoryPath.RootPath);
+				LoadFolders();	
+				ExpandPath(RepositoryPath.RootPath);            
 				monitor.EndTask();
 			}
         }
@@ -169,7 +170,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
         internal static void Show(ProjectCollection collection, string path, string fileName)
         {
-            var sourceControlExplorerView = new SourceControlExplorerView(null, collection);
+			var sourceControlExplorerView = new SourceControlExplorerView(null, collection);
             sourceControlExplorerView.ExpandPath(path);
             sourceControlExplorerView.FindItem(fileName);
             IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
@@ -207,6 +208,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
             _workspaces = new List<WorkspaceData>();
 			_foldersList = new List<TreeNavigator>();
+			_folderDetailsList = new List<TreeNavigator>();
 
             _view = new VBox();
 			_control = new XwtControl(_view);
@@ -542,52 +544,43 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             _foldersList.Clear();
 		}
 
-        /// <summary>
-        /// Loads project folders.
-        /// </summary>
+		/// <summary>
+		/// Loads project folders.
+		/// </summary>
 		void LoadFolders()
-        {
-			_worker = Task.Factory.StartNew(delegate
-			{
-				if (!_workerCancel.Token.IsCancellationRequested)
-				{
-					if (_currentWorkspace == null)
-						return;
+		{
+			if (_currentWorkspace == null)
+				return;
 
-					var items = _currentWorkspace.GetItems(new[] { new ItemSpec(RepositoryPath.RootPath, RecursionType.Full) },
-					                                       VersionSpec.Latest, DeletedState.NonDeleted, ItemType.Folder, false);
-                                                           
-					var root = ItemSetToHierarchItemConverter.Convert(items);
-                    			
-					Application.Invoke(() =>
-					{       
-						ClearFolders();
+			var items = _currentWorkspace.GetItems(new[] { new ItemSpec(RepositoryPath.RootPath, RecursionType.Full) },
+												   VersionSpec.Latest, DeletedState.NonDeleted, ItemType.Folder, false);
 
-            			var node = _foldersStore.AddNode();
+			var root = ItemSetToHierarchItemConverter.Convert(items);
 
-            			var serverName = string.Equals(_projectCollection.Server.Name, _projectCollection.Server.Uri.OriginalString, StringComparison.OrdinalIgnoreCase)
-            				? _projectCollection.Server.Uri.Host
-            				: _projectCollection.Server.Name;
+			ClearFolders();
 
-            			var rootName = string.Format("{0}\\{1}", serverName, _projectCollection.Name);
+			var node = _foldersStore.AddNode();
 
-            			node.SetValue(_baseItemField, root.Item);
-            			node.SetValue(_iconField, ImageHelper.GetRepositoryImage());
-            			node.SetValue(_nameField, rootName);
+			var serverName = string.Equals(_projectCollection.Server.Name, _projectCollection.Server.Uri.OriginalString, StringComparison.OrdinalIgnoreCase)
+				? _projectCollection.Server.Uri.Host
+				: _projectCollection.Server.Name;
 
-						_foldersList.Add(node);
+			var rootName = string.Format("{0}\\{1}", serverName, _projectCollection.Name);
 
-            			AddChilds(node, root.Children);
+			node.SetValue(_baseItemField, root.Item);
+			node.SetValue(_iconField, ImageHelper.GetRepositoryImage());
+			node.SetValue(_nameField, rootName);
 
-						_foldersView.DataSource = _foldersStore;
-                        
-						var firstNode = _foldersStore.GetFirstNode();
-						_foldersView.ExpandRow(firstNode.CurrentPosition, false);
-						_foldersView.SelectRow(firstNode.CurrentPosition);					
-					});
-				}
-			}, _workerCancel.Token, TaskCreationOptions.LongRunning);
-        }
+			_foldersList.Add(node);
+
+			AddChilds(node, root.Children);
+
+			_foldersView.DataSource = _foldersStore;
+
+			var firstNode = _foldersStore.GetFirstNode();
+			_foldersView.ExpandRow(firstNode.CurrentPosition, false);
+			_foldersView.SelectRow(firstNode.CurrentPosition);
+		}
 
 		void AddChilds(TreeNavigator rootNode, List<HierarchyItem> children)
         {
@@ -623,7 +616,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         /// </summary>
         void ClearFolderDetails()
 		{
-            _folderDetailsStore.Clear();		
+            _folderDetailsStore.Clear();
+			_folderDetailsList.Clear();
 		}
 
         /// <summary>
@@ -691,6 +685,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                 }
 
 				row.SetValue(_lastCheckInField, item.CheckinDate.ToString("yyyy-MM-dd HH:mm"));
+
+				_folderDetailsList.Add(row);
             }
         }
 
@@ -840,8 +836,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                     monitor.BeginTask(GettextCatalog.GetString(GettextCatalog.GetString("Loading...")), 2);
                     LoadWorkspaces();
                     monitor.Step(1);
-                    LoadFolders();
-                    ExpandPath(RepositoryPath.RootPath);
+					LoadFolders();
+					ExpandPath(RepositoryPath.RootPath);
                     monitor.EndTask();
                 }
 			}
@@ -894,6 +890,12 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 					if (_foldersView.SelectedRow != null)
 					{
 						var node = _foldersStore.GetNavigatorAt(_foldersView.CurrentEventRow);
+
+						if(node.CurrentPosition == null)      
+						{
+							return;
+						}
+
 						var currentItem = node.GetValue(_baseItemField);
 
 						if (currentItem != null)
@@ -1006,37 +1008,37 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 				if (string.Equals(item.ServerPath, path, StringComparison.OrdinalIgnoreCase))
 				{
 					position = folder.CurrentPosition;
+					break;
 				}
 			}
                      
 			if (position == null)
 				return;
-
-			_foldersView.ExpandRow(position, false);
+                
+			_foldersView.ExpandToRow(position);
 			_foldersView.SelectRow(position);
 		}
        
+        /// <summary>
+        /// Finds an specific item and select it.
+        /// </summary>
+        /// <param name="name">Name.</param>
         void FindItem(string name)
         {				
 			if (string.IsNullOrEmpty(name))
 				return;
             
 			TreePosition position = null;
-
-            var firstNode = _foldersStore.GetFirstNode();
-            var navigator = _foldersStore.GetNavigatorAt(firstNode.CurrentPosition);
-
-            if (navigator.CurrentPosition == null)
-                return;
-
-			foreach (var folder in _foldersList)
+            
+			foreach (var folderDetail in _folderDetailsList)
 			{
-				var item = folder.GetValue(_baseItemField);
-
+				var item = folderDetail.GetValue(_extendedItemField);
+            
 				if (string.Equals(item.ServerPath.ItemName, name, StringComparison.OrdinalIgnoreCase))
 				{
-					position = navigator.CurrentPosition;
-				}
+					position = folderDetail.CurrentPosition;
+					break;
+				}               
 			}
            
             if (position == null)
@@ -1080,7 +1082,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             {
                 if (dialog.Run() == Command.Close)
                 {
-					LoadWorkspaces();
+					LoadWorkspaces();   // Refresh Workspaces
                 }
             }
         }
@@ -1098,16 +1100,18 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
 			LoadFolders();
 
-            if (selectedPath != null)
+			if (selectedPath != null)
+			{
 				ExpandPath(selectedPath);
+			}
         }
 
         #region Popup Menu
 
         enum MenuType
         {
-            Tree,
-            List
+            Tree,   // Left panel
+            List    // Right panel
         }
 
         /// <summary>

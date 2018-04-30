@@ -39,6 +39,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             HierarchyItem[] linerHierarchy = items.Select(x => new HierarchyItem(x)).ToArray();
             HierarchyItem root = linerHierarchy[0];
+
             for (int i = 1; i < linerHierarchy.Length; i++)
             {
                 var currentLine = linerHierarchy[i];
@@ -55,6 +56,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                     }
                 }
             }
+
             return root;
         }
     }

@@ -51,8 +51,6 @@ namespace MonoDevelop.VersionControl.TFS.Services
             XDocument doc = new XDocument();
             doc.Add(new XElement("TFSConfiguration"));
             doc.Root.Add(new XElement("Servers", configuration.Servers.Select(x => x.ToConfigXml())));
-            doc.Root.Add(new XElement("MergeTool", new XAttribute("Command", configuration.MergeToolInfo.CommandName), 
-                                                   new XAttribute("Arguments", configuration.MergeToolInfo.Arguments)));
             doc.Root.Add(new XElement("DefaultLockLevel", (int)configuration.DefaultLockLevel));
             doc.Root.Add(new XElement("DebugMode", configuration.DebugMode));
 
@@ -69,15 +67,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             if (document.Root == null)
                 return configuration;
 
-            configuration.Servers.AddRange(document.XPathSelectElements("//Servers/Server").Select(TeamFoundationServer.FromConfigXml));
-
-            var mergeToolElement = document.Root.Element("MergeTool");
-       
-            if (mergeToolElement != null)
-            {
-                configuration.MergeToolInfo.CommandName = mergeToolElement.GetAttributeValue("Command");
-                configuration.MergeToolInfo.Arguments = mergeToolElement.GetAttributeValue("Arguments");
-            }
+            configuration.Servers.AddRange(document.XPathSelectElements("//Servers/Server").Select(TeamFoundationServer.FromConfigXml));            
 
             var lockLevelElement = document.Root.Element("DefaultLockLevel");
            

@@ -77,7 +77,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         TeamFoundationServer _server;
 		List<TeamFoundationServer> _accounts;
         ProjectCollection _projectCollection;
-		List<BaseItem> _items;
+		List<BaseItem> _selectedItems;
 		List<WorkspaceData> _workspaces;
         Task _worker;
         CancellationTokenSource _workerCancel;
@@ -121,7 +121,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _versionControlService = versionControlService;
 
             _workerCancel = new CancellationTokenSource();
-			_items = new List<BaseItem>();
+			_selectedItems = new List<BaseItem>();
 			_workspaces = new List<WorkspaceData>();
 			_accounts = new List<TeamFoundationServer>();
 
@@ -197,8 +197,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 ReadOnly = true,
                 MinWidth = 400
             };
+
 			_localPathEntry.Font = _localPathEntry.Font.WithScaledSize(1.2);
-          
+			_localPathEntry.Text = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
 			_browseButton = new Button(GettextCatalog.GetString("Browse..."))
             {
                 HorizontalPlacement = WidgetPlacement.End
@@ -332,20 +334,26 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 Editable = true
             };
 
+            // CheckBox status changed
 			checkView.Toggled += (sender, e) =>
-            {
+			{            
 				var astore = (TreeStore)_filesView.DataSource;
 				var node = astore.GetNavigatorAt(_filesView.CurrentEventRow);
-				var baseItem = node.GetValue(_baseItem);
 
-                if (!node.GetValue(_isCheckedField))
+				var baseItem = node.GetValue(_baseItem);
+				var isChecked = node.GetValue(_isCheckedField);
+
+				if (!isChecked)
                 {
-					_items?.Add(baseItem);
+					if (!_selectedItems.Contains(baseItem))
+					{
+						_selectedItems.Add(baseItem);
+					}
                 }
                 else
                 {
-					_items?.Remove(baseItem);
-                }
+					_selectedItems.Remove(baseItem);
+                }            
             };
 
             _filesView.Columns.Add("", checkView);
@@ -421,7 +429,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             _projectsListView.SelectionChanged += OnChangeProject;
             _browseButton.Clicked += OnBrowse;
             _refreshButton.Clicked += OnRefresh;
-            _checkoutButton.Clicked += OnCheckout;
+            _checkoutButton.Clicked += OnCheckout;  // Checkout, map & Get code
         }
        
         void OnChangeAccount(object sender, EventArgs args)
@@ -571,54 +579,87 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         /// <param name="args">Arguments.</param>
         void OnCheckout(object sender, EventArgs args)
         {
-            if (_currentWorkspace == null)
+			if (_currentWorkspace == null)               
+			{
+				MessageService.ShowWarning("It is mandatory to have an existing workspace.");
+				return;               
+			}
+
+			if (!_selectedItems.Any())
+            {
+				MessageService.ShowWarning("No selected path found.");
                 return;
-
-            // Map
-			foreach (var item in _items)
-            {
-                _currentWorkspace.Map(item.ServerPath, _localPathEntry.Text);
-            }          
-
-            // Checkout
-			using (var progress = VersionControlService.GetProgressMonitor("Check Out", VersionControlOperationType.Pull))
-            {
-                progress.BeginTask("Check Out", _items.Count);
-
-                foreach (var item in _items)
-                {
-                    var path = _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
-                    _currentWorkspace.Get(new GetRequest(item.ServerPath, RecursionType.Full, VersionSpec.Latest), GetOptions.None);
-                    progress.Log.WriteLine("Check out item: " + item.ServerPath);
-
-					_currentWorkspace.PendEdit(path.ToEnumerable(), RecursionType.Full, LockLevel.CheckOut, out ICollection<Failure> failures);
-
-					if (failures != null && failures.Any())
-                    {
-                        if (failures.Any(f => f.SeverityType == SeverityType.Error))
-                        {
-                            foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
-                            {
-                                progress.ReportError(failure.Code, new Exception(failure.Message));
-                            }
-
-                            break;
-                        }
-
-                        foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Warning))
-                        {
-                            progress.ReportWarning(failure.Message);
-                        }
-                    }
-                }
-
-                progress.EndTask();
-                progress.ReportSuccess("Finish Check Out.");
             }
 
-            Respond(Command.Ok);
+			var localPath = _localPathEntry.Text;
+
+			if (string.IsNullOrEmpty(localPath))
+            {
+				MessageService.ShowWarning("The local path is not valid.");
+                return;
+            }
+
+			Respond(Command.Ok);
+
+			_worker = Task.Factory.StartNew(delegate
+			{
+				if (!_workerCancel.Token.IsCancellationRequested)
+				{
+					using (var progress = VersionControlService.GetProgressMonitor("Check Out", VersionControlOperationType.Pull))
+					{
+						progress.BeginTask("Check Out", _selectedItems.Count);
+
+						try
+						{
+							// Map
+							foreach (var item in _selectedItems)
+							{
+								_currentWorkspace.Map(item.ServerPath, localPath);
+							}
+
+							// Checkout
+							foreach (var item in _selectedItems)
+							{
+								var path = _currentWorkspace.Data.GetLocalPathForServerPath(item.ServerPath);
+								_currentWorkspace.Get(new GetRequest(item.ServerPath, RecursionType.Full, VersionSpec.Latest), GetOptions.None);
+								progress.Log.WriteLine("Check out item: " + item.ServerPath);
+
+								_currentWorkspace.PendEdit(path.ToEnumerable(), RecursionType.Full, LockLevel.CheckOut, out ICollection<Failure> failures);
+
+								if (failures != null && failures.Any())
+								{
+									if (failures.Any(f => f.SeverityType == SeverityType.Error))
+									{
+										foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Error))
+										{
+											progress.ReportError(failure.Code, new Exception(failure.Message));
+										}
+
+										break;
+									}
+
+									foreach (var failure in failures.Where(f => f.SeverityType == SeverityType.Warning))
+									{
+										progress.ReportWarning(failure.Message);
+									}
+								}
+							}
+
+							progress.EndTask();
+                            progress.ReportSuccess("Finish Check Out.");
+						}
+						catch(Exception ex)
+						{
+							progress.ReportError(ex.Message);
+						}                        
+					}
+				}
+			}, _workerCancel.Token, TaskCreationOptions.LongRunning);           
         }
 
+        /// <summary>
+        /// Loads the server accounts.
+        /// </summary>
         void LoadAccounts()
         {
 			var accounts = _versionControlService.Servers;
@@ -660,6 +701,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
         
+        /// <summary>
+		/// Gets the account icon (Microsoft).
+        /// </summary>
+        /// <returns>The account icon.</returns>
+        /// <param name="username">Username.</param>
 		Image GetAccountIcon(string username)
 		{
 			var address = new MailAddress(username);
@@ -673,6 +719,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 			return null;
 		}
 
+        /// <summary>
+        /// Loads the workspaces.
+        /// </summary>
         void LoadWorkspaces()
         {
             if (_projectCollection != null)
@@ -814,7 +863,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 								_projectsStore.SetValue(row, _projectType, GetProjectTypeImage(project.ProjectDetails));
 								_projectsStore.SetValue(row, _projectName, project.Name);
 								_projectsStore.SetValue(row, _projectItem, project);
-
+                               
 								if (selectedColletion.Projects.Any() && _projectsListView != null)
 								{
 									_projectsListView.SelectRow(0);
@@ -837,6 +886,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         void LoadFolders(string path)
         {
             _filesStore.Clear();
+			_selectedItems.Clear();
 
             if (_currentWorkspace == null)
                 return;
@@ -861,7 +911,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
                 rootNode.SetValue(_isCheckedField, true);
                 rootNode.SetValue(_fileName, rootName);
                 rootNode.SetValue(_baseItem, root.Item);
-
+             
+				_selectedItems?.Add(root.Item);
+                
                 foreach (var child in root.Children)
                 {
                     var childNode = _filesStore.AddNode(rootNode.CurrentPosition);

@@ -55,9 +55,9 @@ namespace MonoDevelop.VersionControl.TFS.Models
             }
             else if (parameterNode.ParameterName.IndexOf("today", StringComparison.OrdinalIgnoreCase) > -1)
             {
-                //TODO: Do date time calc
                 ConstantNode node = new ConstantNode(DateTime.Now.ToString("s") + "Z");
                 node.DataType = ValueDataType.DateTime;
+
                 return node;
             }
             else

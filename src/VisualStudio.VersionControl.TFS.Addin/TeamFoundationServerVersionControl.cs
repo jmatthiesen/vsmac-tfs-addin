@@ -64,6 +64,10 @@ namespace MonoDevelop.VersionControl.TFS
 
         #region implemented abstract members of VersionControlSystem
 
+        /// <summary>
+        /// Create a repository instance.
+        /// </summary>
+        /// <returns>The create repository instance.</returns>
         protected override Repository OnCreateRepositoryInstance()
         {
 			return DependencyContainer.GetTeamFoundationServerRepository(null, null, null);
@@ -74,25 +78,35 @@ namespace MonoDevelop.VersionControl.TFS
             return null;
         }
 
+        /// <summary>
+        /// Gets the repository name.
+        /// </summary>
+        /// <value>The name.</value>
         public override string Name { get { return "TFS"; } }
 
         #endregion
 
         public override bool IsInstalled { get { return true; } }
 
+        /// <summary>
+        /// Gets the repository reference.
+        /// </summary>
+        /// <returns>The repository reference.</returns>
+        /// <param name="path">Path.</param>
+        /// <param name="id">Identifier.</param>
         public override Repository GetRepositoryReference(FilePath path, string id)
         {
-            if (path.IsNullOrEmpty)
-                return null;
-            
+			if (path.IsNullOrEmpty)
+			{
+				return null;
+			}
+
 			foreach (var repo in _repositoriesCache)
             {
 				if (repo.Value != null)
 				{
 					if (repo.Key == path || path.IsChildPathOf(repo.Key))
-					{
-						repo.Value.Refresh();
-
+					{                  
 						return repo.Value;
 					}
 
@@ -117,6 +131,27 @@ namespace MonoDevelop.VersionControl.TFS
             return repository;
         }
 
+		protected override FilePath OnGetRepositoryPath(FilePath path, string id)
+        {
+			if (path.IsEmpty || path.ParentDirectory.IsEmpty || path.IsNull || path.ParentDirectory.IsNull)
+			{
+				return string.Empty;
+			}
+
+            if (Directory.Exists(path))
+			{
+				return path;
+			}
+
+            return OnGetRepositoryPath(path.ParentDirectory, id);
+        }
+        
+        /// <summary>
+        /// Gets the repository by file path.
+        /// </summary>
+        /// <returns>The repository.</returns>
+        /// <param name="path">Path.</param>
+        /// <param name="id">Identifier.</param>
         TeamFoundationServerRepository GetRepository(FilePath path, string id)
         {
             var solutionPath = Path.ChangeExtension(Path.Combine(path, id), "sln");
@@ -132,6 +167,11 @@ namespace MonoDevelop.VersionControl.TFS
             }
         }
 
+        /// <summary>
+        /// Finds the repository by solution path.
+        /// </summary>
+        /// <returns>The by solution.</returns>
+        /// <param name="solutionPath">Solution path.</param>
         TeamFoundationServerRepository FindBySolution(FilePath solutionPath)
         {
             var content = File.ReadAllLines(solutionPath);
@@ -161,6 +201,11 @@ namespace MonoDevelop.VersionControl.TFS
             return null;
         }
 
+        /// <summary>
+        /// Finds repository by path.
+        /// </summary>
+        /// <returns>The by path.</returns>
+        /// <param name="path">Path.</param>
         TeamFoundationServerRepository FindByPath(FilePath path)
         {
             foreach (var server in _versionControlService.Servers)
@@ -174,6 +219,12 @@ namespace MonoDevelop.VersionControl.TFS
             return null;
         }
 
+        /// <summary>
+        /// Get the repository.
+        /// </summary>
+        /// <returns>The repo from server.</returns>
+        /// <param name="server">Server.</param>
+        /// <param name="path">Path.</param>
         TeamFoundationServerRepository GetRepoFromServer(TeamFoundationServer server, FilePath path)
         {
             foreach (var projectCollection in server.ProjectCollections)
@@ -190,23 +241,15 @@ namespace MonoDevelop.VersionControl.TFS
             return null;
         }
 
+        /// <summary>
+        /// Refreshs the repositories.
+        /// </summary>
         internal void RefreshRepositories()
         {
 			foreach (var repo in _repositoriesCache)
             {
                 repo.Value.Refresh();
             }
-        }
-
-        protected override FilePath OnGetRepositoryPath(FilePath path, string id)
-        {
-			if (path.IsEmpty || path.ParentDirectory.IsEmpty || path.IsNull || path.ParentDirectory.IsNull)
-                return null;
-			
-			if(Directory.Exists(path))
-                return path;
-			
-            return OnGetRepositoryPath(path.ParentDirectory, id);
-        }
+        }       
     }
 }

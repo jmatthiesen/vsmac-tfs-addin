@@ -101,18 +101,19 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 
             Table entryTable = new Table();
             entryTable.Add(new Label(GettextCatalog.GetString("Name") + ":"), 0, 0);
-            entryTable.Add(_nameEntry, 1, 0);
+			entryTable.Add(_nameEntry, 1, 0, 1, 1, true, true);
 
             entryTable.Add(new Label(GettextCatalog.GetString("Owner") + ":"), 0, 1);
-            entryTable.Add(_ownerEntry, 1, 1);
+			entryTable.Add(_ownerEntry, 1, 1, 1, 1, true, true);
 
             entryTable.Add(new Label(GettextCatalog.GetString("Computer") + ":"), 0, 2);
-            entryTable.Add(_computerEntry, 1, 2);
+			entryTable.Add(_computerEntry, 1, 2, 1, 1, true, true);
 
             content.PackStart(entryTable);
 
             content.PackStart(new Label(GettextCatalog.GetString("Working folders") + ":"));
             _foldersView.DataSource = _foldersStore;
+			_foldersView.MinWidth = 350;
             _foldersView.MinHeight = 150;
 
             var tfsFolderView = new TextCellView(_tfsFolder)

@@ -30,7 +30,7 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 {
-    sealed class VSTSAuthorizationConfig : TFSAuthorizationConfig, IOAuthAuthorizationConfig
+	sealed class VSTSAuthorizationConfig : TeamFoundationServerAuthorizationConfig, IOAuthAuthorizationConfig
     {
         public VSTSAuthorizationConfig()
         {
