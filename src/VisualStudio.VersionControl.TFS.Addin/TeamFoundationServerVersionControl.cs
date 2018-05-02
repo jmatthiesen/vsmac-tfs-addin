@@ -201,9 +201,11 @@ namespace MonoDevelop.VersionControl.TFS
                 if (string.Equals(serverPath.Host, server.Uri.Host, StringComparison.OrdinalIgnoreCase))
                 {
                     var repo = GetRepoFromServer(server, solutionPath);
-                
-                    if (repo != null)
-                        return repo;
+
+					if (repo != null)
+					{
+						return repo;
+					}
                 }
             }
 
@@ -221,8 +223,10 @@ namespace MonoDevelop.VersionControl.TFS
             {
                 var repo = GetRepoFromServer(server, path);
 
-                if (repo != null)
-                    return repo;
+				if (repo != null)
+				{
+					return repo;
+				}
             }
 
             return null;

@@ -45,7 +45,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             _repository = repository;
        
-            //Dirty hack.
+            // Dirty hack.
             _requiredRefresh = (typeof (VersionInfo)).GetProperty("RequiresRefresh", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
@@ -113,12 +113,12 @@ namespace MonoDevelop.VersionControl.TFS.Models
         {
             var status = VersionStatus.Versioned;
 
-            if (item.IsLocked) //Locked
+            if (item.IsLocked) // Locked
             {
-                if (item.HasOtherPendingChange) //Locked by someone else
+                if (item.HasOtherPendingChange) // Locked by someone else
                     status |= VersionStatus.Locked;
                 else
-                    status |= VersionStatus.LockOwned; //Locked by me
+                    status |= VersionStatus.LockOwned; // Locked by me
             }
 
             var changesForItem = pendingChanges.Where(ch => ch.ServerItem == item.ServerPath).ToArray();
@@ -126,7 +126,8 @@ namespace MonoDevelop.VersionControl.TFS.Models
             //Situations:
             //1. New file in local workspace and remote repository: ChangeType == ChangeType.Add
             //2. File deleted in past, now we add with same name: ChangeType == ChangeType.None, but VersionLocal == 0 and DeleteId > 0
-            if (changesForItem.Any(ch => ch.IsAdd))
+           
+			if (changesForItem.Any(ch => ch.IsAdd))
             {
                 status |= VersionStatus.ScheduledAdd;
                 return status;
@@ -236,6 +237,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
                              let recursion = p.IsDirectory ? RecursionType.OneLevel : RecursionType.None
                              let path = p.Exists ? (string)p : (string)_repository.Workspace.Data.GetServerPathForLocalPath(p)
                              select new ItemSpec(path, recursion)).ToList();
+			
             var items = _repository.Workspace.GetExtendedItems(itemSpecs, DeletedState.NonDeleted, ItemType.Any);
             var pendingChanges = _repository.Workspace.GetPendingChanges(itemSpecs);
 
@@ -288,8 +290,11 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         VersionInfoStatus GetVersionInfoStatus(ExtendedItem item, IList<PendingChange> pendingChanges)
         {
-            if (item == null)
-                return VersionInfoStatus.Unversioned;
+			if (item == null)
+			{
+				return VersionInfoStatus.Unversioned;
+			}
+
             return new VersionInfoStatus
             {
                 RemotePath = item.ServerPath,

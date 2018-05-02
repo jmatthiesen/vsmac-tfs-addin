@@ -139,9 +139,16 @@ namespace MonoDevelop.VersionControl.TFS
         /// <param name="getRemoteStatus">If set to <c>true</c> get remote status.</param>
         protected override IEnumerable<VersionInfo> OnGetVersionInfo(IEnumerable<FilePath> paths, bool getRemoteStatus)
         {
-            var localPaths = paths.Select(p => new LocalPath(p));
-          
-            return _versionInfoResolver.GetFileStatus(localPaths).Values.ToArray();
+			try
+			{
+                var localPaths = paths.Select(p => new LocalPath(p));  
+				return _versionInfoResolver.GetFileStatus(localPaths).Values.ToArray();
+            }
+            catch (Exception e)
+            {
+                Core.LoggingService.LogError("Failed to query git status", e);
+                return paths.Select(x => VersionInfo.CreateUnversioned(x, false));
+            }
         }
         
         /// <summary>
@@ -153,7 +160,15 @@ namespace MonoDevelop.VersionControl.TFS
         /// <param name="recursive">If set to <c>true</c> recursive.</param>
         protected override VersionInfo[] OnGetDirectoryVersionInfo(FilePath localDirectory, bool getRemoteStatus, bool recursive)
         {
-            return _versionInfoResolver.GetDirectoryStatus(new LocalPath(localDirectory)).Values.ToArray();
+			try
+			{
+                return _versionInfoResolver.GetDirectoryStatus(new LocalPath(localDirectory)).Values.ToArray();
+			}
+            catch (Exception e)
+            {
+                Core.LoggingService.LogError("Failed to get git directory status", e);
+                return new VersionInfo[0];
+            }
         }
 
         /// <summary>
