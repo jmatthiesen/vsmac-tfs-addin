@@ -203,7 +203,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         }
 
         /// <summary>
-        /// Loading.
+        /// Loading. Show or hide some UI elements.
         /// </summary>
         /// <param name="isLoading">If set to <c>true</c> is loading.</param>
         void Loading(bool isLoading)
@@ -268,6 +268,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 			}, _workerCancel.Token, TaskCreationOptions.LongRunning);
         }
 
+		/// <summary>
+        /// Determine if the project use git as source control.
+        /// </summary>
+        /// <returns><c>true</c>, if source control git enabled was ised, <c>false</c> otherwise.</returns>
+        /// <param name="projectDetails">Project details.</param>
         bool IsSourceControlGitEnabled(ProjectDetails projectDetails)
         {
             if (projectDetails.Details.Any(p => p.Name == "System.SourceControlGitEnabled"))

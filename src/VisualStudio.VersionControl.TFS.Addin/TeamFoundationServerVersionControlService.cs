@@ -87,7 +87,7 @@ namespace MonoDevelop.VersionControl.TFS
         public IReadOnlyCollection<TeamFoundationServer> Servers { get { return _configuration.Servers; } }
 
         public event System.Action OnServersChange;
-
+        
         public void ServersChange()
         {
             Save();
@@ -100,6 +100,10 @@ namespace MonoDevelop.VersionControl.TFS
             Save();
         }       
 
+        /// <summary>
+        /// Gets or sets the checkout lock level.
+        /// </summary>
+        /// <value>The check out lock level.</value>
         public LockLevel CheckOutLockLevel
         {
             get { return _configuration.DefaultLockLevel; }

@@ -30,6 +30,9 @@ using MonoDevelop.Ide;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Progress display service. Show a progress monitor in some TFS operations.
+    /// </summary>
 	sealed class ProgressDisplay : IProgressDisplay
     {
         readonly ProgressMonitor progressMonitor;

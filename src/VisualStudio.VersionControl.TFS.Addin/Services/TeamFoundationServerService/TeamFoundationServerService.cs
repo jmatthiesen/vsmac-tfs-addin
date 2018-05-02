@@ -34,6 +34,9 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Team foundation server service.
+    /// </summary>
 	public abstract class TeamFoundationServerService
     {
 		protected TeamFoundationServerService(Uri baseUri, string servicePath)

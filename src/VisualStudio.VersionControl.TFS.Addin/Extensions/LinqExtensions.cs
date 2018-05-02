@@ -31,6 +31,9 @@ using System.Linq;
 
 namespace MonoDevelop.VersionControl.TFS.Extensions
 {
+	/// <summary>
+    /// Linq extensions.
+    /// </summary>
 	public static class LinqExtensions
     {
 		public static IEnumerable<T> DistinctBy<T, TKey>(this IEnumerable<T> items, Func<T, TKey> property)

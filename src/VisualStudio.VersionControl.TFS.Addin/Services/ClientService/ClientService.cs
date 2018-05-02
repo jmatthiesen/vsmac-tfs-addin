@@ -35,6 +35,9 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Client service.
+    /// </summary>
     [ServiceResolver(typeof(ClientServiceResolver))]
 	sealed class ClientService : TeamFoundationServerService
     {
@@ -44,7 +47,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
             
         }
 
-        #region implemented abstract members of TFSService
+        #region Implemented abstract members of TFSService
 
         public override XNamespace MessageNs
         {
@@ -56,7 +59,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         #endregion
 
-        #region implemented abstract members of TFSCollectionService
+        #region Implemented abstract members of TFSCollectionService
 
         public IServiceResolver ServiceResolver
         {

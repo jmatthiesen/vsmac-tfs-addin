@@ -72,6 +72,10 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
             }
         }
 
+        /// <summary>
+        /// Update the checkout option status.
+        /// </summary>
+        /// <param name="commandInfo">Command info.</param>
         [CommandUpdateHandler(TeamExplorerCommands.Checkout)]
         protected void UpdateCheckoutFile(CommandInfo commandInfo)
         {
@@ -120,6 +124,11 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
             ResolveConflictsView.Open(repo.Workspace, GetWorkingPaths(item));
         }
 
+        /// <summary>
+        /// Gets the working paths.
+        /// </summary>
+        /// <returns>The working paths.</returns>
+        /// <param name="item">Item.</param>
         List<LocalPath> GetWorkingPaths(VersionControlItem item)
         {
             var paths = new List<LocalPath>();
@@ -147,6 +156,10 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
 			return paths;
         }
 
+        /// <summary>
+        /// Update the resolve conflicts option status.
+        /// </summary>
+        /// <param name="commandInfo">Command info.</param>
         [CommandUpdateHandler(TeamExplorerCommands.ResolveConflicts)]
         protected void UpdateResolveConflicts(CommandInfo commandInfo)
         {

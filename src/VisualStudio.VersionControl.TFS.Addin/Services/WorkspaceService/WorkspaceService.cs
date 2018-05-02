@@ -36,6 +36,9 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Workspace service.
+    /// </summary>
     sealed class WorkspaceService : IWorkspaceService
     {
         readonly ProjectCollection collection;

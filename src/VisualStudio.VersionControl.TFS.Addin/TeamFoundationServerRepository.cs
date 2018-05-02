@@ -41,6 +41,9 @@ using MonoDevelop.VersionControl.TFS.Services;
 
 namespace MonoDevelop.VersionControl.TFS
 {
+	/// <summary>
+    /// Team Foundation Server repository.
+    /// </summary>
     public class TeamFoundationServerRepository : Repository
     {
         readonly IWorkspaceService workspace;
@@ -78,7 +81,7 @@ namespace MonoDevelop.VersionControl.TFS
             return workspace.Data.IsLocalPathMapped(path);
         }
 
-        #region implemented members of Repository
+        #region Implemented members of Repository
 
         #region Not Implemented
 
@@ -96,7 +99,7 @@ namespace MonoDevelop.VersionControl.TFS
         {
 			throw new NotSupportedException("Revert revision is not supported");
         }
-
+        
         #endregion
 
         public override string GetBaseText(FilePath localFile)
@@ -190,9 +193,11 @@ namespace MonoDevelop.VersionControl.TFS
                 }).ToArray();
 
             Dictionary<int, WorkItemCheckinAction> workItems = null;
-         
-            if (changeSet.ExtendedProperties.Contains("TFS.WorkItems"))
-                workItems = (Dictionary<int, WorkItemCheckinAction>)changeSet.ExtendedProperties["TFS.WorkItems"];
+
+			if (changeSet.ExtendedProperties.Contains("TFS.WorkItems"))
+			{
+				workItems = (Dictionary<int, WorkItemCheckinAction>)changeSet.ExtendedProperties["TFS.WorkItems"];
+			}
 
             var result = workspace.CheckIn(commitItems, changeSet.GlobalComment, workItems);
            

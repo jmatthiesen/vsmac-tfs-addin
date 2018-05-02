@@ -32,6 +32,9 @@ using System.Linq;
 
 namespace MonoDevelop.VersionControl.TFS.Helpers
 {
+	/// <summary>
+    /// Collection helper.
+    /// </summary>
     static class CollectionHelper
     {
         public static IEnumerable<T> ToEnumerable<T>(this T item)
@@ -43,6 +46,7 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
         {
             if (predicate == null)
                 return;
+			
             var toRemove = collection.Where(predicate).ToArray();
             foreach (var item in toRemove)
             {

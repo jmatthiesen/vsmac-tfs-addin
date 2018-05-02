@@ -33,6 +33,9 @@ using MonoDevelop.Core.Logging;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Logging service.
+    /// </summary>
     sealed class LoggingService : ILoggingService
     {
         readonly static object locker = new object();
@@ -43,6 +46,10 @@ namespace MonoDevelop.VersionControl.TFS.Services
             _configuration = configurationService.Load();
         }
 
+        /// <summary>
+		/// Logs to debug. Create a MonoDevelop.VersionControl.TFS.Debug.log file.
+        /// </summary>
+        /// <param name="message">Message.</param>
         public void LogToDebug(string message)
         {
             if (_configuration.DebugMode)

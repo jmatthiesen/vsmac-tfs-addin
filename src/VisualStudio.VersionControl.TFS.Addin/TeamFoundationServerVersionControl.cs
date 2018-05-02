@@ -65,7 +65,7 @@ namespace MonoDevelop.VersionControl.TFS
             }
         }
 
-        #region implemented abstract members of VersionControlSystem
+        #region Implemented abstract members of VersionControlSystem
 
         /// <summary>
         /// Create a repository instance.

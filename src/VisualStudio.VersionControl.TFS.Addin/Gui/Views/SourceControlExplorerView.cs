@@ -131,7 +131,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 				LoadWorkspaces();
 				monitor.Step(1);
 				LoadFolders();	
-				ExpandPath(RepositoryPath.RootPath);            
+				ExpandFolderPath(RepositoryPath.RootPath);            
 				monitor.EndTask();
 			}
         }
@@ -164,15 +164,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             var path = new RepositoryPath(RepositoryPath.RootPath + projectInfo.Name, true);
           
             var sourceControlExplorerView = new SourceControlExplorerView(null, collection);
-            sourceControlExplorerView.ExpandPath(path);
+			sourceControlExplorerView.ExpandFolderPath(path);
             IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
         }
 
         internal static void Show(ProjectCollection collection, string path, string fileName)
         {
 			var sourceControlExplorerView = new SourceControlExplorerView(null, collection);
-            sourceControlExplorerView.ExpandPath(path);
-            sourceControlExplorerView.FindItem(fileName);
+			sourceControlExplorerView.ExpandFolderPath(path);
+			sourceControlExplorerView.FindFolderDetailItem(fileName);
             IdeApp.Workbench.OpenDocument(sourceControlExplorerView, true);
         }
 
@@ -394,12 +394,20 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 			_folderDetailsView.ButtonPressed += OnFolderDetailMouseClick;
         }
       
+        /// <summary>
+        /// Fires the files changed.
+        /// </summary>
+        /// <param name="items">Items.</param>
         void FireFilesChanged(List<ExtendedItem> items)
         {
             _versionControlService.RefreshWorkingRepositories();
             FileService.NotifyFilesChanged(items.Select(i => new FilePath(_currentWorkspace.Data.GetLocalPathForServerPath(i.ServerPath))), true);
         }
 
+        /// <summary>
+        /// Fires the files removed.
+        /// </summary>
+        /// <param name="items">Items.</param>
         void FireFilesRemoved(List<ExtendedItem> items)
         {
             _versionControlService.RefreshWorkingRepositories();
@@ -467,6 +475,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
 			_serverComboBox.SelectionChanged += OnChangeServers;
 
+            // Select the first server by default
 			_serverComboBox.SelectedIndex = 0;
 		}
 
@@ -726,7 +735,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
             if (item.ItemType == ItemType.Folder)
             {
-				ExpandPath(item.ServerPath);
+				ExpandFolderPath(item.ServerPath);
                 return;
             }
 
@@ -837,7 +846,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
                     LoadWorkspaces();
                     monitor.Step(1);
 					LoadFolders();
-					ExpandPath(RepositoryPath.RootPath);
+					ExpandFolderPath(RepositoryPath.RootPath);
                     monitor.EndTask();
                 }
 			}
@@ -994,7 +1003,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         /// Expands the selected path.
         /// </summary>
         /// <param name="path">Path.</param>
-		void ExpandPath(string path)
+		void ExpandFolderPath(string path)
 		{
 			if (string.IsNullOrEmpty(path))
 				return;
@@ -1023,7 +1032,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
         /// Finds an specific item and select it.
         /// </summary>
         /// <param name="name">Name.</param>
-        void FindItem(string name)
+        void FindFolderDetailItem(string name)
         {				
 			if (string.IsNullOrEmpty(name))
 				return;
@@ -1102,7 +1111,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
 			if (selectedPath != null)
 			{
-				ExpandPath(selectedPath);
+				ExpandFolderPath(selectedPath);
 			}
         }
 

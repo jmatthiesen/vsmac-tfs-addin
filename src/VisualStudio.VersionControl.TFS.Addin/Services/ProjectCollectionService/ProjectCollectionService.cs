@@ -35,10 +35,13 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Project collection service.
+    /// </summary>
 	internal sealed class ProjectCollectionService : TeamFoundationServerService
     {
 
-        #region implemented abstract members of TFSService
+        #region Implemented abstract members of TFSService
 
         public override XNamespace MessageNs
         {

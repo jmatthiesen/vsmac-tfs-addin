@@ -295,7 +295,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
                 var privateQueries = workItemManager.GetMyQueries(workItemProject);
                
-                if (privateQueries.Any())
+                if (privateQueries.Any())   // Private queries
                 {
 					var privateChildNode = _treeStore.AddNode(childNode.CurrentPosition);
 					privateChildNode.SetValue(_nameField, "My Queries");
@@ -312,7 +312,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
 
                 var publicQueries = workItemManager.GetPublicQueries(workItemProject);
              
-                if (publicQueries.Any())
+                if (publicQueries.Any())    // Public queries
                 {
 					var publicChildNode = _treeStore.AddNode(childNode.CurrentPosition);
 					publicChildNode.SetValue(_nameField, "Public");
@@ -414,6 +414,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Views
             }
         }
 
+        /// <summary>
+        /// Selected work item changed.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
         void OnWorkItemChanged(object sender, EventArgs e)
 		{
 			if (_treeView.SelectedRow == null)

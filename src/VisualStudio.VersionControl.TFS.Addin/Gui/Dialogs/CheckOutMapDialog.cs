@@ -107,6 +107,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         /// </summary>
 		protected override void OnClosed()
 		{
+			// Cancel loading task
             _workerCancel?.Cancel();
 
 			base.OnClosed();
@@ -459,6 +460,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }         
         }
 
+        /// <summary>
+        /// Changed project collection.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="args">Arguments.</param>
         void OnChangeProjectCollection(object sender, EventArgs args)
         {
             if (_projectCollectionComboBox.SelectedItem != null)
@@ -467,6 +473,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Changed workspace.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="args">Arguments.</param>
         void OnChangeWorkspace(object sender, EventArgs args)
         {
 			var row = _workspaceComboBox.SelectedIndex;
@@ -524,6 +535,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
 			}
 		}
 
+        /// <summary>
+        /// Changed project.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="args">Arguments.</param>
 		void OnChangeProject(object sender, EventArgs args)
         {
             var row = _projectsListView.SelectedRow;

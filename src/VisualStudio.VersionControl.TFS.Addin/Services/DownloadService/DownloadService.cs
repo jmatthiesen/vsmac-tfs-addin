@@ -34,6 +34,9 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Download service.
+    /// </summary>
     [ServiceResolver(typeof(DownloadServiceResolver))]
 	sealed class DownloadService : TeamFoundationServerService
     {

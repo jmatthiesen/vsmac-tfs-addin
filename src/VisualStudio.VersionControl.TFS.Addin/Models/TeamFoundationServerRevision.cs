@@ -59,7 +59,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
             Time = changeset.CreationDate;
         }
 
-        #region implemented abstract members of Revision
+        #region Implemented abstract members of Revision
 
         public override Revision GetPrevious()
         {

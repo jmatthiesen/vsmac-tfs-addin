@@ -37,13 +37,15 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// SOAP invoker.
+    /// </summary>
     internal sealed class SoapInvoker : ISoapInvoker
     {
         readonly XNamespace xsiNs = XmlSchema.InstanceNamespace;
         readonly XNamespace xsdNs = XmlSchema.Namespace;
         readonly XNamespace soapNs = "http://schemas.xmlsoap.org/soap/envelope/";
         
-
 		readonly TeamFoundationServerService service;
         readonly ILoggingService _loggingService;
         readonly XNamespace messagegNs;

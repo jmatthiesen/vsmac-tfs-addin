@@ -31,6 +31,9 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Server status service.
+    /// </summary>
     [ServiceResolver(typeof(ServerStatusServiceResolver))]
 	internal sealed class ServerStatusService : TeamFoundationServerService
     {

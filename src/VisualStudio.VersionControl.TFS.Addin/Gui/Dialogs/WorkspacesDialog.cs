@@ -158,6 +158,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Adds workspace click event.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
         void AddWorkspaceClick(object sender, EventArgs e)
         {
             using (var dialog = new AddEditWorkspaceDialog(_projectCollection, null))
@@ -169,6 +174,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Edits the workspace click event.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
         void EditWorkspaceClick(object sender, EventArgs e)
         {
             string workspaceName = _listStore.GetValue(_listView.SelectedRow, _name);
@@ -183,6 +193,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }
         }
 
+        /// <summary>
+        /// Removes the workspace click event.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
         void RemoveWorkspaceClick(object sender, EventArgs e)
         {
             if (_listView.SelectedRow > -1 &&
@@ -196,6 +211,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             }       
         }
 
+        /// <summary>
+        /// Updates the edit workspace button state.
+        /// </summary>
         void UpdateEditWorkspace()
         {
             _editWorkspaceButton.Sensitive = _listView.SelectedRow != -1;

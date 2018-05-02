@@ -211,6 +211,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 			_projects.Clear();
 		}
 
+        /// <summary>
+        /// Loading.
+        /// </summary>
+        /// <param name="isLoading">If set to <c>true</c> is loading.</param>
 		void Loading(bool isLoading)
 		{
 			_projectsSpinner.Visible = isLoading;
@@ -218,6 +222,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 			_addbutton.Sensitive = !isLoading;
 		}
 
+        /// <summary>
+        /// Updates the data.
+        /// </summary>
         async void UpdateData()
 		{
             using (var monitor = IdeApp.Workbench.ProgressMonitors.GetLoadProgressMonitor(true))
@@ -336,6 +343,11 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
 			return _worker;
         }
 
+		/// <summary>
+        /// Determine if the project use git as source control.
+        /// </summary>
+        /// <returns><c>true</c>, if source control git enabled was ised, <c>false</c> otherwise.</returns>
+        /// <param name="projectDetails">Project details.</param>
 		bool IsSourceControlGitEnabled(ProjectDetails projectDetails)
         {
 			if(projectDetails == null)
@@ -351,6 +363,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
             return false;
         }
 
+        /// <summary>
+        /// Expands the tree.
+        /// </summary>
         void ExpandTree()
         {
 			Application.Invoke(() =>

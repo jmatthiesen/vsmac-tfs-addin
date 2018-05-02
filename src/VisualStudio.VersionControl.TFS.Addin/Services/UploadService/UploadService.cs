@@ -37,6 +37,9 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Upload service.
+    /// </summary>
     [ServiceResolver(typeof(UploadServiceResolver))]
 	sealed class UploadService : TeamFoundationServerService
     {
@@ -51,7 +54,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
         const int ChunkSize = 512 * 1024; //Chunk Size 512 K
         static readonly string uncompressedContentType = "application/octet-stream";
 
-        #region implemented abstract members of TfsService
+        #region Implemented abstract members of TfsService
 
         public override XNamespace MessageNs
         {

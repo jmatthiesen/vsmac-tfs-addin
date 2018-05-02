@@ -81,6 +81,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 
         /// <summary>
         /// Creates the lock level combo box.
+		/// More info: https://docs.microsoft.com/en-us/vsts/tfvc/understand-lock-types?view=vsts
         /// </summary>
         /// <returns>The lock level combo box.</returns>
         ComboBox CreateLockLevelComboBox()

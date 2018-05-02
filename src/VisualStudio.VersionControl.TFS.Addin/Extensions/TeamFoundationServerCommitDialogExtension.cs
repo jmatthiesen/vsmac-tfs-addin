@@ -49,6 +49,11 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
 			return false;
 		}
 
+        /// <summary>
+        /// Begin commit.
+        /// </summary>
+        /// <returns><c>true</c>, if begin commit was oned, <c>false</c> otherwise.</returns>
+        /// <param name="changeSet">Change set.</param>
         public override bool OnBeginCommit(ChangeSet changeSet)
         {
 			changeSet.ExtendedProperties["TFS.WorkItems"] = _widget.WorkItems;
@@ -56,6 +61,11 @@ namespace MonoDevelop.VersionControl.TFS.Extensions
 			return true;
         }
 
+        /// <summary>
+        /// End commit.
+        /// </summary>
+        /// <param name="changeSet">Change set.</param>
+        /// <param name="success">If set to <c>true</c> success.</param>
         public override void OnEndCommit(ChangeSet changeSet, bool success)
         {
             base.OnEndCommit(changeSet, success);

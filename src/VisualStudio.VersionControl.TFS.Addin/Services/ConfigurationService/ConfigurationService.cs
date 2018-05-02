@@ -36,6 +36,9 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Configuration service.
+    /// </summary>
     public sealed class ConfigurationService : IConfigurationService
     {
         const string ConfigName = "MonoDevelop.VersionControl.TFS.config";

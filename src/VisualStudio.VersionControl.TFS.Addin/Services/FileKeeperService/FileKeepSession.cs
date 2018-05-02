@@ -34,6 +34,9 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// File keep session.
+    /// </summary>
     public sealed class FileKeepSession : IFileKeepSession
     {
         readonly ILoggingService _loggingService;

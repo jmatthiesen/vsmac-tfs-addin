@@ -63,13 +63,15 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             {
                 var items = new List<PendingChange>();
 
-                for (int i = 0; i < _filesStore.RowCount; i++)
-                {
-                    var isChecked = _filesStore.GetValue(i, _isCheckedField);
+				for (int i = 0; i < _filesStore.RowCount; i++)
+				{
+					var isChecked = _filesStore.GetValue(i, _isCheckedField);
 
-                    if (isChecked)
-                        items.Add(_filesStore.GetValue(i, _changeField));
-                }
+					if (isChecked)
+					{
+						items.Add(_filesStore.GetValue(i, _changeField));
+					}
+				}
 
                 return items;
             }

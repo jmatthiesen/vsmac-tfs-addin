@@ -30,10 +30,19 @@ using System;
 
 namespace MonoDevelop.VersionControl.TFS.Helpers
 {
+	/// <summary>
+    /// URL helper.
+    /// </summary>
     public static class UrlHelper
     {
         static readonly char urlSeparator = '/';
 
+        /// <summary>
+        /// Adds the path.
+        /// </summary>
+        /// <returns>The path.</returns>
+        /// <param name="baseUri">Base URI.</param>
+        /// <param name="path">Path.</param>
         public static Uri AddPath(this Uri baseUri, string path)
         {
             if (baseUri == null)
@@ -48,6 +57,12 @@ namespace MonoDevelop.VersionControl.TFS.Helpers
             return uriBuilder.Uri;
         }
 
+        /// <summary>
+        /// Combines the paths.
+        /// </summary>
+        /// <returns>The paths.</returns>
+        /// <param name="path1">Path1.</param>
+        /// <param name="path2">Path2.</param>
         public static string CombinePaths(string path1, string path2)
         {
             if (path1 == null)

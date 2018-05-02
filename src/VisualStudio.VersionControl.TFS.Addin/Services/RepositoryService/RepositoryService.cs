@@ -36,6 +36,9 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Repository service.
+    /// </summary>
     [ServiceResolver(typeof(RepositoryServiceResolver))]
 	sealed class RepositoryService : TeamFoundationServerService
     {

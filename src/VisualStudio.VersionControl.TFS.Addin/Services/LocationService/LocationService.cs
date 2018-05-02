@@ -34,9 +34,12 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Location service.
+    /// </summary>
 	internal sealed class LocationService : TeamFoundationServerService
     {
-        #region implemented abstract members of TFSService
+        #region Implemented abstract members of TFSService
 
         public override System.Xml.Linq.XNamespace MessageNs
         {
