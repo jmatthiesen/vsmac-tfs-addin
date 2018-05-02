@@ -29,6 +29,9 @@ using MonoDevelop.VersionControl.TFS.Gui.Widgets;
 
 namespace MonoDevelop.VersionControl.TFS.Extensions
 {
+	/// <summary>
+    /// Team Foundation Server commit dialog extension.
+    /// </summary>
 	public class TeamFoundationServerCommitDialogExtension : CommitDialogExtension
     {
 		TeamFoundationServerCommitDialogExtensionWidget _widget;

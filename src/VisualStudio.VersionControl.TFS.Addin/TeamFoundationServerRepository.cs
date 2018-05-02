@@ -143,7 +143,7 @@ namespace MonoDevelop.VersionControl.TFS
           
             return _versionInfoResolver.GetFileStatus(localPaths).Values.ToArray();
         }
-
+        
         /// <summary>
         /// Get directory version info.
         /// </summary>
