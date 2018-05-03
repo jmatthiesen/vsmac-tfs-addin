@@ -56,6 +56,10 @@ namespace MonoDevelop.VersionControl.TFS
             _configuration = _configurationService.Load();
         }
 
+        /// <summary>
+        /// Adds a new server.
+        /// </summary>
+        /// <param name="server">Server.</param>
         public void AddServer(TeamFoundationServer server)
         {
             if (HasServer(server.Uri))
@@ -65,6 +69,10 @@ namespace MonoDevelop.VersionControl.TFS
             ServersChange();
         }
 
+        /// <summary>
+        /// Removes a server.
+        /// </summary>
+        /// <param name="url">URL.</param>
         public void RemoveServer(Uri url)
         {
             if (!HasServer(url))
@@ -74,11 +82,21 @@ namespace MonoDevelop.VersionControl.TFS
             ServersChange();
         }
 
+        /// <summary>
+        /// Gets a server by URL.
+        /// </summary>
+        /// <returns>The server.</returns>
+        /// <param name="url">URL.</param>
         public TeamFoundationServer GetServer(Uri url)
         {
             return _configuration.Servers.SingleOrDefault(s => s.Uri == url);
         }
 
+        /// <summary>
+        /// Determines if a server exist by URL.
+        /// </summary>
+        /// <returns><c>true</c>, if server was hased, <c>false</c> otherwise.</returns>
+        /// <param name="url">URL.</param>
         public bool HasServer(Uri url)
         {
             return _configuration.Servers.Any(s => s.Uri == url);
@@ -94,6 +112,11 @@ namespace MonoDevelop.VersionControl.TFS
             OnServersChange?.Invoke();
         }
 
+        /// <summary>
+        /// Sets the active workspace.
+        /// </summary>
+        /// <param name="collection">Collection.</param>
+        /// <param name="workspaceName">Workspace name.</param>
         public void SetActiveWorkspace(ProjectCollection collection, string workspaceName)
         {
             collection.ActiveWorkspaceName = workspaceName;

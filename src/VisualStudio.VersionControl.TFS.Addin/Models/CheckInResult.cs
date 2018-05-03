@@ -35,7 +35,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
 {
     public class CheckInResult
     {
-        private CheckInResult()
+        CheckInResult()
         {
             
         }

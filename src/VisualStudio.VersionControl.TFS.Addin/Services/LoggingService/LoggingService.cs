@@ -62,11 +62,19 @@ namespace MonoDevelop.VersionControl.TFS.Services
             }
         }
 
+        /// <summary>
+        /// Logs info.
+        /// </summary>
+        /// <param name="message">Message.</param>
         public void LogToInfo(string message)
         {
             Core.LoggingService.Log(LogLevel.Info, message);
         }
 
+        /// <summary>
+        /// Logs an error.
+        /// </summary>
+        /// <param name="message">Message.</param>
         public void LogToError(string message)
         {
             Core.LoggingService.Log(LogLevel.Error, message);

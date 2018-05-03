@@ -30,6 +30,9 @@ using System;
 
 namespace MonoDevelop.VersionControl.TFS.Exceptions
 {
+	/// <summary>
+    /// Version control exception.
+    /// </summary>
     public class VersionControlException : ApplicationException
     {
         public VersionControlException()

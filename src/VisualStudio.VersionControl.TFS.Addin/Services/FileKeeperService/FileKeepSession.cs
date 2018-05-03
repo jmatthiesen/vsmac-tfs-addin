@@ -38,7 +38,9 @@ namespace MonoDevelop.VersionControl.TFS.Services
     /// File keep session.
     /// </summary>
     public sealed class FileKeepSession : IFileKeepSession
-    {
+	{
+		bool _isDisposed;
+
         readonly ILoggingService _loggingService;
         readonly Dictionary<LocalPath, byte[]> _store = new Dictionary<LocalPath, byte[]>();
 
@@ -78,18 +80,16 @@ namespace MonoDevelop.VersionControl.TFS.Services
                 }
             }
             _store.Clear();
-        }
-
-        bool isDisposed;
+        }       
 
         public void Dispose()
         {
-            if (isDisposed)
+			if (_isDisposed)
                 return;
 
             Restore();
 
-            isDisposed = true;
+			_isDisposed = true;
         }
     }
 }

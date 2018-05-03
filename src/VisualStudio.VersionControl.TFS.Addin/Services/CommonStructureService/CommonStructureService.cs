@@ -61,8 +61,8 @@ namespace MonoDevelop.VersionControl.TFS.Services
             invoker.CreateEnvelope("ListAllProjects");
             var resultEl = invoker.InvokeResult();
           
-            return new List<ProjectInfo>(resultEl.GetElements("ProjectInfo")
-                                         .Select(e => ProjectInfo.FromServerXml(e, collection)).OrderBy(p => p.Name));
+            return new List<ProjectInfo>(resultEl.GetElements("ProjectInfo")                                        
+			                             .Select(e => ProjectInfo.FromServerXml(e, collection)).OrderBy(p => p.Name));
         }
     }
 }

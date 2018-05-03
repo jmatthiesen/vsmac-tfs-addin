@@ -95,6 +95,12 @@ namespace MonoDevelop.VersionControl.TFS.Services
             }
         }
 
+        /// <summary>
+        /// Uploads a file.
+        /// </summary>
+        /// <param name="workspaceName">Workspace name.</param>
+        /// <param name="workspaceOwner">Workspace owner.</param>
+        /// <param name="item">Item.</param>
         public void UploadFile(string workspaceName, string workspaceOwner, CommitItem item)
         {
             var fileContent = File.ReadAllBytes(item.LocalPath);

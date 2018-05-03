@@ -60,6 +60,13 @@ namespace MonoDevelop.VersionControl.TFS.Services
             _progressService = progressService;
         }
 
+        /// <summary>
+        /// Check in.
+        /// </summary>
+        /// <returns>The in.</returns>
+        /// <param name="changes">Changes.</param>
+        /// <param name="comment">Comment.</param>
+        /// <param name="workItems">Work items.</param>
         public CheckInResult CheckIn(ICollection<PendingChange> changes, string comment, Dictionary<int, WorkItemCheckinAction> workItems)
         {
             var commitItems = (from it in changes
@@ -72,7 +79,14 @@ namespace MonoDevelop.VersionControl.TFS.Services
         
             return CheckIn(commitItems, comment, workItems);
         }
-
+        
+        /// <summary>
+        /// Check in.
+        /// </summary>
+        /// <returns>The in.</returns>
+        /// <param name="changes">Changes.</param>
+        /// <param name="comment">Comment.</param>
+        /// <param name="workItems">Work items.</param>
         public CheckInResult CheckIn(CommitItem[] changes, string comment, Dictionary<int, WorkItemCheckinAction> workItems)
         {
             changes.RemoveAll(ch => !Data.IsLocalPathMapped(ch.LocalPath));
@@ -103,16 +117,32 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         #region Pending Changes
 
+        /// <summary>
+        /// Gets the pending changes.
+        /// </summary>
+        /// <returns>The pending changes.</returns>
+        /// <param name="items">Items.</param>
         public List<PendingChange> GetPendingChanges(IEnumerable<ItemSpec> items)
         {
             return collection.QueryPendingChangesForWorkspace(workspaceData, items, false);
         }
 
+        /// <summary>
+        /// Gets the pending changes.
+        /// </summary>
+        /// <returns>The pending changes.</returns>
+        /// <param name="items">Items.</param>
         public List<PendingChange> GetPendingChanges(IEnumerable<BaseItem> items)
         {
             return collection.QueryPendingChangesForWorkspace(workspaceData, items.Select(ItemSpec.FromServerItem), false);
         }
 
+        /// <summary>
+        /// Gets the pending sets.
+        /// </summary>
+        /// <returns>The pending sets.</returns>
+        /// <param name="item">Item.</param>
+        /// <param name="recurse">Recurse.</param>
         public List<PendingSet> GetPendingSets(string item, RecursionType recurse)
         {
             ItemSpec[] items = { new ItemSpec(item, recurse) };
@@ -123,23 +153,52 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         #region GetItems
 
+        /// <summary>
+        /// Gets the item.
+        /// </summary>
+        /// <returns>The item.</returns>
+        /// <param name="item">Item.</param>
+        /// <param name="itemType">Item type.</param>
+        /// <param name="includeDownloadUrl">If set to <c>true</c> include download URL.</param>
         public Item GetItem(ItemSpec item, ItemType itemType, bool includeDownloadUrl)
         {
             var items = GetItems(item.ToEnumerable(), VersionSpec.Latest, DeletedState.Any, itemType, includeDownloadUrl);
             return items.SingleOrDefault();
         }
 
+        /// <summary>
+        /// Gets the items.
+        /// </summary>
+        /// <returns>The items.</returns>
+        /// <param name="itemSpecs">Item specs.</param>
+        /// <param name="versionSpec">Version spec.</param>
+        /// <param name="deletedState">Deleted state.</param>
+        /// <param name="itemType">Item type.</param>
+        /// <param name="includeDownloadUrl">If set to <c>true</c> include download URL.</param>
         public List<Item> GetItems(IEnumerable<ItemSpec> itemSpecs, VersionSpec versionSpec, DeletedState deletedState, ItemType itemType, bool includeDownloadUrl)
         {
             return collection.QueryItems(workspaceData, itemSpecs, versionSpec, deletedState, itemType, includeDownloadUrl);
         }
 
+        /// <summary>
+        /// Gets the extended item.
+        /// </summary>
+        /// <returns>The extended item.</returns>
+        /// <param name="item">Item.</param>
+        /// <param name="itemType">Item type.</param>
         public ExtendedItem GetExtendedItem(ItemSpec item, ItemType itemType)
         {
             var items = collection.QueryItemsExtended(workspaceData, new[] { item }, DeletedState.Any, itemType);
             return items.SingleOrDefault();
         }
 
+        /// <summary>
+        /// Gets the extended items.
+        /// </summary>
+        /// <returns>The extended items.</returns>
+        /// <param name="itemSpecs">Item specs.</param>
+        /// <param name="deletedState">Deleted state.</param>
+        /// <param name="itemType">Item type.</param>
         public List<ExtendedItem> GetExtendedItems(IEnumerable<ItemSpec> itemSpecs, DeletedState deletedState, ItemType itemType)
         {
             return collection.QueryItemsExtended(workspaceData, itemSpecs, deletedState, itemType);
@@ -147,6 +206,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         #endregion
 
+        /// <summary>
+        /// Map the specified serverPath and localPath.
+        /// </summary>
+        /// <param name="serverPath">Server path.</param>
+        /// <param name="localPath">Local path.</param>
         public void Map(string serverPath, string localPath)
         {
             Data.WorkingFolders.Add(new WorkingFolder(serverPath, localPath));
@@ -159,6 +223,10 @@ namespace MonoDevelop.VersionControl.TFS.Services
         }
 
 
+        /// <summary>
+        /// Resets the download status.
+        /// </summary>
+        /// <param name="itemId">Item identifier.</param>
         public void ResetDownloadStatus(int itemId)
         {
             var updateVer = new UpdateLocalVersion(itemId, LocalPath.Empty(), 0);
@@ -168,12 +236,22 @@ namespace MonoDevelop.VersionControl.TFS.Services
         }
 
         #region Version Control Operations
-
+        
+        /// <summary>
+        /// Get.
+        /// </summary>
+        /// <param name="request">Request.</param>
+        /// <param name="options">Options.</param>
         public void Get(GetRequest request, GetOptions options)
         {
             Get(request.ToEnumerable(), options);
         }
 
+        /// <summary>
+        /// Get.
+        /// </summary>
+        /// <param name="requests">Requests.</param>
+        /// <param name="options">Options.</param>
         public void Get(IEnumerable<GetRequest> requests, GetOptions options)
         {
             bool force = options.HasFlag(GetOptions.GetAll);
@@ -197,6 +275,12 @@ namespace MonoDevelop.VersionControl.TFS.Services
             paths.AddRange(Directory.EnumerateFiles(root).Select(file => new ChangeRequest((LocalPath) file, RequestType.Add, ItemType.File)));
         }
 
+        /// <summary>
+        /// Pend add.
+        /// </summary>
+        /// <param name="paths">Paths.</param>
+        /// <param name="isRecursive">If set to <c>true</c> is recursive.</param>
+        /// <param name="failures">Failures.</param>
         public void PendAdd(IEnumerable<LocalPath> paths, bool isRecursive, out ICollection<Failure> failures)
         {
             List<ChangeRequest> changes = new List<ChangeRequest>();
@@ -238,6 +322,13 @@ namespace MonoDevelop.VersionControl.TFS.Services
             ProcessGetOperations(getOperations, processType);
         }
 
+        /// <summary>
+        /// Pend edit.
+        /// </summary>
+        /// <param name="paths">Paths.</param>
+        /// <param name="recursionType">Recursion type.</param>
+        /// <param name="lockLevel">Lock level.</param>
+        /// <param name="failures">Failures.</param>
         public void PendEdit(IEnumerable<BasePath> paths, RecursionType recursionType, LockLevel lockLevel, out ICollection<Failure> failures)
         {
             var changes = paths.Select(p => new ChangeRequest(p, RequestType.Edit, ItemType.File, recursionType, lockLevel, VersionSpec.Latest)).ToList();
@@ -251,6 +342,12 @@ namespace MonoDevelop.VersionControl.TFS.Services
             ProcessGetOperations(getOperations, ProcessType.Edit);
         }
 
+        /// <summary>
+        /// Pend rename.
+        /// </summary>
+        /// <param name="oldPath">Old path.</param>
+        /// <param name="newPath">New path.</param>
+        /// <param name="failures">Failures.</param>
         public void PendRename(LocalPath oldPath, LocalPath newPath, out ICollection<Failure> failures)
         {
             List<ChangeRequest> changes = new List<ChangeRequest>
@@ -273,6 +370,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
             LockItems(paths, LockLevel.None);
         }
 
+        /// <summary>
+        /// Locks items.
+        /// </summary>
+        /// <param name="paths">Paths.</param>
+        /// <param name="lockLevel">Lock level.</param>
         public void LockItems(IEnumerable<BasePath> paths, LockLevel lockLevel)
         {
             var changes = (from p in paths
@@ -421,6 +523,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         #region Process Get Operations
 
+        /// <summary>
+        /// Download file.
+        /// </summary>
+        /// <returns>The file.</returns>
+        /// <param name="operation">Operation.</param>
         LocalPath DownloadFile(GetOperation operation)
         {
             var path = operation.TargetLocalItem.IsEmpty ? operation.SourceLocalItem : operation.TargetLocalItem;
@@ -519,6 +626,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return new UpdateLocalVersion(operation.ItemId, LocalPath.Empty(), operation.VersionServer);
         }
 
+        /// <summary>
+        /// Processes the rename operation.
+        /// </summary>
+        /// <returns>The rename.</returns>
+        /// <param name="operation">Operation.</param>
         UpdateLocalVersion ProcessRename(GetOperation operation)
         {
             //If the operation is called by Repository OnMoveFile or OnMoveDirectory file/folder is moved before this method.
@@ -549,6 +661,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
             DeleteKeep
         }
 
+        /// <summary>
+        /// Processes the get operations.
+        /// </summary>
+        /// <param name="getOperations">Get operations.</param>
+        /// <param name="processType">Process type.</param>
         void ProcessGetOperations(IReadOnlyCollection<GetOperation> getOperations, ProcessType processType)
         {
             if (getOperations == null || getOperations.Count == 0)

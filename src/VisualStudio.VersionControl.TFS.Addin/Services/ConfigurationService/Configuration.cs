@@ -31,6 +31,9 @@ using MonoDevelop.VersionControl.TFS.Models;
 
 namespace MonoDevelop.VersionControl.TFS.Services
 {
+	/// <summary>
+    /// Add-In Configuration options.
+    /// </summary>
     public sealed class Configuration
     {
         public Configuration()

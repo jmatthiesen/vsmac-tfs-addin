@@ -67,6 +67,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
                     new XAttribute(XNamespace.Xmlns + "soap", soapNs)));
         }
 
+        /// <summary>
+        /// Create the envelope.
+        /// </summary>
+        /// <returns>The envelope.</returns>
+        /// <param name="methodName">Method name.</param>
         public XElement CreateEnvelope(string methodName)
         {
             this.methodName = methodName;
@@ -76,6 +81,12 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return innerMessage;
         }
 
+        /// <summary>
+        /// Create the envelope.
+        /// </summary>
+        /// <returns>The envelope.</returns>
+        /// <param name="methodName">Method name.</param>
+        /// <param name="headerName">Header name.</param>
         public SoapEnvelope CreateEnvelope(string methodName, string headerName)
         {
             this.methodName = methodName;
@@ -92,6 +103,10 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return responseElement.Element(messagegNs + (methodName + "Result"));
         }
 
+        /// <summary>
+        /// Invokes the result.
+        /// </summary>
+        /// <returns>The result.</returns>
         public XElement InvokeResult()
 		{
 			// If OAuth Token from cache is near to expire, renew it.
@@ -101,6 +116,10 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return MethodResultExtractor(responseElement);
         }
 
+        /// <summary>
+        /// Invokes the response.
+        /// </summary>
+        /// <returns>The response.</returns>
         public XElement InvokeResponse()
         {
             var logBuilder = new StringBuilder();

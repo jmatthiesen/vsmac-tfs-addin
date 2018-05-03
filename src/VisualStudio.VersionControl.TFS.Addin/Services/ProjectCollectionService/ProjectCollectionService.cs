@@ -75,6 +75,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
             );
         }
 
+        /// <summary>
+        /// Gets the project collections.
+        /// </summary>
+        /// <returns>The project collections.</returns>
+        /// <param name="server">Server.</param>
         public List<ProjectCollection> GetProjectCollections(TeamFoundationServer server)
         {
             var collection = new List<ProjectCollection>();

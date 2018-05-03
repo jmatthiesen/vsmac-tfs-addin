@@ -24,6 +24,9 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Pads
     /// </summary>
 	public class TeamExplorerPad : PadContent
     {
+		/// <summary>
+        /// TeamExplorer node types.
+        /// </summary>
         public enum TeamExplorerNodeType
         {
             Server,

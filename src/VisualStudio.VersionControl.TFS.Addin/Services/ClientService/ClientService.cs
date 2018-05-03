@@ -96,31 +96,56 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return extractor.Extract();
         }
 
+        /// <summary>
+        /// Gets the hierarchy.
+        /// </summary>
+        /// <returns>The hierarchy.</returns>
         public List<Hierarchy> GetHierarchy()
         {
             return GetMetadata<Hierarchy>(MetadataRowSetNames.Hierarchy).Where(h => !h.IsDeleted).ToList();
         }
 
+        /// <summary>
+        /// Gets the fields.
+        /// </summary>
+        /// <returns>The fields.</returns>
         public List<Field> GetFields()
         {
             return GetMetadata<Field>(MetadataRowSetNames.Fields);
         }
 
+        /// <summary>
+        /// Gets the constants.
+        /// </summary>
+        /// <returns>The constants.</returns>
         public List<Constant> GetConstants()
         {
             return GetMetadata<Constant>(MetadataRowSetNames.Constants).Where(c => !c.IsDeleted).ToList();
         }
 
+        /// <summary>
+        /// Gets the work item types.
+        /// </summary>
+        /// <returns>The work item types.</returns>
         public List<WorkItemType> GetWorkItemTypes()
         {
             return GetMetadata<WorkItemType>(MetadataRowSetNames.WorkItemTypes).Where(t => !t.IsDeleted).ToList();
         }
 
+        /// <summary>
+        /// Gets the actions.
+        /// </summary>
+        /// <returns>The actions.</returns>
         public List<Models.Action> GetActions()
         {
             return GetMetadata<Models.Action>(MetadataRowSetNames.Actions).Where(t => !t.IsDeleted).ToList();
         }
 
+        /// <summary>
+        /// Gets the stored queries.
+        /// </summary>
+        /// <returns>The stored queries.</returns>
+        /// <param name="project">Project.</param>
         public List<StoredQuery> GetStoredQueries(WorkItemProject project)
         {
             var invoker = GetSoapInvoker();
@@ -134,6 +159,12 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return extractor.Extract();
         }
 
+        /// <summary>
+        /// Gets work item by identifiers.
+        /// </summary>
+        /// <returns>The work item identifiers.</returns>
+        /// <param name="query">Query.</param>
+        /// <param name="project">Project.</param>
 		public List<int> GetWorkItemIds(StoredQuery query, WorkItemProject project)
 		{
 			WorkItemContext context = new WorkItemContext { ProjectId = query.ProjectId, Me = WorkItemsContext.WhoAmI };
@@ -176,6 +207,12 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return list;
 		}
 
+        /// <summary>
+        /// Gets the work item identifiers.
+        /// </summary>
+        /// <returns>The work item identifiers.</returns>
+        /// <param name="query">Query.</param>
+        /// <param name="fields">Fields.</param>
         public List<int> GetWorkItemIds(StoredQuery query, FieldList fields)
         {
             WorkItemContext context = new WorkItemContext { ProjectId = query.ProjectId, Me = WorkItemsContext.WhoAmI };
@@ -230,6 +267,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return list;
         }
 
+        /// <summary>
+        /// Gets a work item by identifier.
+        /// </summary>
+        /// <returns>The work item.</returns>
+        /// <param name="id">Identifier.</param>
         public WorkItem GetWorkItem(int id)
         {
             var invoker = GetSoapInvoker();
@@ -251,6 +293,12 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return workItem;
         }
 
+        /// <summary>
+		/// Get workitems by identifiers (paged).
+        /// </summary>
+        /// <returns>The workitems by identifiers.</returns>
+        /// <param name="query">Query.</param>
+        /// <param name="ids">Identifiers.</param>
         public List<WorkItem> PageWorkitemsByIds(StoredQuery query, List<int> ids)
         {
             if (ids.Count > 50)
@@ -283,6 +331,12 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return list;
         }
 
+        /// <summary>
+        /// Associate the specified workItemId, changeSet and comment.
+        /// </summary>
+        /// <param name="workItemId">Work item identifier.</param>
+        /// <param name="changeSet">Change set.</param>
+        /// <param name="comment">Comment.</param>
         public void Associate(int workItemId, int changeSet, string comment)
         {
             var workItem = GetWorkItem(workItemId);

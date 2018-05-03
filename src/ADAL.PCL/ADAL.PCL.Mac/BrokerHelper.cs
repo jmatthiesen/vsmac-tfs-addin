@@ -27,6 +27,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Foundation;
 
@@ -51,6 +52,7 @@ namespace Microsoft.IdentityService.Clients.ActiveDirectory
 
         public static void SetBrokerResponse(NSUrl brokerResponse)
         {
+			Debug.WriteLine(brokerResponse);
             throw new InvalidOperationException("Broker not supported on Mac");
         }
     }

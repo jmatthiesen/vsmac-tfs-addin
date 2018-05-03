@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Autofac;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.VersionControl.TFS.Gui.Dialogs;
@@ -42,9 +43,9 @@ using MonoDevelop.VersionControl.TFS.Services;
 namespace MonoDevelop.VersionControl.TFS
 {
 	/// <summary>
-    /// Team Foundation Server repository.
-    /// </summary>
-    public class TeamFoundationServerRepository : Repository
+	/// Team Foundation Server repository.
+	/// </summary>
+	public class TeamFoundationServerRepository : Repository
     {
         readonly IWorkspaceService workspace;
         readonly VersionInfoResolver _versionInfoResolver;
@@ -66,7 +67,7 @@ namespace MonoDevelop.VersionControl.TFS
             this.workspace = workspace;
             _versionControlService = versionControlService;
             _fileKeeperService = fileKeeperService;
-
+         
             _versionInfoResolver = new VersionInfoResolver(this);
         }
 
@@ -101,34 +102,6 @@ namespace MonoDevelop.VersionControl.TFS
         }
 
 		#endregion
-        
-		/// <summary>
-		/// Creates the change set.
-		/// </summary>
-		/// <returns>The change set.</returns>
-		/// <param name="basePath">Base path.</param>
-		public override ChangeSet CreateChangeSet(FilePath basePath)
-		{
-			List<LocalPath> paths = new List<LocalPath> { new LocalPath(basePath) };
-		
-			var itemSpecs = (from p in paths
-			                 where workspace.Data.IsLocalPathMapped(p)
-                             let recursion = p.IsDirectory ? RecursionType.OneLevel : RecursionType.None
-                             let path = p.Exists ? (string)p : (string)workspace.Data.GetServerPathForLocalPath(p)
-                             select new ItemSpec(path, recursion)).ToList();
-
-            var items = workspace.GetExtendedItems(itemSpecs, DeletedState.NonDeleted, ItemType.Any);
-            var pendingChanges = workspace.GetPendingChanges(itemSpecs);
-                     
-			var changeSet = base.CreateChangeSet(basePath);
-
-			foreach(var pendingChange in pendingChanges)
-			{
-				changeSet.AddFile(new FilePath(pendingChange.LocalItem));
-			}
-           
-			return changeSet;
-		}
 
 		/// <summary>
 		/// Gets the base text.
@@ -352,6 +325,13 @@ namespace MonoDevelop.VersionControl.TFS
             DeletePaths(paths, true, monitor, keepLocal);
         }
 
+        /// <summary>
+        /// Deletes the paths.
+        /// </summary>
+        /// <param name="localPaths">Local paths.</param>
+        /// <param name="recursive">If set to <c>true</c> recursive.</param>
+        /// <param name="monitor">Monitor.</param>
+        /// <param name="keepLocal">If set to <c>true</c> keep local.</param>
         void DeletePaths(LocalPath[] localPaths, bool recursive, ProgressMonitor monitor, bool keepLocal)
         {
             using (var keeper = _fileKeeperService.StartSession())
@@ -383,6 +363,12 @@ namespace MonoDevelop.VersionControl.TFS
             }
         }
 
+        /// <summary>
+        /// Ons the get text at revision.
+        /// </summary>
+        /// <returns>The get text at revision.</returns>
+        /// <param name="repositoryPath">Repository path.</param>
+        /// <param name="revision">Revision.</param>
         protected override string OnGetTextAtRevision(FilePath repositoryPath, Revision revision)
         {
 			var teamFoundationServerRevision = (TeamFoundationServerRevision)revision;
@@ -658,7 +644,7 @@ namespace MonoDevelop.VersionControl.TFS
 
         public override bool AllowModifyUnlockedFiles { get { return true; } }
         
-        public override bool SupportsRemoteStatus { get { return false; } }
+        public override bool SupportsRemoteStatus { get { return true; } }
 
         #endregion
 

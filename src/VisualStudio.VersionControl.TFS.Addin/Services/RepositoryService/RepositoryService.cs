@@ -68,6 +68,12 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         #region Workspaces
 
+        /// <summary>
+        /// Queries the workspace.
+        /// </summary>
+        /// <returns>The workspace.</returns>
+        /// <param name="ownerName">Owner name.</param>
+        /// <param name="workspaceName">Workspace name.</param>
         public WorkspaceData QueryWorkspace(string ownerName, string workspaceName)
         {
             var invoker = GetSoapInvoker();
@@ -79,6 +85,12 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return WorkspaceData.FromServerXml(result);
         }
 
+        /// <summary>
+        /// Queries the workspace.
+        /// </summary>
+        /// <returns>The workspaces.</returns>
+        /// <param name="ownerName">Owner name.</param>
+        /// <param name="computer">Computer.</param>
         public List<WorkspaceData> QueryWorkspaces(string ownerName, string computer)
         {
             var invoker = GetSoapInvoker();
@@ -94,6 +106,13 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return result.GetElements("Workspace").Select(WorkspaceData.FromServerXml).OrderBy(x => x.Name).ToList();
         }
 
+        /// <summary>
+        /// Updates workspace info.
+        /// </summary>
+        /// <returns>The workspace.</returns>
+        /// <param name="oldWorkspaceName">Old workspace name.</param>
+        /// <param name="ownerName">Owner name.</param>
+        /// <param name="newWorkspace">New workspace.</param>
         public WorkspaceData UpdateWorkspace(string oldWorkspaceName, string ownerName,
                                          WorkspaceData newWorkspace)
         {
@@ -109,6 +128,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return WorkspaceData.FromServerXml(result);
         }
 
+        /// <summary>
+        /// Create a new workspace.
+        /// </summary>
+        /// <returns>The workspace.</returns>
+        /// <param name="workspace">Workspace.</param>
         public WorkspaceData CreateWorkspace(WorkspaceData workspace)
         {
             var invoker = GetSoapInvoker();
@@ -119,6 +143,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return WorkspaceData.FromServerXml(result);
         }
 
+        /// <summary>
+        /// Delete an existing workspace.
+        /// </summary>
+        /// <param name="workspaceName">Workspace name.</param>
+        /// <param name="ownerName">Owner name.</param>
         public void DeleteWorkspace(string workspaceName, string ownerName)
         {
             var invoker = GetSoapInvoker();
@@ -130,6 +159,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         #endregion
 
+        /// <summary>
+        /// Updates the local version.
+        /// </summary>
+        /// <param name="workspaceData">Workspace data.</param>
+        /// <param name="updateLocalVersionQueue">Update local version queue.</param>
         internal void UpdateLocalVersion(WorkspaceData workspaceData, UpdateLocalVersionQueue updateLocalVersionQueue)
         {
             var invoker = GetSoapInvoker();
@@ -142,6 +176,16 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         #region Query Items
 
+        /// <summary>
+        /// Queries the items.
+        /// </summary>
+        /// <returns>The items.</returns>
+        /// <param name="workspaceData">Workspace data.</param>
+        /// <param name="itemSpecs">Item specs.</param>
+        /// <param name="versionSpec">Version spec.</param>
+        /// <param name="deletedState">Deleted state.</param>
+        /// <param name="itemType">Item type.</param>
+        /// <param name="includeDownloadInfo">If set to <c>true</c> include download info.</param>
         public List<Item> QueryItems(WorkspaceData workspaceData, IEnumerable<ItemSpec> itemSpecs, VersionSpec versionSpec,
                                      DeletedState deletedState, ItemType itemType,
                                      bool includeDownloadInfo)
@@ -166,12 +210,24 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return result.GetDescendants("Item").Select(Item.FromXml).ToList();
         }
 
+        /// <summary>
+        /// Queries the folders.
+        /// </summary>
+        /// <returns>The folders.</returns>
         public List<Item> QueryFolders()
         {
             var itemSpecs = new[] { new ItemSpec(RepositoryPath.RootPath, RecursionType.Full) };
             return QueryItems(null, itemSpecs, VersionSpec.Latest, DeletedState.NonDeleted, ItemType.Folder, false);
         }
 
+        /// <summary>
+        /// Queries the items extended.
+        /// </summary>
+        /// <returns>The items extended.</returns>
+        /// <param name="workspaceData">Workspace data.</param>
+        /// <param name="itemSpecs">Item specs.</param>
+        /// <param name="deletedState">Deleted state.</param>
+        /// <param name="itemType">Item type.</param>
         public List<ExtendedItem> QueryItemsExtended(WorkspaceData workspaceData, IEnumerable<ItemSpec> itemSpecs,
                                                      DeletedState deletedState, ItemType itemType)
         {
@@ -192,6 +248,14 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
         #endregion
 
+        /// <summary>
+        /// Get.
+        /// </summary>
+        /// <returns>The get.</returns>
+        /// <param name="workspaceData">Workspace data.</param>
+        /// <param name="requests">Requests.</param>
+        /// <param name="force">If set to <c>true</c> force.</param>
+        /// <param name="noGet">If set to <c>true</c> no get.</param>
         internal List<GetOperation> Get(WorkspaceData workspaceData,
                                         IEnumerable<GetRequest> requests, bool force, bool noGet)
         {
@@ -239,6 +303,13 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return new List<PendingSet>(result.GetElements("PendingSet").Select(PendingSet.FromXml));
         }
 
+        /// <summary>
+        /// Get pending changes.
+        /// </summary>
+        /// <returns>The changes.</returns>
+        /// <param name="workspaceData">Workspace data.</param>
+        /// <param name="changeRequest">Change request.</param>
+        /// <param name="failures">Failures.</param>
         internal List<GetOperation> PendChanges(WorkspaceData workspaceData, IEnumerable<ChangeRequest> changeRequest, out ICollection<Failure> failures)
         {
             var invoker = GetSoapInvoker();
@@ -278,6 +349,15 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return result.GetElements("PendingChange").Select(PendingChange.FromXml).ToList();
         }
 
+        /// <summary>
+        /// Queries the item history.
+        /// </summary>
+        /// <returns>The history.</returns>
+        /// <param name="item">Item.</param>
+        /// <param name="versionItem">Version item.</param>
+        /// <param name="versionFrom">Version from.</param>
+        /// <param name="versionTo">Version to.</param>
+        /// <param name="maxCount">Max count.</param>
         public List<Changeset> QueryHistory(ItemSpec item, VersionSpec versionItem,
                                             VersionSpec versionFrom, VersionSpec versionTo, short maxCount)
         {
@@ -303,6 +383,14 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return result.Elements(MessageNs + "Changeset").Select(Changeset.FromXml).ToList();
         }
 
+        /// <summary>
+        /// Queries changeset.
+        /// </summary>
+        /// <returns>The changeset.</returns>
+        /// <param name="changeSetId">Change set identifier.</param>
+        /// <param name="includeChanges">If set to <c>true</c> include changes.</param>
+        /// <param name="includeDownloadUrls">If set to <c>true</c> include download urls.</param>
+        /// <param name="includeSourceRenames">If set to <c>true</c> include source renames.</param>
         public Changeset QueryChangeset(int changeSetId, bool includeChanges, bool includeDownloadUrls, bool includeSourceRenames)
         {
             var invoker = GetSoapInvoker();
@@ -317,6 +405,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
             return Changeset.FromXml(result);
         }
 
+        /// <summary>
+        /// Uploads a file.
+        /// </summary>
+        /// <param name="workspaceData">Workspace data.</param>
+        /// <param name="commitItem">Commit item.</param>
         internal void UploadFile(WorkspaceData workspaceData, CommitItem commitItem)
         {
             UploadService.UploadFile(workspaceData.Name, workspaceData.Owner, commitItem);
@@ -345,7 +438,15 @@ namespace MonoDevelop.VersionControl.TFS.Services
         }
 
         #endregion
-
+        
+        /// <summary>
+        /// Check in.
+        /// </summary>
+        /// <returns>The in.</returns>
+        /// <param name="workspaceData">Workspace data.</param>
+        /// <param name="repositoryPaths">Repository paths.</param>
+        /// <param name="comment">Comment.</param>
+        /// <param name="workItems">Work items.</param>
         internal CheckInResult CheckIn(WorkspaceData workspaceData, IEnumerable<RepositoryPath> repositoryPaths, string comment, Dictionary<int, WorkItemCheckinAction> workItems)
         {
             var invoker = GetSoapInvoker();

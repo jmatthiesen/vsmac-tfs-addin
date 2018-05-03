@@ -48,7 +48,7 @@ namespace MonoDevelop.VersionControl.TFS.Models
     //</s:complexType>
     public sealed class PendingSet
     {
-        private PendingSet()
+        PendingSet()
         {
             PendingChanges = new List<PendingChange>();
         }

@@ -34,7 +34,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
     /// </summary>
     public sealed class FileKeeperService : IFileKeeperService
     {
-        private readonly ILoggingService _loggingService;
+        readonly ILoggingService _loggingService;
 
         public FileKeeperService(ILoggingService loggingService)
         {

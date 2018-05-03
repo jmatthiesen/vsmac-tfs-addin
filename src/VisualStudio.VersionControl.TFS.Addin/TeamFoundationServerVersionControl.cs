@@ -164,17 +164,15 @@ namespace MonoDevelop.VersionControl.TFS
         TeamFoundationServerRepository GetRepository(FilePath path, string id)
         {
             var solutionPath = Path.ChangeExtension(Path.Combine(path, id), "sln");
-          
-            if (File.Exists(solutionPath)) //Read Solution
-            {
-                var repo = FindBySolution(solutionPath);
-                return repo ?? FindByPath(path);
-            }
-            else
-            {
-                return FindByPath(path);
-            }
-        }
+
+			if (File.Exists(solutionPath)) //Read Solution
+			{
+				var repo = FindBySolution(solutionPath);
+				return repo ?? FindByPath(path);
+			}
+
+			return FindByPath(path);
+		}
 
         /// <summary>
         /// Finds the repository by solution path.
@@ -225,6 +223,8 @@ namespace MonoDevelop.VersionControl.TFS
 
 				if (repo != null)
 				{
+					System.Diagnostics.Debug.WriteLine(repo.GetHashCode());
+
 					return repo;
 				}
             }
@@ -248,8 +248,8 @@ namespace MonoDevelop.VersionControl.TFS
                 if (workspaceData != null)
                 {
 					return DependencyContainer.GetTeamFoundationServerRepository(path, workspaceData, projectCollection);
-                }
-            }
+				}
+            }           
 
             return null;
         }

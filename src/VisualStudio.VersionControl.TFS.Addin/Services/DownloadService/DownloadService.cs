@@ -40,7 +40,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
     [ServiceResolver(typeof(DownloadServiceResolver))]
 	sealed class DownloadService : TeamFoundationServerService
     {
-        private DownloadService(Uri baseUri, string servicePath)
+        DownloadService(Uri baseUri, string servicePath)
             : base(baseUri, servicePath)
         {
 
@@ -72,7 +72,11 @@ namespace MonoDevelop.VersionControl.TFS.Services
      
             return Path.Combine(tempDir, "tfsTemp" + num.ToString("X") + extension);    // Files are gzipped
         }
-
+       /// <summary>
+       /// Download file to temp folder.
+       /// </summary>
+       /// <returns>The to temp.</returns>
+       /// <param name="artifactUri">Artifact URI.</param>
         public LocalPath DownloadToTemp(string artifactUri)
         {
             try
@@ -111,6 +115,12 @@ namespace MonoDevelop.VersionControl.TFS.Services
             }
         }
 
+        /// <summary>
+        /// Download file to temp folder.
+        /// </summary>
+        /// <returns>The to temp with name.</returns>
+        /// <param name="downloadUri">Download URI.</param>
+        /// <param name="fileName">File name.</param>
         public LocalPath DownloadToTempWithName(string downloadUri, string fileName)
         {
             var path = DownloadToTemp(downloadUri);

@@ -35,7 +35,7 @@ using MonoDevelop.VersionControl.TFS.MonoDevelopWrappers.Implementation;
 namespace MonoDevelop.VersionControl.TFS.Services
 {
 	/// <summary>
-    /// Add-in Dependency Container.
+	/// Add-in Dependency Container (Autofac).
     /// </summary>
     public static class DependencyContainer
     {
@@ -54,17 +54,19 @@ namespace MonoDevelop.VersionControl.TFS.Services
         public static IWorkspaceService GetWorkspace(WorkspaceData workspaceData, ProjectCollection collection)
         {
             return Container.Resolve<IWorkspaceService>(new TypedParameter(typeof(WorkspaceData), workspaceData),
-                                                 new TypedParameter(typeof(ProjectCollection), collection));
+			                                            new TypedParameter(typeof(ProjectCollection), collection));
         }
 
-        public static TeamFoundationServerRepository GetTeamFoundationServerRepository(string path, WorkspaceData workspaceData, ProjectCollection collection)
-        {
-            using (var scope = Container.BeginLifetimeScope())
-            {
-                var workspace = GetWorkspace(workspaceData, collection);
-                return scope.Resolve<TeamFoundationServerRepository>(new NamedParameter("rootPath", path), new TypedParameter(typeof (IWorkspaceService), workspace));
-            }
-        }
+		public static TeamFoundationServerRepository GetTeamFoundationServerRepository(string path, WorkspaceData workspaceData, ProjectCollection collection)
+		{
+			var workspace = GetWorkspace(workspaceData, collection);
+
+			var teamFoundationServerRepository = Container.Resolve<TeamFoundationServerRepository>(new NamedParameter("rootPath", path), new TypedParameter(typeof(IWorkspaceService), workspace));
+
+			teamFoundationServerRepository.NotificationService = new NotificationService(teamFoundationServerRepository);
+
+			return teamFoundationServerRepository;
+		}
 
 		public static ISoapInvoker GetSoapInvoker(TeamFoundationServerService service)
         {
@@ -78,7 +80,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
         {
             this.RegisterType<ProgressService>().As<IProgressService>().SingleInstance();
            
-            this.Register<ConfigurationService>(ctx =>
+            this.Register(ctx =>
             {
                 var service = new ConfigurationService();
                 service.Init(UserProfile.Current.ConfigDir);
@@ -87,7 +89,8 @@ namespace MonoDevelop.VersionControl.TFS.Services
 
             this.RegisterType<LoggingService>().As<ILoggingService>().SingleInstance();
             this.RegisterType<NotificationService>().As<INotificationService>();
-            this.RegisterType<TeamFoundationServerRepository>().InstancePerLifetimeScope().OnActivated(a => a.Instance.NotificationService = a.Context.Resolve<INotificationService>() );
+			this.RegisterType<TeamFoundationServerRepository>();
+
         }
     }
 }

@@ -67,6 +67,10 @@ namespace MonoDevelop.VersionControl.TFS.Services
             }
         }
 
+        /// <summary>
+        /// Gets the SOAP invoker.
+        /// </summary>
+        /// <returns>The SOAP invoker.</returns>
         protected ISoapInvoker GetSoapInvoker()
         {
             return DependencyContainer.GetSoapInvoker(this);
