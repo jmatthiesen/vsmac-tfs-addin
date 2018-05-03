@@ -34,10 +34,14 @@ using MonoDevelop.VersionControl.TFS.Helpers;
 
 namespace MonoDevelop.VersionControl.TFS.Models
 {
+	/// <summary>
+    /// Version info resolver.
+    /// </summary>
 	internal sealed class VersionInfoResolver
     {
+		static readonly Dictionary<LocalPath, VersionInfo> Cache = new Dictionary<LocalPath, VersionInfo>();
+
         readonly TeamFoundationServerRepository _repository;
-        static readonly Dictionary<LocalPath, VersionInfo> Cache = new Dictionary<LocalPath, VersionInfo>();
         static readonly object Locker = new object();
         readonly PropertyInfo _requiredRefresh;
 
@@ -51,6 +55,11 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         #region Cache
 
+        /// <summary>
+        /// Invalidates the cache.
+        /// </summary>
+        /// <param name="paths">Paths.</param>
+        /// <param name="recurse">If set to <c>true</c> recurse.</param>
         public void InvalidateCache(IEnumerable<LocalPath> paths, bool recurse = false)
         {
             lock (Locker)
@@ -68,11 +77,18 @@ namespace MonoDevelop.VersionControl.TFS.Models
             }
         }
 
+        /// <summary>
+        /// Invalidates the cache.
+        /// </summary>
+        /// <param name="path">Path.</param>
         public void InvalidateCache(string path)
         {
             InvalidateCache((new LocalPath(path)).ToEnumerable());
         }
 
+        /// <summary>
+        /// Invalidates the cache.
+        /// </summary>
         public void InvalidateCache()
         {
             lock (Locker)
@@ -81,6 +97,11 @@ namespace MonoDevelop.VersionControl.TFS.Models
             }
         }
 
+        /// <summary>
+        /// Updates the cache.
+        /// </summary>
+        /// <param name="path">Path.</param>
+        /// <param name="status">Status.</param>
         private void UpdateCache(LocalPath path, VersionInfo status)
         {
             lock (Locker)
@@ -92,6 +113,11 @@ namespace MonoDevelop.VersionControl.TFS.Models
             }
         }
 
+        /// <summary>
+        /// Get the VersionInfo for the specific path.
+        /// </summary>
+        /// <returns>The get.</returns>
+        /// <param name="path">Path.</param>
         private VersionInfo Get(LocalPath path)
         {
             lock (Locker)
@@ -154,6 +180,11 @@ namespace MonoDevelop.VersionControl.TFS.Models
             return status;
         }
 
+        /// <summary>
+        /// Gets the server version status.
+        /// </summary>
+        /// <returns>The server version status.</returns>
+        /// <param name="item">Item.</param>
         VersionStatus GetServerVersionStatus(ExtendedItem item)
         {
             var status = VersionStatus.Versioned;
@@ -182,6 +213,11 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         #endregion
 
+        /// <summary>
+        /// Gets the file status.
+        /// </summary>
+        /// <returns>The file status.</returns>
+        /// <param name="paths">Paths.</param>
         public Dictionary<LocalPath, VersionInfo> GetFileStatus(IEnumerable<LocalPath> paths)
         {
             var result = new Dictionary<LocalPath, VersionInfo>();
@@ -219,6 +255,11 @@ namespace MonoDevelop.VersionControl.TFS.Models
             return result;
         }
         
+        /// <summary>
+        /// Gets the directory status.
+        /// </summary>
+        /// <returns>The directory status.</returns>
+        /// <param name="localPath">Local path.</param>
         public Dictionary<LocalPath, VersionInfo> GetDirectoryStatus(LocalPath localPath)
         {
             // For folder status we won't use cache.
@@ -244,6 +285,13 @@ namespace MonoDevelop.VersionControl.TFS.Models
             return ExtractVersionInfo(paths, items, pendingChanges);
         }
 
+        /// <summary>
+        /// Extracts the version info.
+        /// </summary>
+        /// <returns>The version info.</returns>
+        /// <param name="localItems">Local items.</param>
+        /// <param name="serverItems">Server items.</param>
+        /// <param name="pendingChanges">Pending changes.</param>
         Dictionary<LocalPath, VersionInfo> ExtractVersionInfo(IList<LocalPath> localItems, IList<ExtendedItem> serverItems, IList<PendingChange> pendingChanges)
         {
             var result = new Dictionary<LocalPath, VersionInfo>();
@@ -285,9 +333,16 @@ namespace MonoDevelop.VersionControl.TFS.Models
                 result.Add(localItem, info);
                 UpdateCache(localItem, info);
             }
+
             return result;
         }
 
+        /// <summary>
+        /// Gets the version info status.
+        /// </summary>
+        /// <returns>The version info status.</returns>
+        /// <param name="item">Item.</param>
+        /// <param name="pendingChanges">Pending changes.</param>
         VersionInfoStatus GetVersionInfoStatus(ExtendedItem item, IList<PendingChange> pendingChanges)
         {
 			if (item == null)

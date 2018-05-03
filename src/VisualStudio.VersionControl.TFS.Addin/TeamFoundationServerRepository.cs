@@ -99,23 +99,56 @@ namespace MonoDevelop.VersionControl.TFS
         {
 			throw new NotSupportedException("Revert revision is not supported");
         }
-        
-        #endregion
 
-        public override string GetBaseText(FilePath localFile)
+		#endregion
+        
+		/// <summary>
+		/// Creates the change set.
+		/// </summary>
+		/// <returns>The change set.</returns>
+		/// <param name="basePath">Base path.</param>
+		public override ChangeSet CreateChangeSet(FilePath basePath)
+		{
+			List<LocalPath> paths = new List<LocalPath> { new LocalPath(basePath) };
+		
+			var itemSpecs = (from p in paths
+			                 where workspace.Data.IsLocalPathMapped(p)
+                             let recursion = p.IsDirectory ? RecursionType.OneLevel : RecursionType.None
+                             let path = p.Exists ? (string)p : (string)workspace.Data.GetServerPathForLocalPath(p)
+                             select new ItemSpec(path, recursion)).ToList();
+
+            var items = workspace.GetExtendedItems(itemSpecs, DeletedState.NonDeleted, ItemType.Any);
+            var pendingChanges = workspace.GetPendingChanges(itemSpecs);
+                     
+			var changeSet = base.CreateChangeSet(basePath);
+
+			foreach(var pendingChange in pendingChanges)
+			{
+				changeSet.AddFile(new FilePath(pendingChange.LocalItem));
+			}
+           
+			return changeSet;
+		}
+
+		/// <summary>
+		/// Gets the base text.
+		/// </summary>
+		/// <returns>The base text.</returns>
+		/// <param name="localFile">Local file.</param>
+		public override string GetBaseText(FilePath localFile)
         {
             var item = workspace.GetItem(ItemSpec.FromLocalPath(new LocalPath(localFile)), ItemType.File, true);
            
             return workspace.GetItemContent(item);
-        }
+        }      
 
-        /// <summary>
-        /// Get history.
-        /// </summary>
-        /// <returns>The get history.</returns>
-        /// <param name="localFile">Local file.</param>
-        /// <param name="since">Since.</param>
-        protected override Revision[] OnGetHistory(FilePath localFile, Revision since)
+		/// <summary>
+		/// Get history.
+		/// </summary>
+		/// <returns>The get history.</returns>
+		/// <param name="localFile">Local file.</param>
+		/// <param name="since">Since.</param>
+		protected override Revision[] OnGetHistory(FilePath localFile, Revision since)
         {
             var serverPath = workspace.Data.GetServerPathForLocalPath(new LocalPath(localFile));
             ItemSpec spec = new ItemSpec(serverPath, RecursionType.None);

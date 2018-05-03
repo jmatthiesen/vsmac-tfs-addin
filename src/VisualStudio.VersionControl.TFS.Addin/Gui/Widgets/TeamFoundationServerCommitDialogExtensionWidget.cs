@@ -49,6 +49,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 		{
 			Init();
 			BuildGui();
+			AttachEvents();
 		}
         
         /// <summary>
@@ -152,7 +153,6 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 			addButton.Clicked += OnAddWorkItem;
 			_removeButton.Label = GettextCatalog.GetString("Remove Work Item");
 			_removeButton.Sensitive = false;
-			_removeButton.Clicked += OnRemoveWorkItem;
 
 			addButton.WidthRequest = _removeButton.WidthRequest = 150;
 
@@ -165,6 +165,19 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 			ShowAll();
 		}
 
+		/// <summary>
+		/// Attachs the events.
+		/// </summary>
+		void AttachEvents()
+		{
+			_removeButton.Clicked += OnRemoveWorkItem;
+		}
+
+        /// <summary>
+        /// Remove WorkItem.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
 		void OnRemoveWorkItem(object sender, EventArgs e)
 		{
 			TreeSelection selection = _workItemsView.Selection;
@@ -175,9 +188,14 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 			}
 
 			_workItemStore.Remove(ref iter);
-			_removeButton.Sensitive = _workItemStore.IterNChildren() > 0;
+			UpdateRemoveWorkItem();
 		}
 
+        /// <summary>
+        /// Associate commit with a WorkItem.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
 		void OnAddWorkItem(object sender, EventArgs e)
         {
             using (var selectWorkItemDialog = new ChooseWorkItemDialog())
@@ -197,10 +215,17 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 
                         _workItemStore.AppendValues(workItem.Id, title, "Associate");
                     }
+
+					UpdateRemoveWorkItem();
                 }
             }
         }
 
+        /// <summary>
+        /// Determines if the WorkItem is added.
+        /// </summary>
+        /// <returns><c>true</c>, if work item added was ised, <c>false</c> otherwise.</returns>
+        /// <param name="workItemId">Work item identifier.</param>
 		bool IsWorkItemAdded(int workItemId)
 		{
 			if (_workItemStore.GetIterFirst(out TreeIter iter))
@@ -227,11 +252,13 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 			if (_workItemStore.GetIterFirst(out TreeIter iter))
 			{
 				var id = (int)_workItemStore.GetValue(iter, 0);
+
 				if (id == workItemId)
 				{
 					_workItemStore.Remove(ref iter);
 					return;
 				}
+
 				while (_workItemStore.IterNext(ref iter))
 				{
 					var idNext = (int)_workItemStore.GetValue(iter, 0);
@@ -263,5 +290,10 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
 			var checkinAction = (WorkItemCheckinAction)Enum.Parse(typeof(WorkItemCheckinAction), (string)_workItemStore.GetValue(iter, 2));
 			return new KeyValuePair<int, WorkItemCheckinAction>(id, checkinAction);
 		}
+
+		void UpdateRemoveWorkItem()
+        {
+            _removeButton.Sensitive = _workItemStore.IterNChildren() > 0;
+        }
 	}
 }
