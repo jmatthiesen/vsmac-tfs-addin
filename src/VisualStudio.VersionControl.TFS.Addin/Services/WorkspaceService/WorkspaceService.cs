@@ -284,9 +284,8 @@ namespace MonoDevelop.VersionControl.TFS.Services
             if (changes.Length == 0)
                 return;
 
-            ICollection<Failure> failures;
-            var getOperations = collection.PendChanges(workspaceData, changes, out failures);
-            ProcessGetOperations(getOperations, ProcessType.Get);
+			var getOperations = collection.PendChanges(workspaceData, changes, out ICollection<Failure> failures);
+			ProcessGetOperations(getOperations, ProcessType.Get);
         }
 
         public List<Changeset> QueryHistory(ItemSpec item, VersionSpec versionItem, VersionSpec versionFrom, VersionSpec versionTo, short maxCount)

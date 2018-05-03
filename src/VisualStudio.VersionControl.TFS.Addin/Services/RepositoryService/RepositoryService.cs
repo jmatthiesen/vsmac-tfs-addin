@@ -196,7 +196,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                                         IEnumerable<GetRequest> requests, bool force, bool noGet)
         {
             if (workspaceData == null)
-                throw new ArgumentNullException("workspaceData");
+				throw new ArgumentNullException(nameof(workspaceData));
            
             var invoker = GetSoapInvoker();
             var msg = invoker.CreateEnvelope("Get");
@@ -403,13 +403,15 @@ namespace MonoDevelop.VersionControl.TFS.Services
             msg.Add(new XElement(MessageNs + "resolution", resolutionType));
 
             var response = invoker.InvokeResponse();
-            ResolveResult result = new ResolveResult();
 
-            result.GetOperations = GetOperationExtractor(invoker.MethodResultExtractor(response));
-            result.UndoOperations = GetOperationExtractor(response.Element(MessageNs + "undoOperations"));
-            result.ResolvedConflicts = ConflictExtractor(response.Element(MessageNs + "resolvedConflicts"));
-           
-            return result;
+			ResolveResult result = new ResolveResult
+			{
+				GetOperations = GetOperationExtractor(invoker.MethodResultExtractor(response)),
+				UndoOperations = GetOperationExtractor(response.Element(MessageNs + "undoOperations")),
+				ResolvedConflicts = ConflictExtractor(response.Element(MessageNs + "resolvedConflicts"))
+			};
+
+			return result;
         }
     }
 }

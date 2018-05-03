@@ -135,7 +135,13 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         #region Version Status Info
 
-        private VersionStatus GetLocalVersionStatus(ExtendedItem item, IList<PendingChange> pendingChanges)
+        /// <summary>
+        /// Gets the local version status.
+        /// </summary>
+        /// <returns>The local version status.</returns>
+        /// <param name="item">Item.</param>
+        /// <param name="pendingChanges">Pending changes.</param>
+        VersionStatus GetLocalVersionStatus(ExtendedItem item, IList<PendingChange> pendingChanges)
         {
             var status = VersionStatus.Versioned;
 
@@ -201,11 +207,21 @@ namespace MonoDevelop.VersionControl.TFS.Models
             return status;
         }
 
+        /// <summary>
+        /// Gets the local revision.
+        /// </summary>
+        /// <returns>The local revision.</returns>
+        /// <param name="item">Item.</param>
 		TeamFoundationServerRevision GetLocalRevision(ExtendedItem item)
         {
 			return new TeamFoundationServerRevision(_repository, item.VersionLocal, item.SourceServerItem);
         }
 
+        /// <summary>
+        /// Gets the server revision.
+        /// </summary>
+        /// <returns>The server revision.</returns>
+        /// <param name="item">Item.</param>
 		TeamFoundationServerRevision GetServerRevision(ExtendedItem item)
         {
 			return new TeamFoundationServerRevision(_repository, item.VersionLatest, item.SourceServerItem);
@@ -271,6 +287,11 @@ namespace MonoDevelop.VersionControl.TFS.Models
             return ExtractVersionInfo(localItems, serverItems, pendingChanges);
         }
 
+        /// <summary>
+        /// Processes the un cached items.
+        /// </summary>
+        /// <returns>The un cached items.</returns>
+        /// <param name="paths">Paths.</param>
         Dictionary<LocalPath, VersionInfo> ProcessUnCachedItems(List<LocalPath> paths)
         {
             var itemSpecs = (from p in paths
@@ -360,6 +381,12 @@ namespace MonoDevelop.VersionControl.TFS.Models
             };
         }
 
+        /// <summary>
+		/// Converts to VersionInfo.
+        /// </summary>
+        /// <returns>The to info.</returns>
+        /// <param name="path">Path.</param>
+        /// <param name="status">Status.</param>
         VersionInfo ConvertToInfo(LocalPath path, VersionInfoStatus status)
         {
 			if (status.IsUnversioned)

@@ -71,10 +71,19 @@ The WorkItems actions are available in a contextual menu.
 
 **IMPORTANT:** The user interface design is temporary. Work in progress.
 
+## Distribute
+
+ To pack up the add-in and share with others, go to the assembly output folder to locate the add-in assembly, and call **vstool.exe** utility.
+
+`$ mono /Applications/Visual\ Studio.app/Contents/Resources/lib/monodevelop/bin/vstool.exe setup pack MonoDevelop.VersionControl.TFS.dll`
+
+<img src="images/vstool.png" alt="VSTool" Width="500" />
+
 ## Thanks
 
 - [https://github.com/Indomitable/monodevelop-tfs-addin](https://github.com/Indomitable/monodevelop-tfs-addin)
 - [https://github.com/Microsoft/vsts-auth-samples](https://github.com/Microsoft/vsts-auth-samples)
+- [https://github.com/AzureAD/azure-activedirectory-library-for-dotnet](https://github.com/AzureAD/azure-activedirectory-library-for-dotnet)
 
 ## Contributing
 

@@ -69,9 +69,7 @@ namespace MonoDevelop.VersionControl.TFS.Services
                 return null;
             
             var resolver = (IServiceResolver)Activator.CreateInstance(resolverAttribute.ResolverType);
-
-
-
+                     
             var serviceElement = resultEl.XPathSelectElement(string.Format("./msg:ServiceDefinitions/msg:ServiceDefinition[@identifier='{0}']", resolver.Id), 
                 this.NsResolver);
             
