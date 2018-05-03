@@ -159,9 +159,11 @@ namespace MonoDevelop.VersionControl.TFS
 				versionFrom = new ChangesetVersionSpec(((TeamFoundationServerRevision)since).Version);
 			}
 
-			return workspace.QueryHistory(spec, VersionSpec.Latest, versionFrom, null, short.MaxValue)
-				            .Select(x => new TeamFoundationServerRevision(this, serverPath, x))
-				            .ToArray();
+			Revision[] revision = workspace.QueryHistory(spec, VersionSpec.Latest, versionFrom, null, short.MaxValue)
+			                               .Select(x => new TeamFoundationServerRevision(this, serverPath, x))
+			                               .ToArray();
+
+			return revision;
         }
         
         /// <summary>

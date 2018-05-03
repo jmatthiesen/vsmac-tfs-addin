@@ -2,6 +2,8 @@
 
 Visual Studio for macOS add-in for interacting with Microsoft Team Foundation Server and Visual Studio Team Services.
 
+This add-in works on Visual Studio for macOS version 7.5+.
+
 ## Usage
 
 In Menu > Version Control section you will find the Team Foundation Server menu at the bottom. To start click on Connect to Server. 
@@ -23,7 +25,7 @@ The following authentication modes are supported:
 
 Choose the projects thsat you want to be connected to: 
 
-<img src="images/choose-projects.png" alt="Choose projects" Width="600" />
+<img src="images/choose-projects.png" alt="Choose projects" Width="500" />
 
 To continue, open "Team Explorer" from Menu > Version Control > Team Foundation Server > Team Explorer. 
 
@@ -48,6 +50,8 @@ Team Foundation Version Control (TFVC) is a centralized version control system. 
 - Add new file.
 - CheckOut.
 - CheckIn.
+- View history changes.
+- Compare changes.
 
 From "Manage" button we can create a manage workspaces. 
 
