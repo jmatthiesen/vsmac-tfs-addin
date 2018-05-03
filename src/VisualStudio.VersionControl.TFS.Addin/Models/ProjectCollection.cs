@@ -245,39 +245,74 @@ namespace MonoDevelop.VersionControl.TFS.Models
 
         #region Workspace Management
 
+        /// <summary>
+        /// Gets the local workspaces.
+        /// </summary>
+        /// <returns>The local workspaces.</returns>
         public IReadOnlyCollection<WorkspaceData> GetLocalWorkspaces()
         {
             lock (locker)
             {
                 if (_localWorkspaces != null && _localWorkspaces.Any())
                     return _localWorkspaces;
-              
-                _localWorkspaces = repositoryService.Value.QueryWorkspaces(Server.UserName, Environment.MachineName);
-               
+
+				try
+				{
+					_localWorkspaces = repositoryService.Value.QueryWorkspaces(Server.UserName, Environment.MachineName);               
+				}
+				catch
+				{
+					_localWorkspaces = new List<WorkspaceData>();
+				}
+
                 return _localWorkspaces;
             }
         }
 
+        /// <summary>
+        /// Gets the remote workspaces.
+        /// </summary>
+        /// <returns>The remote workspaces.</returns>
         public List<WorkspaceData> GetRemoteWorkspaces()
         {
             return repositoryService.Value.QueryWorkspaces(Server.UserName, string.Empty);
         }
 
+        /// <summary>
+        /// Gets the workspace.
+        /// </summary>
+        /// <returns>The workspace.</returns>
+        /// <param name="workspaceName">Workspace name.</param>
         public WorkspaceData GetWorkspace(string workspaceName)
         {
             return repositoryService.Value.QueryWorkspace(Server.UserName, workspaceName);
         }
 
+        /// <summary>
+        /// Deletes a workspace.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="owner">Owner.</param>
         public void DeleteWorkspace(string name, string owner)
         {
             repositoryService.Value.DeleteWorkspace(name, owner);
         }
 
+        /// <summary>
+        /// Creates a new workspace.
+        /// </summary>
+        /// <param name="workspaceData">Workspace data.</param>
         public void CreateWorkspace(WorkspaceData workspaceData)
         {
             repositoryService.Value.CreateWorkspace(workspaceData);
         }
 
+        /// <summary>
+        /// Updates the workspace.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="ownerName">Owner name.</param>
+        /// <param name="workspaceData">Workspace data.</param>
         public void UpdateWorkspace(string name, string ownerName, WorkspaceData workspaceData)
         {
             repositoryService.Value.UpdateWorkspace(name, ownerName, workspaceData);
