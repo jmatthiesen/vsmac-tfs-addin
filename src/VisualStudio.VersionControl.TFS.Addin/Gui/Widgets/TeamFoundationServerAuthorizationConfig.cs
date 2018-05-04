@@ -124,7 +124,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Widgets
             _container = new VBox();
             _tfsContainer = new VBox();
 
-            _titleLabel = new Label(GettextCatalog.GetString("Connect to Team Foundation Server with your account credentials"));
+            _titleLabel = new Label(GettextCatalog.GetString("Connect to Team Foundation Version Control with your account credentials"));
             _nameEntry = new TextEntry
             {
                 PlaceholderText = GettextCatalog.GetString("Name")

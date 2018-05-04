@@ -213,8 +213,8 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
         {
 			return new List<ServerTypeInfo>
             {
-				new ServerTypeInfo { ServerType = ServerType.VSTS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.VSTS.png"), Title = "VSTS", Description = "A cloud service for code development collaboration by Microsoft" },
-				new ServerTypeInfo { ServerType = ServerType.TFS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.TFS.png"), Title = "TFVC", Description = "Centralized Version Control by Microsoft" }
+                new ServerTypeInfo { ServerType = ServerType.VSTS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.VSTS.png"), Title = "Visual Studio Team Services", Description = "Visual Studio Team Services (VSTS) is a cloud service for collaborating on code development." },
+				new ServerTypeInfo { ServerType = ServerType.TFS, Icon = Image.FromResource("MonoDevelop.VersionControl.TFS.Icons.TFS.png"), Title = "Team Foundation Server", Description = "" }
             };
         }
     }

@@ -84,7 +84,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
       
 			var content = new VBox();
 
-			content.PackStart(new Label(GettextCatalog.GetString("Team Foundation Server list")), true, true);
+			content.PackStart(new Label(GettextCatalog.GetString("Servers")), true, true);
             
             _serverList.SelectionMode = SelectionMode.Single;
             _serverList.MinWidth = 600;

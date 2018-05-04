@@ -105,7 +105,7 @@ namespace MonoDevelop.VersionControl.TFS.Gui.Dialogs
             Title = GettextCatalog.GetString("Browse for Folder");
           
             VBox content = new VBox();
-            content.PackStart(new Label(GettextCatalog.GetString("Team Foundation Server") + ":"));
+            content.PackStart(new Label(GettextCatalog.GetString("Team Foundation Version Control") + ":"));
             content.PackStart(new TextEntry
             { 
                 Text = _projectCollection.Server.Name + " - " + _projectCollection.Name, 
