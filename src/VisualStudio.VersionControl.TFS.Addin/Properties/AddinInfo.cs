@@ -35,9 +35,9 @@ using Mono.Addins.Description;
     Version = "1.0",
     Category = "Version Control")]
 
-[assembly: AddinName("TFS Support")]
+[assembly: AddinName("TFVC Support")]
 [assembly: AddinCategory("IDE extensions")]
-[assembly: AddinDescription("TFS support for the Version Control Add-in")]
+[assembly: AddinDescription("Team Foundation Version Control Add-in")]
 [assembly: AddinAuthor("Microsoft")]
 [assembly: AddinUrl("https://github.com/PlainConcepts/vsmac-tfs-addin")]
 
